@@ -1,3 +1,8 @@
+# emacs temp and autosave files
+*~
+\#*\#
+.\#*
+
 # Logs
 logs
 *.log
