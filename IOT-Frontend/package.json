@@ -1,0 +1,23 @@
+{
+  "name": "iot-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for the IoT-Devices of FH-Muenster",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "pm2 start index.js"
+  },
+  "keywords": [
+    "IoT-Devices",
+    "Frontend",
+    "FH-Muenster"
+  ],
+  "author": "Enno Ostendorf <no@007-supersmart.de>",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "mongoose": "^8.0.3",
+    "nodemon": "^3.0.2"
+  }
+}

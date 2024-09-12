@@ -1,0 +1,27 @@
+{
+  "name": "iotbrokertoinflux",
+  "version": "1.0.0",
+  "description": "This is a demon that listens to an IoT-Broker and injects the IoT-Events into an Influx DB",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "IoT-Broker",
+    "Influx",
+    "DB"
+  ],
+  "author": "Enno Ostendorf <no@007-supersmart.de>",
+  "license": "ISC",
+  "dependencies": {
+    "@influxdata/influxdb-client": "^1.33.2",
+    "@influxdata/influxdb-client-apis": "^1.33.2",
+    "axios": "^1.6.8",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "fs": "^0.0.1-security",
+    "influx": "^5.9.3",
+    "jsgrafana": "^1.0.5",
+    "mqtt": "^5.3.4"
+  }
+}

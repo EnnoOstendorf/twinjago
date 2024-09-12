@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="de">
+    <head>
+	<meta charset="utf-8" />
+        <title>FH Münster - IOT-System</title>
+	<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0" />
+	<script type="importmap">
+	  {
+	      "imports": {
+		  "three": "/js/build/three.module.js",
+		  "three/addons/": "/js/build/jsm/"
+	      }
+	  }
+	</script>
+	<!--script src="js/three.min.js"></script-->
+	<script src="js/mqtt.min.js"></script>
+	<script type="module" src="js/iot.js"></script>
+	<link rel="stylesheet" type="text/css" href="css/iot.css" />
+    </head>
+    <body>
+      <div id="header">
+	<div id="logo">
+	  <img src="imgs/logo.png" />
+	</div>
+	<div id="nav">
+	  <div id="navleft"></div>	    
+	  <div id="navright"></div>	    
+	</div>
+      </div>
+      <div id="deviceNavi" class="deviceNavi open">
+	<div id="burger"><s></s><c></c><b></b></div>
+	<!--div id="deviceLogo">
+	    <h1>FH-Münster<br />
+	      IoT-Devicemanager</h1>
+	    </div-->
+	      <h2>Devices</h2>
+	      <ul>
+		<li class="nodevs">keine devices</li>
+	      </ul>
+      </div>
+      <div id="deviceStage" class="deviceStage">
+	<h2><span id="deviceName">Wählen Sie ein Device</span></h2>
+	<p id="dbID" class="comment">DB ID <span>new</span></p>
+	<div id="deviceTabs">	  
+	    <button id="wireBtn" title="Routing an/aus"></button>
+	    <button id="edtBtn" title="Device im Editor öffnen (Berechtigung erforderlich)">&nbsp;</button>
+	</div>
+	<div id="playground">
+	  <div class="camctrl">
+	    Mousewheel to zoom, Mousedrag to rotate, move with button 2
+	  </div>
+	  <div id="tooltip">
+	  </div>
+	</div>
+	<div id="dokSuper">
+	  <div id="dokLyr">
+	  </div>
+	  <div id="dokDatLyr">
+	    <h2>Teile</h2>
+	    <div id="partlist">
+	    </div>
+	    <h2>Verdrahtung</h2>
+	    <div id="routelist"></div>
+	  </div>
+	  <button id="dokBtn" title="Informationen zum Device"><b><i></i><s></s></b></button>
+	</div>
+	<div id="liveData"><span class="datapin" id="datapin">X</span>
+	    <h2 id="livetab" class="live act">Live Daten</h2><h2 id="histtab" class="history">Historie</h2>
+	    <div id="sensorid"></div>
+	    <div id="sensortooltip"></div>
+	    <div id="sensormeters"></div>
+	    <div id="sensorout"></div>
+	    <div id="grafana"></div>
+	</div>
+      </div>
+      <div id="serverstats">
+	<div id="mqtttask" class="task"><span>MQTT <b></b></span></div>
+	<div id="influximport" class="task"><span>Grafana PIPE<b></b></span></div>
+      </div>
+      <div id="throbbermodal"><img src="imgs/throbber.gif" title="Daten werden übertragen, bitte warten - Data will be transferred, please wait" /></div>
+    </body>
+</html>
+        
+        
