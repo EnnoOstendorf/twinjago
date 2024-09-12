@@ -23,3 +23,12 @@ A doc describing installation of each part and a dockerfile for running all (exc
 - **/delete/[id]** - deletes the devices with specified id from the list
 - \[TODO: add futher endpoints\]
 
+## Trivia
+
+- the grafana dashboards are created using the grafana API, the demon takes the skeleton for the API calls out of these files:
+  + grafana-panel.json (for creating a panel)
+  + grafana-dash.json (for creating a dashboard)
+  + grafana-inlux-query.txt (the query for grafana to access the influxdb, NOT used by the demon, just for your information)
+
+- the state of the devices is saved into a file pipestate.json and loaded upon restart. It could be necessary to reset the demon state when you made manual changes to the grafana dashboards. To reinitiate the demon there is a shellscript __reset_mqtt_InfluxGrafanaPipe.sh__.
+
