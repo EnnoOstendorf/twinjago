@@ -9,6 +9,7 @@ so that others can inspect it and have everything they need to reproduce your _T
 - **influxdb** to hold the sensordata in time series
 - **grafana** to display the sensordata
 - **nodejs** to run the demons
+
 A doc describing installation of each part and a dockerfile for running all on one host will be part of this repo.
 
 ## Components
