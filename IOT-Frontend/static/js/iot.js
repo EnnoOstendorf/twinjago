@@ -744,6 +744,9 @@ window.onload = ( loadev ) => {
 	o.rotation.x = mods.rotation.x || 0; o.rotation.y = mods.rotation.y || 0;
 	o.rotation.z = mods.rotation.z || 0;
 	o.scale.x = mods.scale?.x || 1; o.scale.y = mods.scale?.y || 1;
+	if ( mods.hasOwnProperty('depthWrite') ) o.material.depthWrite = mods.depthWrite;
+	if ( mods.hasOwnProperty('side') ) o.material.side = mods.side;
+
     }
     const findPinObject = ( pin ) => {
 	for ( let i=0; i<parts.length; i++ ) {

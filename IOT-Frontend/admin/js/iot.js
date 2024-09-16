@@ -131,7 +131,7 @@ window.onload = ( loadev ) => {
     playground = document.getElementById('playground');
     const width = playground.offsetWidth;
     const height = playground.offsetHeight;
-    const ghosttransp = 0.75;
+    const ghosttransp = 0.7;
     const offset = {
 	x: playground.offsetLeft,
 	y: playground.offsetTop
@@ -953,7 +953,7 @@ window.onload = ( loadev ) => {
 	    console.log('ghost part', mods);
 	    material = new THREE.MeshStandardMaterial({
 		transparent: true,
-		opacity: ghosttransp
+		opacity: ghosttransp, flatShading: true
 	    });
 	}
 	else {
