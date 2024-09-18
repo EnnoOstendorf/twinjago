@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { ArcballControls } from 'three/addons/controls/ArcballControls.js';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 
 console.log('Welcome to the IOT-System-Frontend of FH Münster');
 const scene = new THREE.Scene();
@@ -495,6 +496,30 @@ window.onload = ( loadev ) => {
 	meshp.userData.index = index;
     }
 
+    const create3DFromGeom = ( geom, fname, data, deviceid, tooltip, mods, isbasicp ) => {
+	let material;
+	const col = data.color || '#ffffff';
+	const oname = data.name || fname;
+	if ( mods && mods.ghost ) {
+	    console.log('ghost part', mods);
+	    material = new THREE.MeshStandardMaterial({
+		transparent: true,
+		opacity: ghosttransp, flatShading: true
+	    });
+	}
+	else {
+	    material = new THREE.MeshPhongMaterial( { color: col, fog: false, flatShading: true } );
+	}
+	const mesh = new THREE.Mesh( geom, material );
+	mesh.origcolor = col;
+	mesh.userData.type = isbasicp ? 'basicpart' : 'part';
+	if ( !isbasicp ) {
+	    addPart(oname, mesh, fname, deviceid, tooltip, data);
+	    mainmesh.add( mesh );
+	}
+	return mesh;
+    };
+
     const create3D = ( data, fname, deviceid, tooltip, mods, isbasic ) => {
 	const geometry = new THREE.BufferGeometry();
 	const verts = flattenVerts( data.vertices );
@@ -506,32 +531,7 @@ window.onload = ( loadev ) => {
 	geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( verts, 3 ) );
 	geometry.setAttribute( 'normal', new THREE.Float32BufferAttribute( norms, 3 ) );
 	geometry.computeBoundingSphere();
-	let material;
-	if ( mods.ghost ) {
-	    console.log('ghost part', mods);
-	    material = new THREE.MeshStandardMaterial({
-		transparent: true,
-		opacity: ghosttransp,
-		visible: false,
-		flatShading: true
-	    });
-	}
-	else {
-	    material = new THREE.MeshPhongMaterial( {
-		color: col,
-		fog: false,
-		flatShading: true
-	    });
-	}
-	const mesh = new THREE.Mesh( geometry, material );
-	mesh.origcolor = col;
-	mesh.userData.type = isbasic ? 'basicpart' : 'part';
-	mesh.userData.tooltip = tooltip;
-	if ( !isbasic ) {
-	    addPart(oname, mesh, fname, deviceid, tooltip, data);
-	    mainmesh.add( mesh );
-	}
-	return mesh;
+	return create3DFromGeom( geometry, fname, data, deviceid, tooltip, mods, isbasic );
     }
     console.log('loaded threejs',THREE);
     scene.add(mainmesh);
@@ -800,12 +800,31 @@ window.onload = ( loadev ) => {
 		loadBasic( o );
 	    }
 	    else {
-		const o3 = create3D( o.origdata, o.fname, o.deviceid, o.tooltip, o.modifications, isbasic );
-		applyModifications( o3, o.modifications );
-		o.pins.forEach( ( p, j ) => {
-		    addPin( i, o3, p.name, p.color, p.modifications, p.labelmodifications, isbasic, j );
-		});
-		if ( isbasic && target ) target.add(o3);
+		let o3;
+		if ( o.origdata.type && o.origdata.type === 'stl' ) {
+		    const stlloader = new STLLoader();
+		    stlloader.load( o.origdata.file, ( geometry ) => {
+			o3 = create3DFromGeom( geometry, o.fname, o.origdata, o.deviceid, o.tooltip, o.modifications, isbasic );
+			if ( o.modifications ) applyModifications( o3, o.modifications );
+			console.log('loaded stl',geometry,o3);
+			o.pins.forEach( ( p, j ) => {
+			    const pinscont = document.querySelector('#part'+i+' .pins');
+			    //		    console.log('add pin',p);
+			    addPin( i, o3, p.name, p.color, p.modifications, p.labelmodifications, isbasic, j );
+			});
+			if ( isbasic && target ) target.add(o3);
+		    });
+		}
+		else {
+		    o3 = create3D( o.origdata, o.fname, o.deviceid, o.tooltip, o.modifications, isbasic );
+		    if ( o.modifications ) applyModifications( o3, o.modifications );
+		    o.pins.forEach( ( p, j ) => {
+			const pinscont = document.querySelector('#part'+i+' .pins');
+			//		    console.log('add pin',p);
+			addPin( i, o3, p.name, p.color, p.modifications, p.labelmodifications, isbasic, j );
+		    });
+		    if ( isbasic && target ) target.add(o3);
+		}
 	    }
 	});
 	devdata.signs.forEach( ( o, i ) => {

@@ -455,7 +455,7 @@ input.error {
 	padding: 10px 69px 5px 5px;
 	position: relative;
 }
-.sign > i, .sign > s, .part > i, .part > s, .pin > i, .pin > s,.deviceNavi li > s, .filedesc .delbtn, .linkdelete {
+.sign > i, .sign > s, .part > i, .part > s, .part .partcolor, .pin > i, .pin > s,.deviceNavi li > s, .filedesc .delbtn, .linkdelete {
 	display: block;
 	width: 20px;
 	height: 20px;
@@ -506,6 +506,19 @@ input.error {
 	position: absolute;
 	right: 70px;
 	top: 10px;
+}
+.part .partcolor {
+	display: inline-block;
+	width: 70px;
+	height: 20px;
+	right: 66px;
+	text-shadow: 1px 1px 3px #000;
+	font-weight: bold;
+	color: #eee;
+	font-size: 13px;
+	padding: 3px 10px;
+	border-radius: 10px;
+	text-align: center;
 }
 .deviceNavi li > s {
 	top: 3px;

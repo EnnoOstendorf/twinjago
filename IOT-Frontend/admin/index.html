@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="de">
+    <head>
+	<meta charset="utf-8" />
+        <title>FH Münster - IOT-System</title>
+	<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0" />
+	<script type="importmap">
+	  {
+	      "imports": {
+		  "three": "/js/build/three.module.js",
+		  "three/addons/": "/js/build/jsm/"
+	      }
+	  }
+	</script>
+	<!--script src="js/three.min.js"></script-->
+	<script src="js/mqtt.min.js"></script>
+	<script type="module" src="js/iot.js"></script>
+	<link rel="stylesheet" type="text/css" href="css/iot.css" />
+	<!-- (CO)-Coloris -->
+	<link rel="stylesheet" href="css/coloris.min.css"/>
+	<script src="js/coloris.min.js"></script>
+    </head>
+    <body>
+      <header>
+	<div id="logo">
+	  <img src="imgs/logo.png" />
+	</div>
+	<div id="nav">
+	  <div id="navleft"></div>	    
+	  <div id="navright"></div>	    
+	</div>
+	<div class="modalovl"></div>
+      </header>
+      <div id="deviceNavi" class="deviceNavi">
+	<h2>Devices <button id="createDeviceBtn">+</button></h2>
+	<ul>
+	  <li class="nodevs">keine devices</li>
+	</ul>
+	<h2>Basics <button id="createBasicBtn">+</button></h2>
+	<ol>		
+	</ol>
+	<div class="modalovl"></div>
+      </div>
+      <div id="deviceStage" class="deviceStage">
+	<div id="devStgHead">
+	  <h2>IOT-Device <input name="deviceName" id="deviceName" placeholder="Benenne mich" autocomplete="off" /><span id="globalbasiclabel">BASIC</span> </h2>
+	  <button id="DokumenteBtn" class="disabled" title="Informationen zum Device (für Basics nicht verfügbar)">Informationen</button>
+	  <button id="RoutingBtn" class="disabled" title="Routing Editor">Routing</button>
+	  <button id="liveBtn" title="zur Live-Ansicht"><img src="imgs/augen.png" /> &nbsp;</button>
+	  <p id="dbID" class="comment">DB ID <span>new</span></p>
+	  <div class="modalovl"></div>
+	</div>
+	<div id="playground">
+	  <div class="camctrl">
+	    Mousewheel to zoom, Mousedrag to rotate, move with button 2
+	  </div>
+	  <div class="camstart">
+	    <button id="saveCamBtn" title="aktuelle Kamerasicht als Startansicht des Devices setzen"></button>
+	    <button id="loadCamBtn" title="gesetzte Kamerasicht abrufen"></button>
+	    
+	  </div>
+	  <div class="designCtrl">
+	    <button id="saveDeviceBtn">device speichern</button>
+	    <button id="saveBasicBtn">basic speichern</button>
+	    <button id="dupDeviceBtn">clone</button>
+	    <div class="modalovl"></div>
+	  </div>
+	</div>
+	<div id="parts"><h2>Bauteile<s></s><i></i><b></b></h2>
+	  <div id="partsinner"></div>	    
+	  <div class="newpart" id="newpart"><label for="newpartfile">+ 3D-Datei <input type="file" id="newpartfile" autocomplete="off"></label></div>
+	  <div class="newgroup" id="newgroup">+ basic </div>
+	  <div id="basicselect"></div>
+	  <div class="modalovl"></div>
+	</div>
+	<div id="signs"><h2>Beschilderung<s></s><i></i><b></b></h2>
+	  <div id="signsinner"></div>	    
+	  <div class="newsign" id="newsign"><label for="newsignfile">+ Schildbild <input type="file" id="newsignfile" autocomplete="off"></label></div>
+	  <div class="modalovl"></div>
+	</div>
+	<div id="editDlg">
+	  <form id="editForm" action="">
+	    <button id="rotToPlane">_</button>
+	    <button id="rotToWallNS">|</button>
+	    <button id="rotToWallEW">/</button><br />
+	    <div class="inprow"> <b>Position:</b>
+	      x: <input class="coord" name="posx" id="posx" autocomplete="off" /> <i id="posxhs" class="hotspot"></i>
+	      y: <input class="coord" name="posy" id="posy" autocomplete="off" /> <i id="posyhs" class="hotspot"></i>
+	      z: <input class="coord" name="posz" id="posz" autocomplete="off" /> <i id="poszhs" class="hotspot"></i>
+	    </div><br />
+	    <div class="inprow"><b>Rotation:</b>
+	      x: <input class="coord" name="rotx" id="rotx" autocomplete="off" /> <i id="rotxhs" class="hotspot"></i> <i id="partrotxhs" class="rotspot"></i>
+	      y: <input class="coord" name="roty" id="roty" autocomplete="off" /> <i id="rotyhs" class="hotspot"></i> <i id="partrotyhs" class="rotspot"></i>
+	      z: <input class="coord" name="rotz" id="rotz" autocomplete="off" /> <i id="rotzhs" class="hotspot"></i> <i id="partrotzhs" class="rotspot"></i>
+	    </div><br />
+	    <div class="inprow"><b>Größe:</b>
+	      Breite: <input class="coord" name="sclx" id="sclx" autocomplete="off" /> <i id="sclxhs" class="hotspot"></i>
+	      Höhe: <input class="coord" name="scly" id="scly" autocomplete="off" /> <i id="sclyhs" class="hotspot"></i>
+	    </div><br />
+	    <div id="editpartconf">
+	      <h3>Einstellungen</h3>
+	      <label> <b>Ghost:</b>
+		<input type="checkbox" id="ghost" name="ghost" autocomplete="off" />
+	      </label>
+	      <label> <b>DepthWrite:</b>
+		<input type="checkbox" id="depthwrite" name="depthwrite" autocomplete="off" />
+	      </label>
+	      <label> <b>FrontSide:</b>
+		<input type="radio" id="frontside" name="side" autocomplete="off" />
+	      </label>
+	      <label> <b>BackSide:</b>
+		<input type="radio" id="backside" name="side" autocomplete="off" />
+	      </label>
+	      <label> <b>DoubleSide:</b>
+		<input type="radio" id="doubleside" name="side" autocomplete="off" />
+	      </label><br />
+	      <label> <b>Glass:</b>
+		<input type="checkbox" id="glass" name="glass" autocomplete="off" />
+	      </label>
+	    </div>
+	    <button id="editCancel">Abbrechen</button>
+	    <button id="editConfirm">Setzen</button>
+	  </form>
+	</div>
+	<div id="dokumenteDlg">
+	  <h3>Informationen</h3>
+	  <div class="dokrow">
+	    <b>Beschreibung 1</b>
+	    <textarea id="dok1txt" autocomplete="off" placeholder=""></textarea>
+	  </div>
+	  <div class="dokrow">
+	    <b>Beschreibung 2</b>
+	    <textarea id="dok2txt" autocomplete="off" placeholder=""></textarea>
+	  </div>
+	  <div class="dokrow">
+	    <b>Beschreibung 3</b>
+	    <textarea id="dok3txt" autocomplete="off" placeholder=""></textarea>	    
+	  </div>
+	  <h3>Dateien <span id="dbmaintbtn">#</span></h3>
+	  <div id="filelist"></div>
+	  <div id="newfilebox">
+	    <div id="newfilelist"></div>
+	    <div class="newfile" id="newfile"><label for="newfilefile">+ Datei <input type="file" id="newfilefile" autocomplete="off" multiple="multiple"></label></div>
+	    <div class="footnote">Die neuen Dateien werden nach Click auf Speichern hochgeladen<br /> bzw. gelöscht und das Device wird gespeichert.</div>
+	  </div>
+	  <div id="dokdbmaint">
+	    <b>ID: </b><input id="deldokid" /><button id="deldokdo">Datei löschen</button>
+	  </div>
+	  <h3>Links</h3>
+	  <div id="linklist"></div>
+	  <button id="newlink">+</button>
+	  <div id="editlinkdlg">
+	      <h3>Link</h3>
+	    <label><span>Ziel-URL *</span>
+	      <input id="newlinktargeturl" />
+	    </label>
+	    <label><span>Linktext *</span>
+	      <input id="newlinktext" />
+	    </label>
+	    <label><span>tooltip</span>
+		<input id="newlinktooltip" />
+	    </label>
+	    <button id="linkclsbtn">Abbrechen</button>
+	    <button id="linkaddbtn">Fertig</button>
+	  </div>
+	  <button id="dokDlgCls">Schließen</button>
+	  <button id="dokDlgSave">Hochladen & Speichern</button>
+	</div>
+	<div id="routingDlg">
+	  <button id="routingclose">X</button>
+	  <h2>Routing <button id="newroute" title="neue route anlegen">+</button>
+	  <button id="reroute" title="Re-Route"></button></h2>
+	  <div id="routelist"></div>
+	  <div id="routingPinDlg">	    
+	  </div>
+	</div>
+	<div id="pinDlg">
+	  <form id="pinForm" action="">
+	    <input type="hidden" id="formPartIndex" />
+	    <h2>Pin bearbeiten</h2>
+	    <label> Name:
+	      <input type="text" id="pinname" value="" autocomplete="off" />
+	    </label>
+	    <div id="pincolor"></div>
+	    <div id="colorchooser">
+	      <div id="colrow1" class="colrow"></div>
+	      <div id="colrow2" class="colrow"></div>
+	    </div>
+	    <br />
+	    
+	    <div class="inprow"> <b>Position:</b><!--i id="pincapture"></i-->
+	      x: <input class="coord" name="pinx" id="pinx" autocomplete="off" /> <i id="pinxhs" class="hotspot"></i>
+	      y: <input class="coord" name="piny" id="piny" autocomplete="off" /> <i id="pinyhs" class="hotspot"></i>
+	      z: <input class="coord" name="pinz" id="pinz" autocomplete="off" /> <i id="pinzhs" class="hotspot"></i>
+	      <br />
+	      <b>Rotation:</b>
+	      x: <input class="coord" name="pinrotx" id="pinrotx" autocomplete="off" /> <i id="pinrotxhs" class="rotspot"></i>
+	      y: <input class="coord" name="pinroty" id="pinroty" autocomplete="off" /> <i id="pinrotyhs" class="rotspot"></i>
+	      z: <input class="coord" name="pinrotz" id="pinrotz" autocomplete="off" /> <i id="pinrotzhs" class="rotspot"></i>
+	    </div>
+	    <div class="inprow"> <b>Label</b><br /><b>Position:</b>
+	      x: <input class="coord" name="labelposx" id="labelposx" autocomplete="off" /> <i id="labelposxhs" class="hotspot"></i>
+	      y: <input class="coord" name="labelposy" id="labelposy" autocomplete="off" /> <i id="labelposyhs" class="hotspot"></i>
+	      z: <input class="coord" name="labelposz" id="labelposz" autocomplete="off" /> <i id="labelposzhs" class="hotspot"></i><br />
+	      <b>Rotation:</b>
+	      x: <input class="coord" name="labelrotx" id="labelrotx" autocomplete="off" /> <i id="labelrotxhs" class="rotspot"></i>
+	      y: <input class="coord" name="labelroty" id="labelroty" autocomplete="off" /> <i id="labelrotyhs" class="rotspot"></i>
+	      z: <input class="coord" name="labelrotz" id="labelrotz" autocomplete="off" /> <i id="labelrotzhs" class="rotspot"></i>
+	    </div><br />
+	    <div id="pinCancel">Abbrechen</div>
+	    <div id="pinConfirm">Setzen</div>
+	  </form>
+	</div>
+      </div>
+      <div id="serverstats">
+	<div id="mqtttask" class="task"><span>MQTT <b></b></span></div>
+	<div id="influximport" class="task"><span>-&gt;influx <b></b></span></div>
+      </div>
+      <div id="throbbermodal"><img src="imgs/throbber.gif" title="Daten werden übertragen, bitte warten - Data will be transferred, please wait" /></div>
+    </body>
+</html>
+        
+        
