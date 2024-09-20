@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { ArcballControls } from 'three/addons/controls/ArcballControls.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 console.log('Welcome to the IOT-System-Frontend of FH Münster', location.search.substr(1).split('='));
 const scene = new THREE.Scene();
 let playground = null;
@@ -959,6 +960,18 @@ window.onload = ( loadev ) => {
 	};
     }
 
+    const create3DFromGlb = ( glb, fname, data, deviceid, tooltip, mods, isbasicp ) => {
+	const col = data.color || '#ffffff';
+	const oname = data.name || fname;
+	const mesh = glb.scene;
+	mesh.scale.set(500,500,500);
+	mesh.userData.type = isbasicp ? 'basicpart' : 'part';
+	if ( !isbasicp ) {
+	    addPart(oname, mesh, fname, deviceid, tooltip, data);
+	    mainmesh.add( mesh );
+	}
+	return mesh;
+    };
     const create3DFromGeom = ( geom, fname, data, deviceid, tooltip, mods, isbasicp ) => {
 	let material;
 	const col = data.color || '#ffffff';
@@ -1017,6 +1030,17 @@ window.onload = ( loadev ) => {
 	    	stlloader.load( e.target.result, ( geometry ) => {
 		    create3DFromGeom( geometry, fname, { type: 'stl', color: '#888888', file: e.target.result, name: fname.replace('.stl','') } );
 		    console.log('loaded stl',geometry);
+		});
+	    };
+	    reader.readAsDataURL(finput.files[0]);
+	}
+	else if ( ext == 'glb' ) {
+	    reader.onload = (e) => {
+		const gltfloader = new GLTFLoader();
+		console.log('loading glb',e.target);
+	    	gltfloader.load( e.target.result, ( glb ) => {
+		    create3DFromGlb( glb, fname, { type: 'glb', color: '#888888', file: e.target.result, name: fname.replace('.gltf','') } );
+		    console.log('loaded glb',glb);
 		});
 	    };
 	    reader.readAsDataURL(finput.files[0]);
@@ -1116,7 +1140,7 @@ window.onload = ( loadev ) => {
 	const type = obj.userData.type;
 	if ( type === 'part' ) {
 	    document.getElementById('part'+ind).classList.add('over');
-	    if ( obj.material.color ) 
+	    if ( obj.material?.color ) 
 		obj.material.color.set( '#33aa88' );
 	}
 	else if ( type === 'basicpart' || type === 'basicsign' ) {
@@ -1132,7 +1156,7 @@ window.onload = ( loadev ) => {
 	    const t=document.getElementById('sign'+ind);
 	    if ( t ) {
 		t.classList.add('over');
-		if ( obj.material.color ) 
+		if ( obj.material?.color ) 
 		    obj.material.color.set( '#33aa88' );
 	    }
 	}
@@ -1482,6 +1506,21 @@ window.onload = ( loadev ) => {
 			if ( isbasicp && target ) target.add(o3);
 		    });
 		}
+		else if ( o.origdata.type && o.origdata.type === 'glb' ) {
+		    const gltfloader = new GLTFLoader();
+	    	    gltfloader.load( o.origdata.file, ( glb ) => {
+			o3=create3DFromGlb( glb, o.fname, o.origdata, o.deviceid, o.tooltip, o.modifications, isbasicp );
+			applyModifications( o3, o.modifications );
+			console.log('loaded glb',glb,o3);
+			o.pins.forEach( ( p, j ) => {
+			    const pinscont = document.querySelector('#part'+i+' .pins');
+			    //		    console.log('add pin',p);
+			    addPin( i, o3, pinscont, p.name, p.color, p.modifications, p.labelmodifications, isbasicp, j );
+			});
+			if ( isbasicp && target ) target.add(o3);
+			console.log('loaded glb',glb);
+		    });
+		}
 		else {
 		    o3 = create3D( o.origdata, o.fname, o.deviceid, o.tooltip, o.modifications, isbasicp );
 		    applyModifications( o3, o.modifications );
@@ -1720,9 +1759,9 @@ window.onload = ( loadev ) => {
 			'position' : { 'x' : apa.mesh.position.x, 'y' : apa.mesh.position.y, 'z' : apa.mesh.position.z },
 			'rotation' : { 'x' : apa.mesh.rotation.x, 'y' : apa.mesh.rotation.y, 'z' : apa.mesh.rotation.z },
 			'scale' : {	'x' : apa.mesh.scale.x, 'y' : apa.mesh.scale.y },
-			'ghost' : apa.mesh.material.opacity<1,
-			'depthWrite' : apa.mesh.material.depthWrite,
-			'side' : apa.mesh.material.side
+			'ghost' : apa.mesh.material?.opacity<1,
+			'depthWrite' : apa.mesh.material?.depthWrite,
+			'side' : apa.mesh.material?.side
 		    }
 		}
 	    }
