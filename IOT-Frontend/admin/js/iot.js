@@ -450,12 +450,13 @@ window.onload = ( loadev ) => {
 	}
 	//	console.log( 'checkfilesready',ready);
     }
-    const createFileEntry = ( id, name, size ) => {
+    const createFileEntry = ( id, name, size, label ) => {
 //	console.log('creating File Entry',id,name,size);
 	const nl = document.createElement( 'div' );
 	nl.id='file'+id;
 	nl.classList.add('filedesc');
-	nl.innerHTML = name + ' (<i>' + size + 'b</i>)';
+	if ( !label ) label = name;
+	nl.innerHTML = '<input id="label-'+id+'" value="'+ label + '" /><br/>' + name + ' (<i>' + size + 'b</i>)';
 	const dl = document.createElement( 'span' );
 	dl.classList.add('delbtn');
 	dl.onclick=(ev) => {
@@ -482,12 +483,13 @@ window.onload = ( loadev ) => {
 	nld.appendChild(nldd);
 	return nld;
     }
-    const createFile = ( raw, filedata, item ) => {
+    const createFile = ( raw, filedata, label, item ) => {
 	const jso = {
 	    'size' : filedata.size,
 	    'filetype' : filedata.type,
 	    'deviceid' : aktdeviceuid,
 	    'filename' : filedata.name,
+	    'label' : label,
 	    'content' : raw
 	}
 //	console.log('create File',jso);
@@ -498,10 +500,10 @@ window.onload = ( loadev ) => {
 		item.insertAdjacentHTML( 'beforeend', 'fertig!' );
 		item.classList.add('ready');
 	    }
-	    const filedesc = { 'name' : filedata.name, 'size' : filedata.size, 'type' : filedata.type, 'dbid':json._id };
+	    const filedesc = { 'name' : filedata.name, 'label' : label, 'size' : filedata.size, 'type' : filedata.type, 'dbid':json._id };
 //	    console.log('upload finished', json, filedesc);
 	    document.getElementById( 'filelist' ).appendChild(
-		createFileEntry( files.length, filedesc.name,filedesc.size));
+		createFileEntry( files.length, filedesc.name,filedesc.size,filedesc.label));
 	    files.push(filedesc);
 	    checkFilesReady( item );
 	    // callback when upload finished
@@ -1077,7 +1079,7 @@ window.onload = ( loadev ) => {
 	for ( let i=0; i<files.length; i++ ) {
 	    const xdom = document.createElement( 'div' );
 	    xdom.classList.add('fileitem');
-	    xdom.innerHTML = '<b>'+files[i].name+'</b> (<i>'+files[i].size+'</i>b)';
+	    xdom.innerHTML = '<input class="filedesc" placeholder="Beschreibung" /><b>'+files[i].name+'</b> (<i>'+files[i].size+'</i>b)';
 	    const xdeldom = document.createElement( 'span' );
 	    xdeldom.classList.add("delNewFile");
 	    xdeldom.innerHTML='X';
@@ -1319,6 +1321,11 @@ window.onload = ( loadev ) => {
 	    else if ( am.type === "Object3D" ) {
 		removeMeshes( am );
 	    }
+	    else if ( am.type === "Group" ) {
+//		console.log('remove group',am);
+		removeMeshes( am );
+		am.parent.remove(am);
+	    }
 	    else if ( am.type === "Line" ) {
 		am.geometry.dispose();
 		am.material.dispose();
@@ -1470,7 +1477,7 @@ window.onload = ( loadev ) => {
 		for ( let i=0; i<da.length; i++ ) {
 //		    console.log('found file ',da[i] );
 		    files.push(da[i]);
-		    cont.appendChild( createFileEntry( i, da[i].name, da[i].size ) );
+		    cont.appendChild( createFileEntry( i, da[i].name, da[i].size, da[i].label ) );
 		}
 	    }
 	    if ( devdata.links && devdata.links.length > 0 ) {
@@ -2368,13 +2375,14 @@ window.onload = ( loadev ) => {
 	    const items = filebox.querySelectorAll( '.fileitem' );
 	    items.forEach( ( o, i ) => {
 		const fname = o.querySelector( 'b' ).innerHTML;
+		const label = o.querySelector( '.filedesc' ).value;
 		if ( o.classList.contains('deleted') || o.classList.contains('ready') ) {
 		    console.log('deleted || ready',fname);
 		    return;
 		}
 		const fsize = o.querySelector( 'i' ).innerHTML;
 		o.querySelector('.delNewFile').remove();
-		createFile( newraws[i], newfiles[i], o );
+		createFile( newraws[i], newfiles[i], label, o );
 		console.log('found newfile',fname, fsize, newfiles[i], newraws[i]);
 	    });
 	    if ( items.length === 0 ) {

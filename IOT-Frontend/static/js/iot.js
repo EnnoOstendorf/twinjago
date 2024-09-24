@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { ArcballControls } from 'three/addons/controls/ArcballControls.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 console.log('Welcome to the IOT-System-Frontend of FH Münster');
 const scene = new THREE.Scene();
@@ -496,6 +497,20 @@ window.onload = ( loadev ) => {
 	meshp.userData.index = index;
     }
 
+    const create3DFromGlb = ( glb, fname, data, deviceid, tooltip, mods, isbasicp ) => {
+	const col = data.color || '#ffffff';
+	const oname = data.name || fname;
+	const mesh = glb.scene;
+	mesh.scale.set(500,500,500);
+	mesh.userData.type = isbasicp ? 'basicpart' : 'part';
+	if ( !isbasicp ) {
+	    addPart(oname, mesh, fname, deviceid, tooltip, data);
+	    mainmesh.add( mesh );
+	    console.log('adding glb',mainmesh);
+	}
+	return mesh;
+    };
+
     const create3DFromGeom = ( geom, fname, data, deviceid, tooltip, mods, isbasicp ) => {
 	let material;
 	const col = data.color || '#ffffff';
@@ -513,6 +528,9 @@ window.onload = ( loadev ) => {
 	const mesh = new THREE.Mesh( geom, material );
 	mesh.origcolor = col;
 	mesh.userData.type = isbasicp ? 'basicpart' : 'part';
+	if ( mods && mods.ghost ) {
+	    mesh.visible = false;
+	}
 	if ( !isbasicp ) {
 	    addPart(oname, mesh, fname, deviceid, tooltip, data);
 	    mainmesh.add( mesh );
@@ -701,6 +719,12 @@ window.onload = ( loadev ) => {
 	    }
 	    else if ( am.type === "Object3D" ) {
 		removeMeshes( am );
+		am.parent.remove(am);
+	    }
+	    else if ( am.type === "Group" ) {
+//		console.log('remove group',am);
+		removeMeshes( am );
+		am.parent.remove(am);
 	    };
 	}
     }
@@ -808,11 +832,24 @@ window.onload = ( loadev ) => {
 			if ( o.modifications ) applyModifications( o3, o.modifications );
 			console.log('loaded stl',geometry,o3);
 			o.pins.forEach( ( p, j ) => {
-			    const pinscont = document.querySelector('#part'+i+' .pins');
 			    //		    console.log('add pin',p);
 			    addPin( i, o3, p.name, p.color, p.modifications, p.labelmodifications, isbasic, j );
 			});
 			if ( isbasic && target ) target.add(o3);
+		    });
+		}
+		else if ( o.origdata.type && o.origdata.type === 'glb' ) {
+		    const gltfloader = new GLTFLoader();
+	    	    gltfloader.load( o.origdata.file, ( glb ) => {
+			o3=create3DFromGlb( glb, o.fname, o.origdata, o.deviceid, o.tooltip, o.modifications, isbasic );
+			applyModifications( o3, o.modifications );
+			console.log('loaded glb',glb,o3);
+			o.pins.forEach( ( p, j ) => {
+			    //		    console.log('add pin',p);
+			    addPin( i, o3, p.name, p.color, p.modifications, p.labelmodifications, isbasic, j );
+			});
+			if ( isbasic && target ) target.add(o3);
+			console.log('loaded glb',glb,o3);
 		    });
 		}
 		else {
