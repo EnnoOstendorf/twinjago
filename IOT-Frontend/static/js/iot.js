@@ -657,7 +657,8 @@ window.onload = ( loadev ) => {
 			const ind = o3.userData.index;
 			if ( parts[ind] ) {
 			    if ( parts[ind].tooltip && parts[ind].tooltip != '' ) {
-				showTooltip( xp, yp, parts[ind].tooltip );
+//				showTooltip( xp, yp, parts[ind].tooltip );
+				showTooltip( xp, yp, o3.userData.tooltip );
 			    }
 			    if ( parts[ind].deviceid && parts[ind].deviceid != '' ) {
 				aktdevice = parts[ind].deviceid;
