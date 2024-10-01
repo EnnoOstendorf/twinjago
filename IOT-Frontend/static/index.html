@@ -33,21 +33,24 @@
 	    <h1>FH-Münster<br />
 	      IoT-Devicemanager</h1>
 	    </div-->
-	      <h2>Devices</h2>
+	      <h2>Twins</h2>
 	      <ul>
 		<li class="nodevs">keine devices</li>
 	      </ul>
       </div>
       <div id="deviceStage" class="deviceStage">
-	<h2><span id="deviceName">Wählen Sie ein Device</span></h2>
+	<h2><span id="deviceName">Wählen Sie einen Twin</span></h2>
 	<p id="dbID" class="comment">DB ID <span>new</span></p>
 	<div id="deviceTabs">	  
 	    <button id="wireBtn" title="Routing an/aus"></button>
 	    <button id="edtBtn" title="Device im Editor öffnen (Berechtigung erforderlich)">&nbsp;</button>
 	</div>
 	<div id="playground">
-	  <div class="camctrl">
-	    Mousewheel to zoom, Mousedrag to rotate, move with button 2
+	  <div class="camctrl mouse">
+	    Mousewheel/MiddleMousedrag to zoom, LeftMousedrag to rotate, move with right button
+	  </div>
+	  <div class="camctrl touch">
+	    One Finger to rotate, two fingers to rotate/scale/move
 	  </div>
 	  <div id="tooltip">
 	  </div>

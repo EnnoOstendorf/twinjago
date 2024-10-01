@@ -246,8 +246,11 @@ window.onload = ( loadev ) => {
     scene.add( light4 );
 
     let mainmesh=new THREE.Group();
+    mainmesh.userData.id="main";
     let routemesh=new THREE.Group();
+    routemesh.userData.id="routes";
     let signmesh=new THREE.Group();
+    signmesh.userData.id="signs";
     let hlp = null;
     let axishelp = new THREE.AxesHelper( 6 );
     mainmesh.add( axishelp );
@@ -303,7 +306,7 @@ window.onload = ( loadev ) => {
     }
     const loadAllDevices = () => {
 	const deviceDom = document.querySelector('.deviceNavi ul');
-	deviceDom.innerHTML = '<img src="imgs/throbber.gif" /> lade Devices';
+	deviceDom.innerHTML = '<img src="imgs/throbber.gif" /> lade Twins';
 	const url = '/api/list';
 	const xhr = new XMLHttpRequest();
 	xhr.open('get',url,true);
@@ -721,8 +724,8 @@ window.onload = ( loadev ) => {
 		removeMeshes( am );
 		am.parent.remove(am);
 	    }
-	    else if ( am.type === "Group" ) {
-//		console.log('remove group',am);
+	    else if ( am.type === "Group" && am.userData.id !== 'routes' ) {
+		console.log('remove group',am);
 		removeMeshes( am );
 		am.parent.remove(am);
 	    };
@@ -1171,7 +1174,7 @@ window.onload = ( loadev ) => {
 	const nl = document.createElement( 'div' );
 	nl.id='file'+i;
 	nl.classList.add('filedesc');
-	nl.innerHTML = '<a href="/api/download/'+files[i].dbid+'">'+files[i].name + '</a> (<i>' + files[i].size + 'b</i>)';
+	nl.innerHTML = '<h3>'+(files[i].label||files[i].name)+'</h3><a href="/api/download/'+files[i].dbid+'">'+files[i].name + '</a> (<i>' + files[i].size + 'b</i>)';
 	return nl;
     }
     const createLinksEntry = ( i ) => {

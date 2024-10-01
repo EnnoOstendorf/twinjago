@@ -100,10 +100,17 @@ body {
 	left: 18%;
 }
 #devStgHead {
-	height: 100px;
+	height: 84px;
+	position: relative;
+	width: 60%;
 }
 #devStgHead h2 {
 	margin: 10px 0 14px 0;
+}
+#TwinCnfBtns {
+	position: absolute;
+	right: 0;
+	bottom: 0;
 }
 #devStgHead button {
 	font-size: 18px;
@@ -119,6 +126,9 @@ body {
 	font-size: 24px;
 	margin: 0 0 0 40px;
 	max-width: 500px;
+}
+#deviceCat {
+	margin: 0 11px;
 }
 input.error {
 	border-color: red;
@@ -188,22 +198,50 @@ input.error {
 }
 .designCtrl {
 	position: absolute;
-	bottom: -80px;
+	bottom: -60px;
 	left: 0;
 	width: 800px;
-	text-align: center;
+	text-align: left;
+}
+.globalCtrl {
+	position: absolute;
+	/* top: 0; */
+	/* left: 46%; */
+	bottom: -80px;
+	right: 0;
+}
+#globalSettings {
+	font-size: 16px;
+	padding: 5px 20px;
+	cursor: pointer;
 }
 #deviceNavi > h2 {
 	position: relative;
 }
 .designCtrl button, #deviceNavi > h2 > button {
-	font-size: 24px;
-	padding: 9px 24px;
+	font-size: 18px;
+	padding: 7px 24px;
 	cursor: pointer;
 	margin: 20px 0 0;
 }
 .designCtrl button.disabled {
     display:none;
+}
+.tree {
+	background: #fff;
+	padding-left: 10px;
+	height: 0;
+	overflow: hidden;
+	transition: all 1s ease-out;
+}
+.tree.open {
+	height: auto;
+}
+.deviceNavi li.cat {
+	font-weight: bold;
+	font-style: italic;
+	background: #ccc;
+	width: 86%;
 }
 #deviceNavi > h2 > button {
 	display: inline-block;
@@ -221,18 +259,27 @@ input.error {
 	height: 350px;
 	float: left;
 	margin: -80px 10px 20px 0;
-	transition: height 0.5s ease-in-out;
+	transition: all 0.5s ease-in-out;
 	background: #eee;
 	padding: 0 20px;
 	border-radius: 20px;
 	position: absolute;
 	right: 0;
+	overflow: hidden;
 }
-.partsfocus #parts,.signsfocus #signs {
+.partsfocus #parts {
     height: 600px;
 }
-.partsfocus #signs,.signsfocus #parts {
+.signsfocus #signs {
+    top: 120px;
+    height: 600px;
+}
+.signsfocus #parts {
     height: 50px;
+}
+.partsfocus #signs {
+    height: 50px;
+    top: 650px;
 }
 
 #signs {
@@ -506,6 +553,7 @@ input.error {
 	position: absolute;
 	right: 70px;
 	top: 10px;
+	cursor: pointer;
 }
 .part .partcolor {
 	display: inline-block;

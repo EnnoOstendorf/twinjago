@@ -9,6 +9,7 @@ router.post('/post', async (req, res) => {
 //    console.log('got post:',req.body);
     const data = new Model({
         name: req.body.name,
+        category: req.body.category,
 	type: req.body.type,
         parts: req.body.parts,
         signs: req.body.signs,
@@ -75,6 +76,7 @@ router.get('/list', async (req, res) => {
 	data.forEach( ( o, i ) => {
 	    list.push({
 		name: o.name,
+		cat: o.category,
 		id: o._id,
 		type: o.type,
 		parts: o.parts.length,

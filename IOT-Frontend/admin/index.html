@@ -32,7 +32,7 @@
 	<div class="modalovl"></div>
       </header>
       <div id="deviceNavi" class="deviceNavi">
-	<h2>Devices <button id="createDeviceBtn">+</button></h2>
+	<h2>Twins <button id="createDeviceBtn">+</button></h2>
 	<ul>
 	  <li class="nodevs">keine devices</li>
 	</ul>
@@ -43,10 +43,13 @@
       </div>
       <div id="deviceStage" class="deviceStage">
 	<div id="devStgHead">
-	  <h2>IOT-Device <input name="deviceName" id="deviceName" placeholder="Benenne mich" autocomplete="off" /><span id="globalbasiclabel">BASIC</span> </h2>
-	  <button id="DokumenteBtn" class="disabled" title="Informationen zum Device (für Basics nicht verfügbar)">Informationen</button>
-	  <button id="RoutingBtn" class="disabled" title="Routing Editor">Routing</button>
-	  <button id="liveBtn" title="zur Live-Ansicht"><img src="imgs/augen.png" /> &nbsp;</button>
+	  <h2>Twin <input name="deviceName" id="deviceName" placeholder="Benenne mich" autocomplete="off" /><span id="globalbasiclabel">BASIC</span> </h2>
+	  <h3>Kategorie: <input name="deviceCat" id="deviceCat" placeholder="Kategorie eingeben" autocomplete="off" /></h3>
+	  <div id="TwinCnfBtns">
+	    <button id="DokumenteBtn" class="disabled" title="Informationen zum Device (für Basics nicht verfügbar)">Informationen</button>
+	    <button id="RoutingBtn" class="disabled" title="Routing Editor">Routing</button>
+	    <button id="liveBtn" title="zur Live-Ansicht"><img src="imgs/augen.png" /> &nbsp;</button>
+	  </div>
 	  <p id="dbID" class="comment">DB ID <span>new</span></p>
 	  <div class="modalovl"></div>
 	</div>
@@ -64,6 +67,9 @@
 	    <button id="saveBasicBtn">basic speichern</button>
 	    <button id="dupDeviceBtn">clone</button>
 	    <div class="modalovl"></div>
+	  </div>
+	  <div class="globalCtrl">
+	    <button id="globalSettings">globale Einstellungen</button>
 	  </div>
 	</div>
 	<div id="parts"><h2>Bauteile<s></s><i></i><b></b></h2>

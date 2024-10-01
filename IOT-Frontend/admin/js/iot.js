@@ -132,6 +132,11 @@ window.onload = ( loadev ) => {
     
     const palette = ['#202020','#808080','#800000','#FF0000','#008000','#00FF00','#808000','#FFFF00','#000080','#0000FF','#800080','#FF00FF','#008080','#00FFFF','#C0C0C0','#FFFFFF'];
     
+    const devcats = [];
+    const devcattree = [];
+    const basiccats = [];
+    const basiccattree = [];
+    
     playground = document.getElementById('playground');
     const width = playground.offsetWidth;
     const height = playground.offsetHeight;
@@ -244,8 +249,11 @@ window.onload = ( loadev ) => {
     scene.add( light4 );
 
     let mainmesh=new THREE.Group();
+    mainmesh.userData.id="main";
     let routemesh=new THREE.Group();
+    routemesh.userData.id="routes";
     let signmesh=new THREE.Group();
+    signmesh.userData.id="signs";
     let hlp = null;
     let axishelp = new THREE.AxesHelper( 6 );
     mainmesh.add( axishelp );
@@ -316,6 +324,66 @@ window.onload = ( loadev ) => {
 	aktpin.obj3d.userData.origColor=color;
 //	console.log('setPinColor',color,aktpin.obj3d);
     }
+    const addCatDev = ( cats, tree, o ) => {
+	if ( !o.cat ) return;
+	if ( !cats.includes( o.cat ) ) {
+	    cats.push(o.cat);
+	    tree[o.cat] = [];
+	}
+	tree[o.cat].push( o )
+    }
+    const renderCatDev = ( treeel, o ) => {
+	const liel = document.createElement('li');
+	liel.id = 'device-'+o.id;
+	liel.title = o.name+'  Anzahl Teile: '+o.parts+'  Anzahl Schilder: '+o.signs;
+	liel.setAttribute('data-devicename',o.name);
+	liel.setAttribute('data-devicedbid',o.id);
+	liel.innerHTML=o.name+' ('+o.parts+'/'+o.signs+')';
+	const delel = document.createElement('s');
+	liel.appendChild(delel);
+	delel.onclick = ( ev ) => {
+	    //		console.log( 'delete device', ev.target.parentNode.getAttribute('data-devicedbid') );
+	    modalDlg( 'Möchten Sie wirklich das Device '+o.name+' löschen?',
+		      () => { // ok callback
+			  sendDBDelete( ev.target.parentNode.getAttribute('data-devicedbid') );
+			  liel.remove();
+		      },
+		      () => { // nok callback
+		      } );
+	    ev.preventDefault();
+	    ev.stopPropagation();
+	};
+	devices.push(o);
+	liel.onclick = loadDevice;
+	treeel.appendChild(liel);
+    }
+    const renderCat = ( listdom, tree, o ) => {
+	const domel = document.createElement('li');
+	domel.id='cat-'+o; domel.classList.add('cat');
+	domel.innerHTML = o;
+	const plusel = document.createElement('b');
+	plusel.innerHTML = '+';
+	domel.insertAdjacentElement('afterbegin',plusel);	    
+	listdom.appendChild( domel );
+	const treeel = document.createElement('div');
+	treeel.classList.add('tree');
+	treeel.id = 'tree-'+o;
+	tree[o]?.forEach( ( oo, ii ) => {
+	    renderCatDev( treeel, oo );
+	    console.log('cattree',oo);
+	});
+	domel.onclick = ( ev ) => {
+	    if ( domel.classList.contains('open') ) {
+		domel.classList.remove('open');
+		treeel.classList.remove('open');
+	    }
+	    else {
+		domel.classList.add('open');
+		treeel.classList.add('open');
+	    }
+	}
+	listdom.appendChild( treeel );
+    }
     const populateDevlist = ( devs ) => {
 	const devlistDom = document.querySelector('.deviceNavi ul');
 	const basiclistDom = document.querySelector('.deviceNavi ol');
@@ -324,12 +392,29 @@ window.onload = ( loadev ) => {
 	    basiclistDom.classList.add('filled');
 	}
 	devices.splice(0);
+	devcats.splice(0); devcattree.splice(0);
+	basiccats.splice(0); basiccattree.splice(0);
 	devlistDom.innerHTML = '<li class="nodevs"></li>';
 	basiclistDom.innerHTML = '<li class="nodevs"></li>';
 //	console.log('devices[]',devlistDom.innerHTML);
 	devs.forEach( ( o, i ) => {
+	    if ( o.cat ) {
+		console.log( 'category found', o.cat );
+		if ( o.type === 'basic' ) addCatDev( basiccats, basiccattree, o );
+		else addCatDev( devcats, devcattree, o );
+	    }
+	});
+	devcats.forEach( ( o, i ) => {
+	    renderCat( devlistDom, devcattree, o );
+	});
+	basiccats.forEach( ( o, i ) => {
+	    renderCat( basiclistDom, basiccattree, o );
+	});
+	console.log( 'Build Cats',devcats,Object.keys(devcattree));
+	devs.forEach( ( o, i ) => {
+	    if ( o.cat ) return;
 	    const aktDom = o.type === 'basic' ? basiclistDom : devlistDom;
-//	    console.log('devtype',o);
+	    console.log('devtype',o);
 	    aktDom.insertAdjacentHTML( 'beforeend',
 					   '<li id="device-'+o.id+'" title="'+o.name
 					   +'  Anzahl Teile: '+o.parts+'  Anzahl Schilder: '
@@ -869,7 +954,7 @@ window.onload = ( loadev ) => {
 //	console.log('Dound deviceid',deviceidp);
 	document.getElementById('partsinner').insertAdjacentHTML(
 	    'beforeend',
-	    '<div id="part'+index+'" class="part"><strong>'+basic.name+'</strong><c>BASIC</c><div class="deviceidbox"><b>Device ID</b> <input name="deviceID" class="deviceID" placeholder="ID im Broker" autocomplete="off" value="'+deviceidp+'" /><button class="brokerselectbtn">Broker</button><div class="brokeridselect"></div><div class="sensorout"></div></div><div class="tooltip"><b>Tooltip</b> <textarea id="tooltip'+index+'" placeholder="mouseover Ballontext">'+(basic.tooltip||'')+'</textarea></div><div class="pins"><b>'+pinarr.length+' Pins</b> <button id="basicpinmap'+index+'" data-index="'+index+'" class="basicPinBtn">Anpassen</button><div class="pinmap"></div><br /></div><i></i><s></s></div>' );
+	    '<div id="part'+index+'" class="part"><strong>'+basic.name+'</strong><c data-id="'+basic.id+'" title="zum Basic">BASIC</c><div class="deviceidbox"><b>Device ID</b> <input name="deviceID" class="deviceID" placeholder="ID im Broker" autocomplete="off" value="'+deviceidp+'" /><button class="brokerselectbtn">Broker</button><div class="brokeridselect"></div><div class="sensorout"></div></div><div class="tooltip"><b>Tooltip</b> <textarea id="tooltip'+index+'" placeholder="mouseover Ballontext">'+(basic.tooltip||'')+'</textarea></div><div class="pins"><b>'+pinarr.length+' Pins</b> <button id="basicpinmap'+index+'" data-index="'+index+'" class="basicPinBtn">Anpassen</button><div class="pinmap"></div><br /></div><i></i><s></s></div>' );
 	const DOMObj = document.getElementById('part'+index);
 /*	DOMObj.onmouseover = ( ev ) => {
 //	    console.log('hilite',meshp.userData.index);
@@ -888,6 +973,9 @@ window.onload = ( loadev ) => {
 	    backupCoords( meshp );
 //	    console.log( 'EDitbak', editbackup );
 	    showEditDlg();
+	};
+	DOMObj.querySelector( 'c' ).onclick = ( ev ) => {
+	    quickLoadBasic( ev.target.getAttribute('data-id') )
 	};
 	const closePinmap = (ev) => {
 	    const par=ev.target.parentNode;
@@ -1321,8 +1409,8 @@ window.onload = ( loadev ) => {
 	    else if ( am.type === "Object3D" ) {
 		removeMeshes( am );
 	    }
-	    else if ( am.type === "Group" ) {
-//		console.log('remove group',am);
+	    else if ( am.type === "Group" && am.userData.id !== 'routes' ) {
+		console.log('remove group',am);
 		removeMeshes( am );
 		am.parent.remove(am);
 	    }
@@ -1450,6 +1538,7 @@ window.onload = ( loadev ) => {
 //	console.log('render device', devdata.name);
 	if ( !isbasicp ) {
 	    document.getElementById('deviceName').value = devdata.name;
+	    document.getElementById('deviceCat').value = devdata.category || '';
 	    document.querySelector('#dbID span').innerHTML = devdata._id;
 //	    console.log('render device !isbasic',devdata.type);
 	    if ( devdata.type === 'basic' ) {
@@ -1618,6 +1707,13 @@ window.onload = ( loadev ) => {
 	};
 	xhr.send();
     }
+    const quickLoadBasic = ( id ) => {
+	showThrobber();
+	resetDevice();
+	document.querySelector('.deviceNavi .selected')?.classList.remove('selected');
+	console.log('quickLoadBasic', id);
+	loadDevicePure( id );
+    }
     const loadDevice = ( ev ) => {
 	resetDevice();
 	document.querySelector('.deviceNavi .selected')?.classList.remove('selected');
@@ -1717,6 +1813,7 @@ window.onload = ( loadev ) => {
     }
     const saveDevice = ( typep ) => {
 	const devicenameo = document.getElementById('deviceName');
+	const devicecato = document.getElementById('deviceCat');
 	const devicedbid = document.querySelector('#dbID span').innerHTML;
 	const type = typep || 'bauteil';
 	if ( devicenameo.value === '' ) {
@@ -1725,12 +1822,13 @@ window.onload = ( loadev ) => {
 	}
 	showThrobber();
 	const devicename = devicenameo.value;
+	const devicecat = devicecato.value;
 	const devicedoks = [
 	    document.getElementById('dok1txt').value,
 	    document.getElementById('dok2txt').value,
 	    document.getElementById('dok3txt').value
 	];
-	let devdata = { 'name': devicename, 'type': type, 'camstart' : camstart, 'doks': devicedoks, 'parts': [], 'signs': [], 'files' : [], 'links' : [], 'routes' : [] };
+	let devdata = { 'name': devicename, 'category': devicecat, 'type': type, 'camstart' : camstart, 'doks': devicedoks, 'parts': [], 'signs': [], 'files' : [], 'links' : [], 'routes' : [] };
 	let basiccount = 0;
 	for ( let i=0; i<parts.length; i++ ) {	    
 	    let apa = parts[i];	    
@@ -1838,8 +1936,12 @@ window.onload = ( loadev ) => {
 	    devdata.signs.push( signdata );
 	}
 	for ( let i=0; i<files.length; i++ ) {
+	    const labeldom = document.getElementById('label-'+i);
+	    if ( labeldom && labeldom.value ) {
+		files[i].label = labeldom.value;
+	    }
 	    devdata.files.push( files[i] );
-//	    console.log('saveDevice file', files[i]);
+	    console.log('saveDevice file', files[i]);
 	}
 	for ( let i=0; i<links.length; i++ ) {
 	    devdata.links.push( links[i] );
