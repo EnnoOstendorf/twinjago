@@ -506,6 +506,7 @@ window.onload = ( loadev ) => {
 	const mesh = glb.scene;
 	mesh.scale.set(500,500,500);
 	mesh.userData.type = isbasicp ? 'basicpart' : 'part';
+	mesh.userData.tooltip = tooltip;
 	if ( !isbasicp ) {
 	    addPart(oname, mesh, fname, deviceid, tooltip, data);
 	    mainmesh.add( mesh );
@@ -531,6 +532,7 @@ window.onload = ( loadev ) => {
 	const mesh = new THREE.Mesh( geom, material );
 	mesh.origcolor = col;
 	mesh.userData.type = isbasicp ? 'basicpart' : 'part';
+	mesh.userData.tooltip = tooltip;
 	if ( mods && mods.ghost ) {
 	    mesh.visible = false;
 	}
@@ -664,11 +666,13 @@ window.onload = ( loadev ) => {
 			}
 		    }
 		    else if ( o3.userData.type === 'basic' ) {
+			const ind = o3.userData.index;
 //			console.log('highlight basic', ind)
 		    }
 		    else if ( o3.userData.type === 'basicpart' || o3.userData.type === 'basicsign' ) {
-			if ( o3.userData.type === 'basicpart' ) hilightPart( o3 );
 			const ind = o3.parent.userData.index;
+//			console.log('highlight basicpart', o3)
+			if ( o3.userData.type === 'basicpart' ) hilightPart( o3 );
 			if ( parts[ind] && parts[ind].tooltip && parts[ind].tooltip != '' ) {
 			    let label = '<b>'+parts[ind].tooltip+'</b>';
 			    if ( o3.userData.tooltip && o3.userData.tooltip != '' ) {
@@ -682,6 +686,7 @@ window.onload = ( loadev ) => {
 			}
 		    }
 		    else {
+//			console.log('highlight nothing', o3)
 			lolightParts();
 			aktdevice = '';
 			hideTooltip();
@@ -1159,7 +1164,7 @@ window.onload = ( loadev ) => {
 		o3.userData.index = index;
 		o3.userData.type = 'basic';
 		translateLabels(basic);
-//		console.log('loaded Basic',basic,json,o3);
+//		console.log('loaded Basic',basic);
 		if ( basic.modifications ) applyModifications( o3, basic.modifications );
 		mainmesh.add(o3);
 		addBasicPart( basic, o3 );
