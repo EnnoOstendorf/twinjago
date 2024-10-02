@@ -278,13 +278,14 @@ window.onload = ( loadev ) => {
 	}
 	return target;
     }
-    const showEditDlg = () => {
+    const showEditDlg = ( mode ) => {
 	hlp = new THREE.BoxHelper(aktmesh, 0x00ffff);
 	scene.add(hlp);
 	const edtDlg = document.getElementById('editDlg');
 	const box = document.getElementById('partsinner');
 	document.body.classList.add('modalmode');
 	edtDlg.classList.add('vis');
+	edtDlg.classList.add(mode);
 	aktEditCoords();
 //	console.log( 'clicked edit button', document.getElementById('partsinner').scrollTop );
     }
@@ -641,7 +642,7 @@ window.onload = ( loadev ) => {
 		aktmesh = mesh;
 		backupCoords( mesh );
 //		console.log( 'EDitbak', editbackup );
-		showEditDlg();
+		showEditDlg('sign');
 	    };
 	    sign.querySelector('s').onclick = ( ev ) => {	    
 		sign.remove();
@@ -866,7 +867,7 @@ window.onload = ( loadev ) => {
 	    aktsign = DOMObj;
 	    backupCoords( meshp );
 //	    console.log( 'EDitbak', editbackup );
-	    showEditDlg();
+	    showEditDlg( 'part' );
 	};
 	DOMObj.querySelector('s').onclick = ( ev ) => {	    
 	    meshp.geometry.dispose();
@@ -972,7 +973,7 @@ window.onload = ( loadev ) => {
 	    aktsign = DOMObj;
 	    backupCoords( meshp );
 //	    console.log( 'EDitbak', editbackup );
-	    showEditDlg();
+	    showEditDlg( 'part' );
 	};
 	DOMObj.querySelector( 'c' ).onclick = ( ev ) => {
 	    quickLoadBasic( ev.target.getAttribute('data-id') )
@@ -1320,6 +1321,7 @@ window.onload = ( loadev ) => {
 	if ( capturemode ) stopCapture();
     }
     const aktEditCoords = () => {
+	console.log('aktEditCoords',aktmesh);
 	if ( ! aktmesh ) return;
 	document.getElementById('posx').value=aktmesh.position.x;
 	document.getElementById('posy').value=aktmesh.position.y;
@@ -1327,8 +1329,11 @@ window.onload = ( loadev ) => {
 	document.getElementById('rotx').value=aktmesh.rotation.x;
 	document.getElementById('roty').value=aktmesh.rotation.y;
 	document.getElementById('rotz').value=aktmesh.rotation.z;
+	document.getElementById('width').value=aktmesh.scale.x;
+	document.getElementById('height').value=aktmesh.scale.y;
 	document.getElementById('sclx').value=aktmesh.scale.x;
 	document.getElementById('scly').value=aktmesh.scale.y;
+	document.getElementById('sclz').value=aktmesh.scale.z;
 	if ( ! aktmesh.material ) {
 	    document.getElementById('editpartconf').classList.add('hidden');	    
 	}
@@ -1495,7 +1500,9 @@ window.onload = ( loadev ) => {
 	o.position.z = mods.position.z || 0;
 	o.rotation.x = mods.rotation.x || 0; o.rotation.y = mods.rotation.y || 0;
 	o.rotation.z = mods.rotation.z || 0;
-	o.scale.x = mods.scale?.x || 1; o.scale.y = mods.scale?.y || 1;
+	o.scale.x = mods.scale?.x || 1;
+	o.scale.y = mods.scale?.y || 1;
+	o.scale.z = mods.scale?.z || 1;
 	if ( mods.hasOwnProperty('depthWrite') ) o.material.depthWrite = mods.depthWrite;
 	if ( mods.hasOwnProperty('side') ) o.material.side = mods.side;
 	if ( mods.hasOwnProperty('ghost') && mods.ghost ) {
@@ -1848,7 +1855,7 @@ window.onload = ( loadev ) => {
 		    'modifications' : {
 			'position' : { 'x' : apa.mesh.position.x, 'y' : apa.mesh.position.y, 'z' : apa.mesh.position.z },
 			'rotation' : { 'x' : apa.mesh.rotation.x, 'y' : apa.mesh.rotation.y, 'z' : apa.mesh.rotation.z },
-			'scale' : {	'x' : apa.mesh.scale.x, 'y' : apa.mesh.scale.y },
+			'scale' : {	'x' : apa.mesh.scale.x, 'y' : apa.mesh.scale.y, 'z' : apa.mesh.scale.z },
 			'ghost' : apa.mesh.material?.opacity<1,
 			'depthWrite' : apa.mesh.material?.depthWrite,
 			'side' : apa.mesh.material?.side
@@ -1866,7 +1873,7 @@ window.onload = ( loadev ) => {
 		    'modifications' : {
 			'position' : { 'x' : apa.mesh.position.x, 'y' : apa.mesh.position.y, 'z' : apa.mesh.position.z },
 			'rotation' : { 'x' : apa.mesh.rotation.x, 'y' : apa.mesh.rotation.y, 'z' : apa.mesh.rotation.z },
-			'scale' : {	'x' : apa.mesh.scale.x, 'y' : apa.mesh.scale.y },
+			'scale' : {	'x' : apa.mesh.scale.x, 'y' : apa.mesh.scale.y, 'z' : apa.mesh.scale.z },
 			'ghost' : apa.mesh.material?.opacity<1,
 			'depthWrite' : apa.mesh.material?.depthWrite,
 			'side' : apa.mesh.material?.side
@@ -2728,7 +2735,9 @@ window.onload = ( loadev ) => {
 	    editmode = false;
 	    document.body.classList.remove('modalmode');
 	    restoreBackup(aktmesh);
-	    document.getElementById('editDlg').classList.remove('vis');
+	    const dlgdom = document.getElementById('editDlg');
+	    dlgdom.className = '';
+	    
 	    if ( hlp ) {
 		hlp.geometry.dispose();
 		hlp.material.dispose();
@@ -2756,7 +2765,7 @@ window.onload = ( loadev ) => {
 		hlp.material.dispose();
 		scene.remove( hlp );
 	    };
-	    document.getElementById('editDlg').classList.remove('vis');
+	    document.getElementById('editDlg').className = '';
 	    document.body.classList.remove('modalmode');
 	    ev.preventDefault();
 	};
@@ -2838,8 +2847,11 @@ window.onload = ( loadev ) => {
 		else if ( ev.target.id === 'rotx' ) aktmesh.rotation.x = parseFloat( ev.target.value );
 		else if ( ev.target.id === 'roty' ) aktmesh.rotation.y = parseFloat( ev.target.value );
 		else if ( ev.target.id === 'rotz' ) aktmesh.rotation.z = parseFloat( ev.target.value );
+		else if ( ev.target.id === 'width' ) aktmesh.scale.x = parseFloat( ev.target.value );
+		else if ( ev.target.id === 'height' ) aktmesh.scale.y = parseFloat( ev.target.value );
 		else if ( ev.target.id === 'sclx' ) aktmesh.scale.x = parseFloat( ev.target.value );
 		else if ( ev.target.id === 'scly' ) aktmesh.scale.y = parseFloat( ev.target.value );
+		else if ( ev.target.id === 'sclz' ) aktmesh.scale.z = parseFloat( ev.target.value );
 		else if ( ev.target.id === 'pinx' ) aktpin.obj3d.position.x = parseFloat( ev.target.value );
 		else if ( ev.target.id === 'piny' ) aktpin.obj3d.position.y = parseFloat( ev.target.value );
 		else if ( ev.target.id === 'pinz' ) aktpin.obj3d.position.z = parseFloat( ev.target.value );
@@ -2889,8 +2901,11 @@ window.onload = ( loadev ) => {
 		else if ( dragtarget.id === 'rotxhs' ) aktmesh.rotation.x = newv;
 		else if ( dragtarget.id === 'rotyhs' ) aktmesh.rotation.y = newv;
 		else if ( dragtarget.id === 'rotzhs' ) aktmesh.rotation.z = newv;
+		else if ( dragtarget.id === 'widthhs' ) aktmesh.scale.x = newv;
+		else if ( dragtarget.id === 'heighths' ) aktmesh.scale.y = newv;
 		else if ( dragtarget.id === 'sclxhs' ) aktmesh.scale.x = newv;
 		else if ( dragtarget.id === 'sclyhs' ) aktmesh.scale.y = newv;
+		else if ( dragtarget.id === 'sclzhs' ) aktmesh.scale.z = newv;
 		else if ( dragtarget.id === 'pinxhs' ) aktpin.obj3d.position.x = newv;
 		else if ( dragtarget.id === 'pinyhs' ) aktpin.obj3d.position.y = newv;
 		else if ( dragtarget.id === 'pinzhs' ) aktpin.obj3d.position.z = newv;

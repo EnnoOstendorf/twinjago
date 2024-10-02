@@ -917,6 +917,12 @@ input.error {
 	line-height: 25px;
 	clear: both;
 }
+.sign #scale,.part #signsize {
+	display: none;
+}
+.sign #signsize,.part #scale {
+	display: block;
+}
 .coord {
 	width: 60px;
 	margin: 5px 0 5px 5px;
