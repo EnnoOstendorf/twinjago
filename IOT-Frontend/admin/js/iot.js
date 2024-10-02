@@ -1077,6 +1077,9 @@ window.onload = ( loadev ) => {
 	    material = new THREE.MeshPhongMaterial( { color: col, fog: false, flatShading: true } );
 	}
 	const mesh = new THREE.Mesh( geom, material );
+	if ( mods && mods.ghost ) {
+	    mesh.visible = false;
+	}
 	mesh.origcolor = col;
 	mesh.userData.type = isbasicp ? 'basicpart' : 'part';
 	if ( !isbasicp ) {
@@ -2624,10 +2627,12 @@ window.onload = ( loadev ) => {
 	    if ( ev.target.checked ) {
 		if ( ! aktmesh.material.transparent ) aktmesh.material.transparent=true;
 		aktmesh.material.opacity = ghosttransp;
+		aktmesh.visible = false;
 		console.log('ghost click on', aktmesh);
 	    }
 	    else {
 		aktmesh.material.opacity = 1;
+		aktmesh.visible = true;
 		console.log('ghost click off', aktmesh);
 	    }
 	    console.log('making ghost',aktmesh);
