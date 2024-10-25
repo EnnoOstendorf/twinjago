@@ -3,6 +3,7 @@ const fs = require('fs');
 const http = require('http');
 const https = require('https');
 const express = require('express');
+const basicAuth = require('express-basic-auth');
 const mongoose = require('mongoose');
 const mongoString = process.env.DATABASE_URL
 
@@ -35,7 +36,11 @@ app.use(express.urlencoded({
   extended: true
 }));
 app.use(express.static('static'));
-app.use('/admin',express.static('admin'));
+app.use('/admin',express.static('admin'),
+	basicAuth({
+	    users: {
+		'user1' : 'twin*jago'
+	    }}));
 
 const routes = require('./routes/routes');
 

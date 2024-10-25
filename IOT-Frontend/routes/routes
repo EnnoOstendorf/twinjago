@@ -4,22 +4,125 @@ const dokModel = require('../models/dokmodel');
 
 const router = express.Router()
 
+const devicelist = [];
+const doklist = [];
+var ready = false;
+var dokready = false;
+
+/*
+  on startup fetch all devs from db and save list
+ */
+
+console.log('generating list of devices and basics...');
+
+const genList = async () => {
+    try{
+	const data = await Model.find();
+	data.forEach( ( o, i ) => {
+	    devicelist.push({
+		name: o.name,
+		cat: o.category,
+		id: o._id,
+		type: o.type,
+		parts: o.parts.length,
+		signs: o.signs.length
+	    });
+	});
+	ready = true;
+	console.log('...generated',devicelist.length,'devices');	
+    }
+    catch(error){
+	console.log('error', error.message)
+    }
+};
+
+const genDokList = async () => {
+    try{
+        const data = await dokModel.find();
+	data.forEach( ( o, i ) => {
+	    doklist.push({
+		filename: o.filename,
+		deviceid: o.deviceid,
+		id: o._id,
+		filetype: o.filetype,
+		size: o.size
+	    });
+	});
+	dokready = true;
+	console.log('...generated',doklist.length,'doks');	
+    }
+    catch(error){
+	console.log('error', error.message)
+    }
+};
+
+genList();
+genDokList();
+
+const updateDevice = ( id, o ) => {
+    devicelist.forEach( ( o2, i ) => {
+	if ( o2.id == id ) {
+	    devicelist[i] = {
+		name: o.name,
+		cat: o.category,
+		id: id,
+		type: o.type,
+		parts: o.parts.length,
+		signs: o.signs.length
+	    }
+	}
+    })
+}
+
+const deleteDevice = ( id ) => {
+    var foundnum = -1;
+    devicelist.forEach( ( o, i ) => {
+	if ( o.id == id ) {
+	    foundnum = i;
+	}
+    });
+    if ( foundnum > -1 ) devicelist.splice(foundnum,1);
+};
+
+const deleteDok = ( id ) => {
+    var foundnum = -1;
+    doklist.forEach( ( o, i ) => {
+	if ( o.id == id ) {
+	    foundnum = i;
+	}
+    });
+    if ( foundnum > -1 ) doklist.splice(foundnum,1);
+};
+
 //Post Method
 router.post('/post', async (req, res) => {
-//    console.log('got post:',req.body);
+    if ( !ready ) {
+        res.status(400).json({message: 'demon not ready'})
+	return
+    }
+    const o=req.body;
+    //    console.log('got post:',req.body);
     const data = new Model({
-        name: req.body.name,
-        category: req.body.category,
-	type: req.body.type,
-        parts: req.body.parts,
-        signs: req.body.signs,
-        files: req.body.files,
-        links: req.body.links,
-	routes: req.body.routes
+        name: o.name,
+        category: o.category,
+	type: o.type,
+        parts: o.parts,
+        signs: o.signs,
+        files: o.files,
+        links: o.links,
+	routes: o.routes
     })
 
     try {
         const dataToSave = await data.save();
+	devicelist.push({
+	    name: o.name,
+	    cat: o.category,
+	    id: dataToSave._id,
+	    type: o.type,
+	    parts: o.parts.length,
+	    signs: o.signs.length
+	});
 //	console.log('dataToSave',dataToSave);
         res.status(200).json({ '_id' : dataToSave._id })
     }
@@ -30,19 +133,31 @@ router.post('/post', async (req, res) => {
 
 //Post Method
 router.post('/dokpost', async (req, res) => {
+    if ( !ready ) {
+        res.status(400).json({message: 'demon not ready'})
+	return
+    }
 //    console.log('got dokpost:');
     // Deactivated DB creation for test purposes
+    const o=req.body;
     const data = new dokModel({
-	deviceid: req.body.deviceid,
-        filename: req.body.filename,
-        size: req.body.size,
+	deviceid: o.deviceid,
+        filename: o.filename,
+        size: o.size,
 	type: 'file',
-        filetype: req.body.filetype,
-        content: req.body.content
+        filetype: o.filetype,
+        content: o.content
     })
 
     try {
         const dataToSave = await data.save();
+	doklist.push({
+	    filename: o.filename,
+	    deviceid: o.deviceid,
+	    id: dataToSave._id,
+	    filetype: o.filetype,
+	    size: o.size
+	});
 //	console.log('dataToSave',dataToSave);
         res.status(200).json(dataToSave)
     }
@@ -59,6 +174,10 @@ router.post('/dokpost', async (req, res) => {
 // and fetch each device in a single request
 
 router.get('/getAll', async (req, res) => {
+    if ( !ready ) {
+        res.status(400).json({message: 'demon not ready'})
+	return
+    }
     try{
         const data = await Model.find();
         res.json(data)
@@ -70,47 +189,19 @@ router.get('/getAll', async (req, res) => {
 
 // List all devices, but return only name, id and number of parts and signs per device
 router.get('/list', async (req, res) => {
-    try{
-        const data = await Model.find();
-	let list = [];
-	data.forEach( ( o, i ) => {
-	    list.push({
-		name: o.name,
-		cat: o.category,
-		id: o._id,
-		type: o.type,
-		parts: o.parts.length,
-		signs: o.signs.length
-	    });
-	});
-//	console.log('list:', list);
-	
-        res.json(list)
+    if ( !ready ) {
+        res.status(400).json({message: 'demon not ready'})
+	return
     }
-    catch(error){
-        res.status(500).json({message: error.message})
-    }
+    res.json(devicelist)
 })
 
 router.get('/doklist', async (req, res) => {
-    try{
-        const data = await dokModel.find();
-	let list = [];
-	data.forEach( ( o, i ) => {
-	    list.push({
-		filename: o.filename,
-		deviceid: o.deviceid,
-		id: o._id,
-		filetype: o.filetype,
-		size: o.size
-	    });
-	});
-//	console.log('list:', list);	
-        res.json(list)
+    if ( !dokready ) {
+        res.status(400).json({message: 'demon not ready'})
+	return
     }
-    catch(error){
-        res.status(500).json({message: error.message})
-    }
+    res.json( doklist );
 })
 
 //Get by ID Method
@@ -145,6 +236,7 @@ router.patch('/update/:id', async (req, res) => {
     try {
         const id = req.params.id;
         const updatedData = req.body;
+	updateDevice(id,updatedData);
         const options = { new: true };
 	console.log('got update',id,updatedData.routes);
         const result = await Model.findByIdAndUpdate(
@@ -163,6 +255,7 @@ router.delete('/delete/:id', async (req, res) => {
     try {
         const id = req.params.id;
         const data = await Model.findByIdAndDelete(id)
+	deleteDevice( id );
         res.send(`Document with ${data.name} has been deleted..`)
     }
     catch (error) {
@@ -174,6 +267,7 @@ router.delete('/dokdelete/:id', async (req, res) => {
     try {
         const id = req.params.id;
         const data = await dokModel.findByIdAndDelete(id)
+	deleteDok( id );
         res.send(`Document with ${data.name} has been deleted..`)
     }
     catch (error) {

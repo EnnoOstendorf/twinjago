@@ -44,7 +44,7 @@
       <div id="deviceStage" class="deviceStage">
 	<div id="devStgHead">
 	  <h2>Twin <input name="deviceName" id="deviceName" placeholder="Benenne mich" autocomplete="off" /><span id="globalbasiclabel">BASIC</span> </h2>
-	  <h3>Kategorie: <input name="deviceCat" id="deviceCat" placeholder="Kategorie eingeben" autocomplete="off" /></h3>
+	  <h3>Kategorie: <input name="deviceCat" id="deviceCat" placeholder="Kategorie eingeben" autocomplete="off" /><span id="devCatSelect" class="selection"></span><span id="basCatSelect" class="selection"></span></h3>
 	  <div id="TwinCnfBtns">
 	    <button id="DokumenteBtn" class="disabled" title="Informationen zum Device (für Basics nicht verfügbar)">Informationen</button>
 	    <button id="RoutingBtn" class="disabled" title="Routing Editor">Routing</button>
@@ -185,6 +185,7 @@
 	  <div id="routingPinDlg">	    
 	  </div>
 	</div>
+
 	<div id="pinDlg">
 	  <form id="pinForm" action="">
 	    <input type="hidden" id="formPartIndex" />
@@ -199,7 +200,7 @@
 	    </div>
 	    <br />
 	    
-	    <div class="inprow"> <b>Position:</b><!--i id="pincapture"></i-->
+	    <div class="inprow"> <b>Position:</b>
 	      x: <input class="coord" name="pinx" id="pinx" autocomplete="off" /> <i id="pinxhs" class="hotspot"></i>
 	      y: <input class="coord" name="piny" id="piny" autocomplete="off" /> <i id="pinyhs" class="hotspot"></i>
 	      z: <input class="coord" name="pinz" id="pinz" autocomplete="off" /> <i id="pinzhs" class="hotspot"></i>
@@ -218,11 +219,26 @@
 	      y: <input class="coord" name="labelroty" id="labelroty" autocomplete="off" /> <i id="labelrotyhs" class="rotspot"></i>
 	      z: <input class="coord" name="labelrotz" id="labelrotz" autocomplete="off" /> <i id="labelrotzhs" class="rotspot"></i>
 	    </div><br />
-	    <div id="pinCancel">Abbrechen</div>
-	    <div id="pinConfirm">Setzen</div>
+
+	    <div id="pinCancel">Abbrechen
+	    </div>
+	    <div id="pinConfirm">Setzen
+	    </div>
 	  </form>
 	</div>
       </div>
+      <div id="globalConf">
+	<h3>Globale Einstellungen</h3>
+	<div id="infotwin">
+	  <b>Infotwin: </b>
+	  <input id="infotwinid" placeholder="Wähle einen Twin" />
+	  <div id="infotwinselect">
+	  </div>
+	</div>
+	<button id="globalCancel">Abbrechen</button>
+	<button id="globalConfirm">Setzen</button>
+      </div>
+      
       <div id="serverstats">
 	<div id="mqtttask" class="task"><span>MQTT <b></b></span></div>
 	<div id="influximport" class="task"><span>-&gt;influx <b></b></span></div>
@@ -230,5 +246,5 @@
       <div id="throbbermodal"><img src="imgs/throbber.gif" title="Daten werden übertragen, bitte warten - Data will be transferred, please wait" /></div>
     </body>
 </html>
-        
-        
+
+

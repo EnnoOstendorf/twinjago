@@ -776,7 +776,9 @@ window.onload = ( loadev ) => {
 	o.position.z = mods.position.z || 0;
 	o.rotation.x = mods.rotation.x || 0; o.rotation.y = mods.rotation.y || 0;
 	o.rotation.z = mods.rotation.z || 0;
-	o.scale.x = mods.scale?.x || 1; o.scale.y = mods.scale?.y || 1;
+	o.scale.x = mods.scale?.x || 1;
+	o.scale.y = mods.scale?.y || 1;
+	o.scale.z = mods.scale?.z || 1;
 	if ( mods.hasOwnProperty('depthWrite') ) o.material.depthWrite = mods.depthWrite;
 	if ( mods.hasOwnProperty('side') ) o.material.side = mods.side;
 
@@ -948,7 +950,59 @@ window.onload = ( loadev ) => {
 //	constrols.saveState();
 	console.log('restorecampos',camera.rotation);
     };
-    const loadDevicePure = ( id ) => {
+    const fillDokLayer = () => {
+	const id = document.querySelector('#dbID span').innerHTML;
+	const doklyr = document.getElementById( 'dokLyr' );
+	if ( doklyr ) {
+	    doklyr.innerHTML = '<div class="dok">' + doks.join( '</div><div class="dok">' ) + '</div>';
+	    if ( files.length > 0 ) {
+		doklyr.insertAdjacentHTML( 'beforeend', '<h3>Dateien</h3>' );
+		const listcont = document.createElement('div');
+		listcont.classList.add('filelist');
+		for ( let i=0; i<files.length; i++ ) {
+		    listcont.appendChild( createFilesEntry( i ) );
+		}
+		doklyr.appendChild( listcont );
+	    }
+	    if ( links.length > 0 ) {
+		doklyr.insertAdjacentHTML( 'beforeend', '<h3>weiterführende Links</h3>' );
+		const listcont = document.createElement('div');
+		listcont.classList.add('linklist');
+		for ( let i=0; i<links.length; i++ ) {
+		    listcont.appendChild( createLinksEntry( i ) );
+		}
+		doklyr.appendChild( listcont );
+	    }
+	    //		doklyr.classList.add('show');
+	}
+    }
+    const raiseDok = () => {
+	console.log('raise Dok Layer');
+	const doklyr = document.getElementById( 'dokLyr' );
+	const dokdatlyr = document.getElementById( 'dokDatLyr' );
+	if ( doklyr ) {
+	    doklyr.classList.add('show');
+	}
+	if ( dokdatlyr ) {
+	    dokdatlyr.classList.add('show');
+	}
+	document.getElementById( 'dokSuper' ).classList.add('show');
+	document.getElementById( 'dokBtn' ).classList.add( 'akt');
+    }
+    const hideDok = () => {
+	console.log('hide Dok Layer');
+	const doklyr = document.getElementById( 'dokLyr' );
+	const dokdatlyr = document.getElementById( 'dokDatLyr' );
+	if ( doklyr ) {
+	    doklyr.classList.remove('show');
+	}
+	if ( dokdatlyr ) {
+	    dokdatlyr.classList.remove('show');
+	}
+	document.getElementById( 'dokSuper' ).classList.remove('show');
+	document.getElementById( 'dokBtn' ).classList.remove( 'akt');
+    }
+    const loadDevicePure = ( id, cb ) => {
 	const url = '/api/getOne/'+id;
 	const xhr = new XMLHttpRequest();
 	unsetControls();
@@ -969,18 +1023,28 @@ window.onload = ( loadev ) => {
 		    //		    controls.update();
 		}
 		hideThrobber();
+		if ( cb && typeof cb === 'function' ) cb();
 	    }
 	};
 	xhr.send();
     }
     if ( location.search ) {
 	const pars = location.search.substr(1).split('&');
+	let parid = 0;
+	let cb = 0;
 	for ( let i=0; i<pars.length; i++ ) {
 	    const par = pars[i].split('=');
 	    if ( par[0] === 'id' ) {
-		loadDevicePure( par[1] );
+		parid = par[1];
+//		loadDevicePure( par[1] );
+	    }
+	    else if ( par[0] === 'show' ) {
+		if ( par[1] === 'dok' ) {
+		    cb = () => { fillDokLayer(); raiseDok(); };
+		}
 	    }
 	}
+	if ( parid != 0 ) loadDevicePure( parid, cb );
     }
     const loadDevice = ( ev ) => {
 	resetDevice();
@@ -1258,45 +1322,11 @@ window.onload = ( loadev ) => {
 	document.getElementById( 'dokBtn' ).onclick = ( ev ) => {
 	    const dbtn = document.getElementById( 'dokBtn' );
 	    if ( dbtn.classList.contains('akt') ) {
-		const doklyr = document.getElementById( 'dokLyr' );
-		const dokdatlyr = document.getElementById( 'dokDatLyr' );
-		if ( doklyr ) {
-		    doklyr.classList.remove('show');
-		}
-		if ( dokdatlyr ) {
-		    dokdatlyr.classList.remove('show');
-		}
-		document.getElementById( 'dokSuper' ).classList.remove('show');
-		dbtn.classList.remove('akt');
+		hideDok();
 		return;
 	    }
-	    dbtn.classList.add('akt');
-	    const id = document.querySelector('#dbID span').innerHTML;
-	    const doklyr = document.getElementById( 'dokLyr' );
-	    if ( doklyr ) {
-		doklyr.innerHTML = '<div class="dok">' + doks.join( '</div><div class="dok">' ) + '</div>';
-		if ( files.length > 0 ) {
-		    doklyr.insertAdjacentHTML( 'beforeend', '<h3>Dateien</h3>' );
-		    const listcont = document.createElement('div');
-		    listcont.classList.add('filelist');
-		    for ( let i=0; i<files.length; i++ ) {
-			listcont.appendChild( createFilesEntry( i ) );
-		    }
-		    doklyr.appendChild( listcont );
-		}
-		if ( links.length > 0 ) {
-		    doklyr.insertAdjacentHTML( 'beforeend', '<h3>weiterführende Links</h3>' );
-		    const listcont = document.createElement('div');
-		    listcont.classList.add('linklist');
-		    for ( let i=0; i<links.length; i++ ) {
-			listcont.appendChild( createLinksEntry( i ) );
-		    }
-		    doklyr.appendChild( listcont );
-		}
-//		doklyr.classList.add('show');
-	    }
-	    const dokdatlyr = document.getElementById( 'dokDatLyr' );
-//	    dokdatlyr.classList.add('show');
+	    fillDokLayer();
+	    raiseDok();
 	    document.getElementById( 'dokSuper' ).classList.add('show');
 	    //	    console.log('dok',id, doks);
 	};

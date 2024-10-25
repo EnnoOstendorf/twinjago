@@ -73,6 +73,8 @@ body {
 }
 #deviceNavi.open {
 	left: 0;
+	overflow-y: auto;
+	overflow-x: hidden;
 }
 #deviceNavi.filled {
     padding-top:10px;
@@ -564,6 +566,10 @@ input.error {
 	top: 0;
 	border-radius: 0 0 10px 0;
 	cursor: pointer;
+	transition: right 0.2s linear;
+}
+.open #burger {
+    right: 0;
 }
 #burger s, #burger c, #burger b, #dokBtn i, #dokBtn s{
 	background: #4b4b4b;

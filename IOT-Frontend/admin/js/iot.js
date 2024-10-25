@@ -302,6 +302,55 @@ window.onload = ( loadev ) => {
 	
 	dokDlg.classList.remove('vis');
 //	console.log( 'clicked dokumente button' );
+    }   
+    const fillCatSelect = () => {
+	const devcatseldom = document.getElementById('devCatSelect');
+	const bascatseldom = document.getElementById('basCatSelect');
+	devcatseldom.replaceChildren();
+	bascatseldom.replaceChildren();
+	const devcatdom = document.getElementById('deviceCat');
+	devcats.forEach( (o,i) => {
+	    const nd = document.createElement( 'b' );
+	    nd.innerHTML = o;
+	    nd.onclick = ( ev ) => {
+		console.log('clicked cate', o, devcatdom);
+		devcatdom.value=o;
+		devcatseldom.classList.remove('show');
+	    }
+	    devcatseldom.appendChild(nd);
+	});
+	basiccats.forEach( (o,i) => {
+	    const nd = document.createElement( 'b' );
+	    nd.innerHTML = o;
+	    nd.onclick = ( ev ) => {
+		devcatdom.value=o;
+		bascatseldom.classList.remove('show');
+	    }
+	    bascatseldom.appendChild(nd);
+	});
+	console.log('fill cat select',devcats,basiccats);
+    }
+    const showCatSelect = ( type ) => {
+	const catseldom = document.getElementById(type+'CatSelect');
+	catseldom.classList.add( 'show' );
+	console.log('show cat select');
+    }
+    const hideCatSelect = ( type ) => {
+	const catseldom = document.getElementById(type+'CatSelect');
+	catseldom.classList.remove( 'show' );
+	console.log('hide cat select');
+    }
+    const showGlobalDlg = () => {
+	const globDlg = document.getElementById('globalConf');
+	document.body.classList.add('modalmode');	
+	globDlg.classList.add('show');
+//	console.log( 'clicked dokumente button' );
+    }
+    const hideGlobalDlg = () => {
+	const globDlg = document.getElementById('globalConf');
+	document.body.classList.remove('modalmode');	
+	globDlg.classList.remove('show');
+//	console.log( 'clicked dokumente button' );
     }
     const showPinDlg = ( partindex ) => {
 //	console.log('showpin',aktpin.objDOM);
@@ -411,6 +460,7 @@ window.onload = ( loadev ) => {
 	basiccats.forEach( ( o, i ) => {
 	    renderCat( basiclistDom, basiccattree, o );
 	});
+	fillCatSelect();
 	console.log( 'Build Cats',devcats,Object.keys(devcattree));
 	devs.forEach( ( o, i ) => {
 	    if ( o.cat ) return;
@@ -603,7 +653,12 @@ window.onload = ( loadev ) => {
 	});
 
     }
-    const createSign = ( raw, modifications, nocreateDom ) => {
+    const clipString = ( str, anz ) => {
+	if ( str.length > anz )
+	    return str.substr(0,anz-3)+'...';
+	return str;
+    }
+    const createSign = ( raw, fname, modifications, nocreateDom ) => {
 	const img = new Image();
 	img.src = raw;
 	const index = signs.length;//document.querySelectorAll('.sign').length;//signlist.children.length;
@@ -631,9 +686,9 @@ window.onload = ( loadev ) => {
 	mesh.userData.index = index;
 	if ( modifications ) applyModifications( mesh, modifications );
 	if ( ! nocreateDom ) {
-	    signs.push({ 'index':index, 'img': raw, 'mesh': mesh, 'settings' : {} });
+	    signs.push({ 'index':index, 'fname': fname, 'img': raw, 'mesh': mesh, 'settings' : {} });
 	    const signlist = document.getElementById( 'signsinner' );
-	    signlist.insertAdjacentHTML( 'beforeend', '<span class="sign" id="sign'+index+'"><i></i><s></s></span' );
+	    signlist.insertAdjacentHTML( 'beforeend', '<span class="sign" id="sign'+index+'" title="'+fname+'"><i></i><s></s><b>('+clipString(fname,15)+')</b></span>' );
 	    const sign = document.getElementById( 'sign'+index );
 	    sign.appendChild( img );
 	    sign.querySelector('i').onclick = ( ev ) => {
@@ -1143,12 +1198,13 @@ window.onload = ( loadev ) => {
     const finput2 = document.getElementById('newsignfile');
     finput2.onchange = ( ev ) => {
 //	console.log('Texture File chosen',finput2.value,finput2.files[0]);
+    	const filedata = finput2.files[0];
 	const reader = new FileReader();	    
 	reader.onload = (e) => {		
 	    const rawfile = e.target.result;
-	    createSign( rawfile );
+	    createSign( rawfile, filedata.name );
 	};
-	reader.readAsDataURL(finput2.files[0]);
+	reader.readAsDataURL(filedata);
     }
     const addFile = ( file ) => {
     	const filedata = finput3.files[0];
@@ -1640,7 +1696,7 @@ window.onload = ( loadev ) => {
 	    }
 	});
 	devdata.signs.forEach( ( o, i ) => {
-	    const o3=createSign( o.img, o.modifications, isbasicp );
+	    const o3=createSign( o.img, o.fname || 'noname', o.modifications, isbasicp );
 	    if ( isbasicp && target ) target.add(o3);
 //	    console.log( 'render sign', o, i );
 	});
@@ -1932,6 +1988,7 @@ window.onload = ( loadev ) => {
 	    let asi = signs[i];
 	    let signdata = {
 		'img' : asi.img,
+		'fname' : asi.fname,
 		'index' : asi.index,
 		'modifications' : {
 		    'position' : { 'x' : asi.mesh.position.x, 'y' : asi.mesh.position.y, 'z' : asi.mesh.position.z },
@@ -2194,6 +2251,12 @@ window.onload = ( loadev ) => {
 	};
 	document.getElementById( 'saveBasicBtn').onclick = ( ev ) => {
 	    saveDevice( 'basic' );
+	};
+	document.getElementById( 'globalSettings').onclick = ( ev ) => {
+	    showGlobalDlg();
+	};
+	document.getElementById( 'globalCancel').onclick = ( ev ) => {
+	    hideGlobalDlg();
 	};
 	document.getElementById( 'newgroup').onclick = ( ev ) => {
 	    if ( ev.target.classList.contains('disabled') ) return;
@@ -2833,6 +2896,18 @@ window.onload = ( loadev ) => {
 	};
 	document.getElementById('deviceName').onblur = ( ev ) => {
 	    if ( ev.target.value !== '' ) ev.target.classList.remove('error');
+	};
+	document.getElementById('deviceCat').onfocus = ( ev ) => {
+	    const type = isbasic ? 'bas' : 'dev';
+	    showCatSelect( type );
+	    console.log('deviceCat focus');
+	};
+	document.getElementById('deviceCat').onblur = ( ev ) => {
+	    const type = isbasic ? 'bas' : 'dev';
+	    window.setTimeout( () => {
+		hideCatSelect( type );
+	    }, 200 );
+	    console.log('deviceCat blur');
 	};
 	// Coord Number Fields
 	document.querySelectorAll( '.coord' ).forEach( ( o,i ) => {

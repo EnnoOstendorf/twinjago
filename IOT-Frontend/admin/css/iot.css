@@ -107,6 +107,36 @@ body {
 #devStgHead h2 {
 	margin: 10px 0 14px 0;
 }
+#devStgHead h3 {
+	position: relative;
+}
+.selection {
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 261px;
+	background: #eee;
+	padding: 5px;
+	z-index: 0;
+	border-radius: 0 10px 10px;
+	opacity: 0;
+	transition: all 0.2s linear;
+}
+.selection.show {
+    z-index:1;
+    opacity: 1;
+}
+.selection b {
+	display: block;
+	cursor: pointer;
+	padding: 5px 10px 3px;
+	margin: 1px 5px;
+}
+.selection b:hover {
+	color: #222;
+	background: #fff;
+	border-radius: 10px;
+}
 #TwinCnfBtns {
 	position: absolute;
 	right: 0;
@@ -228,11 +258,12 @@ input.error {
     display:none;
 }
 .tree {
-	background: #fff;
-	padding-left: 10px;
+	background: #ccc;
+	padding-left: 20px;
 	height: 0;
 	overflow: hidden;
 	transition: all 1s ease-out;
+	margin: 0 0 0 -10px;
 }
 .tree.open {
 	height: auto;
@@ -242,6 +273,10 @@ input.error {
 	font-style: italic;
 	background: #ccc;
 	width: 86%;
+	margin-bottom:0;
+}
+.deviceNavi .tree li {
+	width: 81%;
 }
 #deviceNavi > h2 > button {
 	display: inline-block;
@@ -265,7 +300,6 @@ input.error {
 	border-radius: 20px;
 	position: absolute;
 	right: 0;
-	overflow: hidden;
 }
 .partsfocus #parts {
     height: 600px;
@@ -480,6 +514,7 @@ input.error {
 	z-index:1;
 	max-height:100%;
 	overflow: auto;
+	bottom: 0;
 }
 #basicselect.show {
     display:block;
@@ -499,7 +534,7 @@ input.error {
 }
 .sign {
 	display: inline-block;
-	padding: 10px 69px 5px 5px;
+	padding: 10px 69px 15px 5px;
 	position: relative;
 }
 .sign > i, .sign > s, .part > i, .part > s, .part .partcolor, .pin > i, .pin > s,.deviceNavi li > s, .filedesc .delbtn, .linkdelete {
@@ -518,6 +553,16 @@ input.error {
 .sign > s, .part > s, .pin > s,.deviceNavi li > s, .filedesc .delbtn, .linkdelete,.route .delbtn {
     background-image: url(../imgs/mulleimer.png);
     right: 35px;
+}
+.sign > b {
+	display: block;
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	text-align: center;
+	left: 0;
+	font-weight: normal;
+	font-size: 10px;
 }
 .filedesc {
 	font-size: 16px;
@@ -895,7 +940,7 @@ input.error {
 	padding: 2px 5px 3px;
 }
 
-#editDlg button,#pinDlg button,#pinCancel,#pinConfirm {
+#editDlg button,#pinDlg button,#pinCancel,#pinConfirm,#globalCancel,#globalConfirm {
 	font-weight: bold;
 	font-size: 15px;
 	padding: 3px 10px;
@@ -1100,6 +1145,34 @@ input.error {
 	background: #0f0;
 }
 
+
+#globalConf {
+	position: absolute;
+	width: 60%;
+	background: rgba(255,255,255,0.95);
+	left: 50%;
+	margin-left: -30%;
+	height: 60%;
+	top: 50%;
+	margin-top: -18%;
+	overflow: auto;
+	text-align: center;
+	border-radius: 20px;
+	border: 1px solid #888;
+	box-shadow: 0 0 10px;
+	display: none;
+}
+#globalConf.show {
+    display:block;
+}
+#globalConf h3 {
+	margin: 20px;
+	font-size: 24px;
+}
+#infotwin b {
+	display: inline-block;
+	margin: 0 20px;
+}
 @font-face {
     font-family: celesteoffcpro;
     src: url('../fonts/CelesteOffcPro.ttf') format('truetype');
