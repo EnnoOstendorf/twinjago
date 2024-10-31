@@ -4,6 +4,7 @@ import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 console.log('Welcome to the IOT-System-Frontend of FH Münster', location.search.substr(1).split('='));
 const scene = new THREE.Scene();
+const config = [];
 let playground = null;
 let aktdevice = null;
 let aktsensorout = null;
@@ -328,7 +329,7 @@ window.onload = ( loadev ) => {
 	    }
 	    bascatseldom.appendChild(nd);
 	});
-	console.log('fill cat select',devcats,basiccats);
+//	console.log('fill cat select',devcats,basiccats);
     }
     const showCatSelect = ( type ) => {
 	const catseldom = document.getElementById(type+'CatSelect');
@@ -420,7 +421,6 @@ window.onload = ( loadev ) => {
 	treeel.id = 'tree-'+o;
 	tree[o]?.forEach( ( oo, ii ) => {
 	    renderCatDev( treeel, oo );
-	    console.log('cattree',oo);
 	});
 	domel.onclick = ( ev ) => {
 	    if ( domel.classList.contains('open') ) {
@@ -449,7 +449,7 @@ window.onload = ( loadev ) => {
 //	console.log('devices[]',devlistDom.innerHTML);
 	devs.forEach( ( o, i ) => {
 	    if ( o.cat ) {
-		console.log( 'category found', o.cat );
+//		console.log( 'category found', o.cat );
 		if ( o.type === 'basic' ) addCatDev( basiccats, basiccattree, o );
 		else addCatDev( devcats, devcattree, o );
 	    }
@@ -461,11 +461,10 @@ window.onload = ( loadev ) => {
 	    renderCat( basiclistDom, basiccattree, o );
 	});
 	fillCatSelect();
-	console.log( 'Build Cats',devcats,Object.keys(devcattree));
+//	console.log( 'Build Cats',devcats,Object.keys(devcattree));
 	devs.forEach( ( o, i ) => {
 	    if ( o.cat ) return;
 	    const aktDom = o.type === 'basic' ? basiclistDom : devlistDom;
-	    console.log('devtype',o);
 	    aktDom.insertAdjacentHTML( 'beforeend',
 					   '<li id="device-'+o.id+'" title="'+o.name
 					   +'  Anzahl Teile: '+o.parts+'  Anzahl Schilder: '
@@ -492,6 +491,40 @@ window.onload = ( loadev ) => {
 //	console.log('devices[]',devices);
 //	console.log('devlist',devs,devlistDom);
     }
+    const saveGlobals = () => {
+	const data = {
+	    info : document.getElementById('infotext')?.value
+	};
+	console.log('save Globals', data, config.length);
+	if ( config.length === 0 )
+	    sendDBconfCreate( data );
+	else
+	    sendDBconfUpdate( data );
+	config.info = data.info;
+    }
+    const loadConfig = () => {
+	const url = '/api/getconfig';
+	const xhr = new XMLHttpRequest();
+	xhr.open('GET',url,true);
+	xhr.setRequestHeader("Content-Type", "application/json");
+	xhr.onreadystatechange = function () {
+	    if (xhr.readyState === 4 && xhr.status === 200) {
+		var json = JSON.parse(xhr.responseText);
+		config.push(json);
+		document.getElementById('infotext').value = json.info;
+/*		json.forEach( ( o, i ) => {
+		    config.push( o );
+		    if ( o.info ) {
+			document.getElementById('infotext').value = o.info;
+		    }
+		    });
+		    */
+		console.log('loaded config',json);
+	    }
+	};
+	xhr.send();
+    }
+    loadConfig();
     const loadAllDevices = () => {
 	const deviceDom = document.querySelector('.deviceNavi ul');
 	const basicDom = document.querySelector('.deviceNavi ol');
@@ -1814,6 +1847,20 @@ window.onload = ( loadev ) => {
 	};
 	xhr.send(JSON.stringify(devdata));
     }
+    const sendDBconfCreate = ( devdata, cb ) => {
+	const url = '/api/confpost';
+	const xhr = new XMLHttpRequest();
+	xhr.open('POST',url,true);
+	xhr.setRequestHeader("Content-Type", "application/json");
+	xhr.onreadystatechange = function () {
+	    if (xhr.readyState === 4 && xhr.status === 200) {
+		var json = JSON.parse(xhr.responseText);
+//		console.log('sendDBCreate',json);
+		if ( cb ) cb(json);
+	    }
+	};
+	xhr.send(JSON.stringify(devdata));
+    }
     const sendDBDokCreate = ( devdata, success, error, progress ) => {
 	const url = '/api/dokpost';
 	const xhr = new XMLHttpRequest();
@@ -1835,6 +1882,20 @@ window.onload = ( loadev ) => {
 		progress( ev );
 	    }
 	}
+	xhr.send(JSON.stringify(devdata));
+    }
+    const sendDBconfUpdate = ( devdata, cb ) => {
+	const url = '/api/configupdate';
+	const xhr = new XMLHttpRequest();
+	xhr.open('PATCH',url,true);
+	xhr.setRequestHeader("Content-Type", "application/json");
+	xhr.onreadystatechange = function () {
+	    if (xhr.readyState === 4 && xhr.status === 200) {
+		var json = JSON.parse(xhr.responseText);
+//		console.log(json.email + ", " + json.password);
+		if ( cb ) cb();
+	    }
+	};
 	xhr.send(JSON.stringify(devdata));
     }
     const sendDBUpdate = ( id, devdata, cb ) => {
@@ -2256,6 +2317,10 @@ window.onload = ( loadev ) => {
 	    showGlobalDlg();
 	};
 	document.getElementById( 'globalCancel').onclick = ( ev ) => {
+	    hideGlobalDlg();
+	};
+	document.getElementById( 'globalConfirm').onclick = ( ev ) => {
+	    saveGlobals();
 	    hideGlobalDlg();
 	};
 	document.getElementById( 'newgroup').onclick = ( ev ) => {

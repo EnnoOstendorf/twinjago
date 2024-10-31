@@ -13,6 +13,10 @@ const dataSchema = new mongoose.Schema({
 	required: true,
 	type: Array
     },
+    label: {
+        required: false,
+        type: String
+    },
     size: {
         required: false,
         type: Number

@@ -1147,7 +1147,7 @@ input.error {
 
 
 #globalConf {
-	position: absolute;
+	position: fixed;
 	width: 60%;
 	background: rgba(255,255,255,0.95);
 	left: 50%;
@@ -1169,9 +1169,17 @@ input.error {
 	margin: 20px;
 	font-size: 24px;
 }
-#infotwin b {
-	display: inline-block;
-	margin: 0 20px;
+#infotextbox > b {
+	vertical-align: top;
+	font-size: 16px;
+	padding: 6px;
+}
+#infotext {
+	width: 70%;
+	height: 300px;
+	margin: -5px 0 0;
+	padding: 5px;
+	font-size: 14px;
 }
 @font-face {
     font-family: celesteoffcpro;

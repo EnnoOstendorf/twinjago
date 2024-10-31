@@ -5,6 +5,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 console.log('Welcome to the IOT-System-Frontend of FH Münster');
 const scene = new THREE.Scene();
+const config = [];
 let playground = null;
 let aktdevice = null;
 let lastdevice = null;
@@ -175,6 +176,9 @@ window.onload = ( loadev ) => {
     playground = document.getElementById('playground');
     var width = playground.offsetWidth;
     var height = playground.offsetHeight;
+    const devcats = [];
+    const devcattree = [];
+
     const ghosttransp = 0;
     const labeloffset = {
 	x: 0, y: 0.35, z: 3.55
@@ -274,6 +278,66 @@ window.onload = ( loadev ) => {
 	}
 	return target;
     }
+    const addCatDev = ( cats, tree, o ) => {
+	if ( !o.cat ) return;
+	if ( !cats.includes( o.cat ) ) {
+	    cats.push(o.cat);
+	    tree[o.cat] = [];
+	}
+	tree[o.cat].push( o )
+    }
+    const renderCatDev = ( treeel, o ) => {
+	const liel = document.createElement('li');
+	liel.id = 'device-'+o.id;
+	liel.title = o.name+'  Anzahl Teile: '+o.parts+'  Anzahl Schilder: '+o.signs;
+	liel.setAttribute('data-devicename',o.name);
+	liel.setAttribute('data-devicedbid',o.id);
+	liel.innerHTML=o.name+' ('+o.parts+'/'+o.signs+')';
+	const delel = document.createElement('s');
+	liel.appendChild(delel);
+	delel.onclick = ( ev ) => {
+	    //		console.log( 'delete device', ev.target.parentNode.getAttribute('data-devicedbid') );
+	    modalDlg( 'Möchten Sie wirklich das Device '+o.name+' löschen?',
+		      () => { // ok callback
+			  sendDBDelete( ev.target.parentNode.getAttribute('data-devicedbid') );
+			  liel.remove();
+		      },
+		      () => { // nok callback
+		      } );
+	    ev.preventDefault();
+	    ev.stopPropagation();
+	};
+	devices.push(o);
+	liel.onclick = loadDevice;
+	treeel.appendChild(liel);
+    }
+    const renderCat = ( listdom, tree, o ) => {
+	const domel = document.createElement('li');
+	domel.id='cat-'+o; domel.classList.add('cat');
+	domel.innerHTML = o;
+	const plusel = document.createElement('b');
+	plusel.innerHTML = '+';
+	domel.insertAdjacentElement('afterbegin',plusel);	    
+	listdom.appendChild( domel );
+	const treeel = document.createElement('div');
+	treeel.classList.add('tree');
+	treeel.id = 'tree-'+o;
+	tree[o]?.forEach( ( oo, ii ) => {
+	    renderCatDev( treeel, oo );
+	    console.log('cattree',oo);
+	});
+	domel.onclick = ( ev ) => {
+	    if ( domel.classList.contains('open') ) {
+		domel.classList.remove('open');
+		treeel.classList.remove('open');
+	    }
+	    else {
+		domel.classList.add('open');
+		treeel.classList.add('open');
+	    }
+	}
+	listdom.appendChild( treeel );
+    }
     const populateDevlist = ( devs ) => {
 	const devnaviDom = document.querySelector('.deviceNavi');
 	const devlistDom = devnaviDom.querySelector('.deviceNavi ul');
@@ -284,11 +348,22 @@ window.onload = ( loadev ) => {
 //	    basiclistDom.classList.add('filled');
 	}
 	devices.splice(0);
+	devcats.splice(0); devcattree.splice(0);
 	devlistDom.innerHTML = '<li class="nodevs"></li>';
 //	basiclistDom.innerHTML = '<li class="nodevs"></li>';
 //	console.log('devices[]',devlistDom.innerHTML);
 	devs.forEach( ( o, i ) => {
 	    if ( o.type ===  'basic' ) return;
+	    if ( o.cat && o.cat.toLowerCase() !== 'test' ) {
+		console.log( 'category found', o.cat );
+		addCatDev( devcats, devcattree, o );
+	    }
+	});
+	devcats.forEach( ( o, i ) => {
+	    renderCat( devlistDom, devcattree, o );
+	});
+	devs.forEach( ( o, i ) => {
+	    if ( o.type ===  'basic' || ( o.cat && o.cat.toLowerCase() === 'test' ) ) return;
 	    const aktDom = devlistDom;
 	    aktDom.insertAdjacentHTML( 'beforeend',
 					   '<li id="device-'+o.id+'" title="'+o.name
@@ -304,6 +379,22 @@ window.onload = ( loadev ) => {
 //	console.log('devices[]',devices);
 //	console.log('devlist',devs,devlistDom);
     }
+    const loadConfig = () => {
+	const url = '/api/getconfig';
+	const xhr = new XMLHttpRequest();
+	xhr.open('GET',url,true);
+	xhr.setRequestHeader("Content-Type", "application/json");
+	xhr.onreadystatechange = function () {
+	    if (xhr.readyState === 4 && xhr.status === 200) {
+		var json = JSON.parse(xhr.responseText);
+		config.push(json);
+		document.getElementById('infotext').innerHTML = json.info;
+		console.log('loaded config',json);
+	    }
+	};
+	xhr.send();
+    }
+    loadConfig();
     const loadAllDevices = () => {
 	const deviceDom = document.querySelector('.deviceNavi ul');
 	deviceDom.innerHTML = '<img src="imgs/throbber.gif" /> lade Twins';
@@ -1045,7 +1136,9 @@ window.onload = ( loadev ) => {
 	    }
 	}
 	if ( parid != 0 ) loadDevicePure( parid, cb );
+	else document.getElementById( 'infolayersuper' ).classList.add( 'open' );
     }
+    else document.getElementById( 'infolayersuper' ).classList.add( 'open' );
     const loadDevice = ( ev ) => {
 	resetDevice();
 	document.querySelector('.deviceNavi .selected')?.classList.remove('selected');
@@ -1353,6 +1446,15 @@ window.onload = ( loadev ) => {
 	    const d=document.getElementById( 'deviceNavi' );
 	    if ( d.classList.contains( 'open' ) ) d.classList.remove('open');
 	    else d.classList.add( 'open' );
+	};
+	document.getElementById( 'infoBtn' ).onclick = ( ev ) => {
+	    const d=document.getElementById( 'infolayersuper' );
+	    if ( d.classList.contains( 'open' ) ) d.classList.remove('open');
+	    else d.classList.add( 'open' );
+	};
+	document.getElementById( 'infoBtnCls' ).onclick = ( ev ) => {
+	    const d=document.getElementById( 'infolayersuper' );
+	    d.classList.remove('open');	    
 	};
 	
 	window.addEventListener( 'resize', onWindowResize );

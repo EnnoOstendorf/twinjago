@@ -5,7 +5,10 @@ const https = require('https');
 const express = require('express');
 const basicAuth = require('express-basic-auth');
 const mongoose = require('mongoose');
-const mongoString = process.env.DATABASE_URL
+const mongoString = process.env.DATABASE_URL;
+const privKeyPath = process.env.PRIVKEYPATH;
+const certFilePath = process.env.CERTFILEPATH;
+const caFilePath = process.env.CAFILEPATH;
 
 mongoose.connect(mongoString);
 const database = mongoose.connection;
@@ -21,9 +24,9 @@ database.once('connected', () => {
 
 const app = express();
 
-const privateKey = fs.readFileSync('/etc/letsencrypt/live/freetwin.de/privkey.pem', 'utf8');
-const certificate = fs.readFileSync('/etc/letsencrypt/live/freetwin.de/cert.pem', 'utf8');
-const ca = fs.readFileSync('/etc/letsencrypt/live/freetwin.de/chain.pem', 'utf8');
+const privateKey = fs.readFileSync(privKeyPath, 'utf8');
+const certificate = fs.readFileSync(certFilePath, 'utf8');
+const ca = fs.readFileSync(caFilePath, 'utf8');
 
 const credentials = {
 	key: privateKey,
@@ -36,13 +39,17 @@ app.use(express.urlencoded({
   extended: true
 }));
 app.use(express.static('static'));
-app.use('/admin',express.static('admin'),
-	basicAuth({
-	    users: {
-		'user1' : 'twin*jago'
-	    }}));
+
+app.use('/admin',  basicAuth({
+    users: { 'user1' : 'twin*jago' },
+    challenge: true,
+    realm: 'sdhflkjsdhf'
+}));
+
+app.use('/admin', express.static('admin'));
 
 const routes = require('./routes/routes');
+//const adminroutes = require('./routes/admroutes');
 
 app.use('/api', routes);
 

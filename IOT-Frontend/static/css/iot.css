@@ -103,6 +103,27 @@ body {
 .filled .nodevs {
 	display: none;
 }
+.tree {
+	background: #ccc;
+	padding-left: 20px;
+	height: 0;
+	overflow: hidden;
+	transition: all 1s ease-out;
+	margin: 0 0 0 -10px;
+}
+.tree.open {
+	height: auto;
+}
+.deviceNavi li.cat {
+	font-weight: bold;
+	font-style: italic;
+	background: #ccc;
+	width: 86%;
+	margin-bottom:0;
+}
+.deviceNavi .tree li {
+	width: 81%;
+}
 .deviceStage {
 	margin: 0;
 	float: left;
@@ -451,6 +472,66 @@ input.error {
 .meterroot h4 {
 	margin: 4px 0;
 	font-size: 16px;
+}
+/* info layer */
+#infolayersuper {
+	position: fixed;
+	right: 0;
+	top: 0;
+	z-index: 1;
+}
+#infolayersuper.open {
+	width: 100%;
+	left: 0;
+	top: ;
+	right: auto;
+	height: 100%;
+}
+#infolayer {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 0;
+	transition: all 0.5s ease-out;
+	border-radius: 20px;
+	text-align: center;
+}
+.open #infolayer {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	height: 70%;
+	width: 80%;
+	background: rgba(200,200,200,0.96);
+	margin: -21% 0 0 -40%;
+}
+#infotext {
+	margin: 40px;
+	font-size: 14px;
+	opacity: 0;
+	transition: all 0.8s ease-out;
+}
+.open #infotext {
+	opacity: 1;
+}
+#infoBtn {
+	width: 40px;
+	height: 40px;
+	border-radius: 0 0 0 10px;
+	cursor: pointer;
+	font-size: 25px;
+	line-height: 30px;
+	position: absolute;
+	top: 0;
+	right: 0px;
+	font-weight: bold;
+	background: rgba(200,200,200,0.95);
+	border: 0;
+}
+#infoBtnCls {
+	font-size: 20px;
+	padding: 10px 20px;
+	cursor: pointer;
 }
 /* Modal */
 #modalOuter {

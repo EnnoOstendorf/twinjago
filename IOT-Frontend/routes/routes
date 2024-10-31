@@ -1,13 +1,18 @@
 const express = require('express');
 const Model = require('../models/model');
 const dokModel = require('../models/dokmodel');
+const confModel = require('../models/confmodel');
 
 const router = express.Router()
 
 const devicelist = [];
 const doklist = [];
+const config = [];
+
 var ready = false;
 var dokready = false;
+var confready = false;
+var configid;
 
 /*
   on startup fetch all devs from db and save list
@@ -36,6 +41,25 @@ const genList = async () => {
     }
 };
 
+const genConfig = async () => {
+    try{
+	const data = await confModel.find();
+	for ( let i=0; i<data.length; i++ ) {
+	    o = data[i];
+	    if ( o && typeof o !== 'undefined' ) {
+		config.push( o );
+		configid = o._id;
+	    }
+	}
+
+	confready = true;
+	console.log('...config',o);	
+    }
+    catch(error){
+	console.log('error', error.message)
+    }
+};
+
 const genDokList = async () => {
     try{
         const data = await dokModel.find();
@@ -56,6 +80,7 @@ const genDokList = async () => {
     }
 };
 
+genConfig();
 genList();
 genDokList();
 
@@ -167,6 +192,33 @@ router.post('/dokpost', async (req, res) => {
 })
 
 	   
+//Post config Method
+router.post('/confpost', async (req, res) => {
+    if ( !ready ) {
+        res.status(400).json({message: 'demon not ready'})
+	return
+    }
+    console.log('got confpost:',req.body);
+    // Deactivated DB creation for test purposes
+    const o=req.body;
+    const data = new confModel({
+	info: o.infotext
+    })
+
+    try {
+        const dataToSave = await data.save();
+	config.push({
+	    info: o.infotext
+	});
+//	console.log('dataToSave',dataToSave);
+        res.status(200).json(dataToSave)
+    }
+    catch (error) {
+        res.status(400).json({message: error.message})
+    }
+})
+
+	   
 // Get all Method
 // simply return everything
 // **** CAUTION: this can get very big ****
@@ -204,6 +256,17 @@ router.get('/doklist', async (req, res) => {
     res.json( doklist );
 })
 
+//Get Config
+router.get('/getconfig', async (req, res) => {
+    try{
+        const data = await confModel.find();
+        res.json(data)
+    }
+    catch(error){
+        res.status(500).json({message: error.message})
+    }
+})
+
 //Get by ID Method
 router.get('/getOne/:id', async (req, res) => {
     try{
@@ -228,6 +291,23 @@ router.get('/download/:id', async (req, res) => {
     }
     catch(error){
         res.status(500).json({message: error.message})
+    }
+})
+
+//Update Config
+router.patch('/configupdate', async (req, res) => {
+    try {
+        const options = { new: true };
+        const updatedData = req.body;
+	console.log('got config update',updatedData);
+        const result = await confModel.findByIdAndUpdate(
+            configid, updatedData, options
+        )
+
+        res.send(result)
+    }
+    catch (error) {
+        res.status(400).json({ message: error.message })
     }
 })
 
