@@ -488,12 +488,48 @@ window.onload = ( loadev ) => {
 	    devices.push(o);
 	    it.onclick = loadDevice;
 	});
+
 //	console.log('devices[]',devices);
 //	console.log('devlist',devs,devlistDom);
     }
+    const populateGlobals = () => {
+	if ( devices.length === 0 ) {
+	    window.setTimeout( () => { populateGlobals(); }, 500 );
+	    return;
+	}
+	const deftwinSelDom = document.getElementById('deftwinSel');
+	const deftwinInput = document.getElementById('deftwinName');
+	deftwinSelDom.innerHTML = '<li class="nodevs">-</li>';
+	deftwinSelDom.querySelector('li').onclick = ( ev ) => {
+	    deftwinInput.value = '';
+	    deftwinInput.removeAttribute('data-id');
+	}
+	console.log('populateGlobals',devices.length);
+	devices.forEach( ( o, i ) => {
+	    if ( o.type === 'basic' || ( o.cat && o.cat.toLowerCase().indexOf('test') > -1 ) ) {
+//		console.log('no matching twin for deftwinselect', o.type, o.cat );
+		return;
+	    }
+	    // fill the default twin select
+	    const option = document.createElement('li');	    
+	    option.innerHTML = o.name;
+	    option.onclick = ( ev ) => {
+		deftwinInput.value = o.name;
+		deftwinInput.setAttribute('data-id',o.id);
+		console.log('chosen deftwin', deftwinInput, o.name, o.id);
+	    }
+	    deftwinSelDom.appendChild(option);
+	    if ( config[0].deftwin === o.id ) {
+		deftwinInput.value = o.name;
+		deftwinInput.setAttribute('data-id',o.id);
+		console.log('default Twin?',config[0].deftwin,o.id,o.name);
+	    }
+	});
+    }
     const saveGlobals = () => {
 	const data = {
-	    info : document.getElementById('infotext')?.value
+	    info : document.getElementById('infotext')?.value,
+	    deftwin : document.getElementById('deftwinName').getAttribute('data-id') || ''
 	};
 	console.log('save Globals', data, config.length);
 	if ( config.length === 0 )
@@ -512,7 +548,8 @@ window.onload = ( loadev ) => {
 		var json = JSON.parse(xhr.responseText);
 		config.push(json);
 		document.getElementById('infotext').value = json.info;
-/*		json.forEach( ( o, i ) => {
+		populateGlobals();
+		/*		json.forEach( ( o, i ) => {
 		    config.push( o );
 		    if ( o.info ) {
 			document.getElementById('infotext').value = o.info;
@@ -2961,6 +2998,16 @@ window.onload = ( loadev ) => {
 	};
 	document.getElementById('deviceName').onblur = ( ev ) => {
 	    if ( ev.target.value !== '' ) ev.target.classList.remove('error');
+	};
+	document.getElementById('deftwinName').onfocus = ( ev ) => {
+	    document.getElementById('deftwinSel').classList.add('show');
+	    //	    if ( ev.target.value !== '' ) ev.target.classList.remove('error');
+	};
+	document.getElementById('deftwinName').onblur = ( ev ) => {
+	    window.setTimeout( () => {
+		document.getElementById('deftwinSel').classList.remove('show');
+	    }, 200 );
+//	    if ( ev.target.value !== '' ) ev.target.classList.remove('error');
 	};
 	document.getElementById('deviceCat').onfocus = ( ev ) => {
 	    const type = isbasic ? 'bas' : 'dev';

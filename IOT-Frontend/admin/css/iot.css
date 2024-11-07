@@ -1169,18 +1169,54 @@ input.error {
 	margin: 20px;
 	font-size: 24px;
 }
-#infotextbox > b {
+#infotextbox > b, #deftwinBox {
 	vertical-align: top;
 	font-size: 16px;
 	padding: 6px;
 }
-#infotext {
+#infotext, #deftwinSelbox {
 	width: 70%;
 	height: 300px;
 	margin: -5px 0 0;
 	padding: 5px;
 	font-size: 14px;
+	display: inline-block;
 }
+#deftwinName {
+    width: 240px;
+    cursor: pointer;
+}
+#deftwinSel {
+	border: 1px solid #ccc;
+	background: #eee;
+	position: absolute;
+	top: 0;
+	left: 240px;
+	display: none;
+	list-style: none;
+	padding: 0 5px;
+	max-height: 200px;
+	overflow: auto;
+}
+#deftwinSel.show {
+	display: block;
+}
+#deftwinSelbox {
+	/* display: inline-block; */
+	text-align: left;
+	position: relative;
+	height: auto;
+	margin: -5px 0 20px;
+}
+#deftwinSel li {
+	list-style: none;
+	cursor: pointer;
+	padding: 2px 5px;
+}
+#deftwinSel li:hover {
+	background: rgba(0,0,0,0.2);
+}
+
 @font-face {
     font-family: celesteoffcpro;
     src: url('../fonts/CelesteOffcPro.ttf') format('truetype');

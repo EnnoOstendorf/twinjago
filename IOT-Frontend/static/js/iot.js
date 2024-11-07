@@ -389,6 +389,7 @@ window.onload = ( loadev ) => {
 		var json = JSON.parse(xhr.responseText);
 		config.push(json);
 		document.getElementById('infotext').innerHTML = json.info;
+		if ( json.deftwin ) loadDevicePure( json.deftwin );
 		console.log('loaded config',json);
 	    }
 	};
@@ -1045,7 +1046,7 @@ window.onload = ( loadev ) => {
 	const id = document.querySelector('#dbID span').innerHTML;
 	const doklyr = document.getElementById( 'dokLyr' );
 	if ( doklyr ) {
-	    doklyr.innerHTML = '<div class="dok">' + doks.join( '</div><div class="dok">' ) + '</div>';
+	    doklyr.innerHTML = '<div class="dok">' + doks.join( '<br />' ) + '</div>';
 	    if ( files.length > 0 ) {
 		doklyr.insertAdjacentHTML( 'beforeend', '<h3>Dateien</h3>' );
 		const listcont = document.createElement('div');
@@ -1138,7 +1139,10 @@ window.onload = ( loadev ) => {
 	if ( parid != 0 ) loadDevicePure( parid, cb );
 	else document.getElementById( 'infolayersuper' ).classList.add( 'open' );
     }
-    else document.getElementById( 'infolayersuper' ).classList.add( 'open' );
+    else {
+	console.log('no twin',config[0]);	
+	document.getElementById( 'infolayersuper' ).classList.add( 'open' );
+    }
     const loadDevice = ( ev ) => {
 	resetDevice();
 	document.querySelector('.deviceNavi .selected')?.classList.remove('selected');
@@ -1412,6 +1416,13 @@ window.onload = ( loadev ) => {
 	document.getElementById( 'datapin' ).onclick = ( ev ) => {
 	    pinData();
 	};
+	document.getElementById( 'dokBtnCls' ).onclick = ( ev ) => {
+	    const dbtn = document.getElementById( 'dokBtn' );
+	    if ( dbtn.classList.contains('akt') ) {
+		hideDok();
+		return;
+	    }
+	}
 	document.getElementById( 'dokBtn' ).onclick = ( ev ) => {
 	    const dbtn = document.getElementById( 'dokBtn' );
 	    if ( dbtn.classList.contains('akt') ) {

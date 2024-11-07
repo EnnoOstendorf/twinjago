@@ -275,7 +275,7 @@ input.error {
 	z-index: 1;
 	background: rgba(200,200,200,0.9);
 	width: 50%;
-	left: 20px;
+	left: 60px;
 	padding: 20px;
 	top: 20px;
 	overflow: auto;
@@ -285,13 +285,29 @@ input.error {
     display:block;
 }
 #dokDatLyr {
-	left: calc(50% + 60px);
+	left: calc(50% + 100px);
 	width: calc(40% - 20px);
 	padding: 0 20px 20px;
 	border-radius: 0 20px 20px 0;
 }
 #dokDatLyr h2 {
 	margin: 10px 0;
+}
+#dokBtnCls {
+	position: absolute;
+	left: calc(50% - 60px);
+	bottom: 10px;
+	z-index: 1;
+	box-shadow: unset;
+	font-size: 18px;
+	padding: 5px 20px 1px;
+	cursor: pointer;
+}
+#dokLyr .dok {
+	height: 91%;
+	overflow: auto;
+	padding: 0 20px 0 0;
+	/* background: rgba(255,255,255,0.4); */
 }
 .filelist h3 {
 	display: inline-block;
@@ -362,7 +378,7 @@ input.error {
 #liveData {
 	position: absolute;
 	right: 5px;
-	top: 10px;
+	top: 80px;
 	border: 1px solid #ccc;
 	padding: 5px;
 	background: rgba(200,200,200,0.8);
@@ -479,37 +495,44 @@ input.error {
 	right: 0;
 	top: 0;
 	z-index: 1;
+	background: rgba(255,255,255,0.5);
+	transition: all 0.3s ease-out;
+	width: 0;
+	height: 100%;
 }
 #infolayersuper.open {
 	width: 100%;
-	left: 0;
-	top: ;
-	right: auto;
-	height: 100%;
+}
+#infolayersuper.open button {
+	box-shadow: unset;
 }
 #infolayer {
 	position: absolute;
 	top: 0;
 	right: 0;
 	width: 0;
-	transition: all 0.5s ease-out;
+	transition: all 0.3s ease-out;
 	border-radius: 20px;
 	text-align: center;
 }
 .open #infolayer {
 	position: absolute;
-	left: 50%;
-	top: 50%;
-	height: 70%;
-	width: 80%;
+	right: calc(50% - 400px);
+	top: calc(50% - 300px);
+	height: 600px;
+	width: 800px;
 	background: rgba(200,200,200,0.96);
-	margin: -21% 0 0 -40%;
+	box-shadow: 0 0 5px;
+	overflow: hidden;
 }
 #infotext {
 	margin: 40px;
 	font-size: 14px;
 	opacity: 0;
-	transition: all 0.8s ease-out;
+	transition: all 0.3s linear;
+	height: 70%;
+	overflow: auto;
+	width: 720px;
 }
 .open #infotext {
 	opacity: 1;
@@ -637,6 +660,10 @@ input.error {
 .ready span b {
 	background: #0f0;
 }
+button, #burger {
+	box-shadow: 0 0 5px;
+}
+
 #burger {
 	width: 40px;
 	height: 40px;
@@ -650,7 +677,9 @@ input.error {
 	transition: right 0.2s linear;
 }
 .open #burger {
-    right: 0;
+	right: 0;
+	box-shadow: unset;
+	border-radius: 0 0 0 10px;
 }
 #burger s, #burger c, #burger b, #dokBtn i, #dokBtn s{
 	background: #4b4b4b;

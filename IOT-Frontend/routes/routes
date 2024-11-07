@@ -202,13 +202,15 @@ router.post('/confpost', async (req, res) => {
     // Deactivated DB creation for test purposes
     const o=req.body;
     const data = new confModel({
-	info: o.infotext
+	info: o.infotext,
+	deftwin: o.deftwin
     })
 
     try {
         const dataToSave = await data.save();
 	config.push({
-	    info: o.infotext
+	    info: o.infotext,
+	    deftwin: o.deftwin
 	});
 //	console.log('dataToSave',dataToSave);
         res.status(200).json(dataToSave)
@@ -259,7 +261,7 @@ router.get('/doklist', async (req, res) => {
 //Get Config
 router.get('/getconfig', async (req, res) => {
     try{
-        const data = await confModel.find();
+        const data = await confModel.findById(configid);
         res.json(data)
     }
     catch(error){
