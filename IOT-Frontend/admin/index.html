@@ -34,7 +34,7 @@
       <div id="deviceNavi" class="deviceNavi">
 	<h2>Twins <button id="createDeviceBtn">+</button></h2>
 	<ul>
-	  <li class="nodevs">keine devices</li>
+	  <li class="nodevs">keine twins</li>
 	</ul>
 	<h2>Basics <button id="createBasicBtn">+</button></h2>
 	<ol>		
@@ -43,10 +43,10 @@
       </div>
       <div id="deviceStage" class="deviceStage">
 	<div id="devStgHead">
-	  <h2>Twin <input name="deviceName" id="deviceName" placeholder="Benenne mich" autocomplete="off" /><span id="globalbasiclabel">BASIC</span> </h2>
+	  <h2><span id="devType">Twin</span> <input name="deviceName" id="deviceName" placeholder="Benenne mich" autocomplete="off" /> </h2>
 	  <h3>Kategorie: <input name="deviceCat" id="deviceCat" placeholder="Kategorie eingeben" autocomplete="off" /><span id="devCatSelect" class="selection"></span><span id="basCatSelect" class="selection"></span></h3>
 	  <div id="TwinCnfBtns">
-	    <button id="DokumenteBtn" class="disabled" title="Informationen zum Device (für Basics nicht verfügbar)">Informationen</button>
+	    <button id="DokumenteBtn" class="disabled" title="Informationen zum Twin (für Basics nicht verfügbar)">Informationen</button>
 	    <button id="RoutingBtn" class="disabled" title="Routing Editor">Routing</button>
 	    <button id="liveBtn" title="zur Live-Ansicht"><img src="imgs/augen.png" /> &nbsp;</button>
 	  </div>
@@ -57,13 +57,8 @@
 	  <div class="camctrl">
 	    Mousewheel to zoom, Mousedrag to rotate, move with button 2
 	  </div>
-	  <div class="camstart">
-	    <button id="saveCamBtn" title="aktuelle Kamerasicht als Startansicht des Devices setzen"></button>
-	    <button id="loadCamBtn" title="gesetzte Kamerasicht abrufen"></button>
-	    
-	  </div>
 	  <div class="designCtrl">
-	    <button id="saveDeviceBtn">device speichern</button>
+	    <button id="saveDeviceBtn">twin speichern</button>
 	    <button id="saveBasicBtn">basic speichern</button>
 	    <button id="dupDeviceBtn">clone</button>
 	    <div class="modalovl"></div>
@@ -152,7 +147,7 @@
 	  <div id="newfilebox">
 	    <div id="newfilelist"></div>
 	    <div class="newfile" id="newfile"><label for="newfilefile">+ Datei <input type="file" id="newfilefile" autocomplete="off" multiple="multiple"></label></div>
-	    <div class="footnote">Die neuen Dateien werden nach Click auf Speichern hochgeladen<br /> bzw. gelöscht und das Device wird gespeichert.</div>
+	    <div class="footnote">Die neuen Dateien werden nach Click auf Speichern hochgeladen<br /> bzw. gelöscht und der Twin wird gespeichert.</div>
 	  </div>
 	  <div id="dokdbmaint">
 	    <b>ID: </b><input id="deldokid" /><button id="deldokdo">Datei löschen</button>

@@ -389,7 +389,7 @@ window.onload = ( loadev ) => {
 		var json = JSON.parse(xhr.responseText);
 		config.push(json);
 		document.getElementById('infotext').innerHTML = json.info;
-		if ( json.deftwin ) loadDevicePure( json.deftwin );
+		if ( json.deftwin && location.search.indexOf('id=') === -1 ) loadDevicePure( json.deftwin );
 		console.log('loaded config',json);
 	    }
 	};
@@ -739,11 +739,15 @@ window.onload = ( loadev ) => {
 	const intersects = raycaster.intersectObjects( mainmesh.children );
 	if ( intersects.length > 0 ) {
 	    if ( intersects[0].object.type !== 'AxesHelper'  ) {
-		const o3 = intersects[0].object;
+		let o3 = intersects[0].object;
 		lolightParts();
-//		console.log('intersects',xp,yp,o3.userData);
+//		console.log('intersects',xp,yp,o3);
+		if ( ! o3.userData.type ) {
+		    while ( o3.parent && ! o3.userData.type ) o3 = o3.parent;
+		    o3 = o3.parent;
+		}
 		if ( o3.userData.type ) {
-//		    console.log('highlight part', o3.userData.type)
+		    console.log('highlight part', o3)
 		    if ( o3.userData.type === 'part' ) {
 			hilightPart( o3 );
 			const ind = o3.userData.index;
@@ -755,11 +759,23 @@ window.onload = ( loadev ) => {
 			    if ( parts[ind].deviceid && parts[ind].deviceid != '' ) {
 				aktdevice = parts[ind].deviceid;
 			    }
+			    else aktdevice = '';
 			    
 			}
 		    }
 		    else if ( o3.userData.type === 'basic' ) {
 			const ind = o3.userData.index;
+			if ( parts[ind] && parts[ind].tooltip && parts[ind].tooltip != '' ) {
+			    let label = '<b>'+parts[ind].tooltip+'</b>';
+			    if ( o3.userData.tooltip && o3.userData.tooltip != '' ) {
+				label += '<br/>'+o3.userData.tooltip;
+			    }
+			    if ( parts[ind].deviceid && parts[ind].deviceid != '' ) {
+				aktdevice = parts[ind].deviceid;
+			    }
+			    else aktdevice = '';
+			    showTooltip( xp, yp, label );
+			}
 //			console.log('highlight basic', ind)
 		    }
 		    else if ( o3.userData.type === 'basicpart' || o3.userData.type === 'basicsign' ) {
@@ -777,15 +793,21 @@ window.onload = ( loadev ) => {
 			if ( parts[ind] && parts[ind].deviceid && parts[ind].deviceid != '' ) {
 			    aktdevice = parts[ind].deviceid;
 			}
+			else aktdevice = '';
 		    }
 		    else {
-//			console.log('highlight nothing', o3)
+			console.log('highlight nothing', o3)
 			lolightParts();
 			aktdevice = '';
 			hideTooltip();
 			document.getElementById('sensorid').innerHTML = '';
 			document.getElementById('sensorout').innerHTML = '';
 		    }
+		}
+		else {
+		    while ( o3.parent && ! o3.userData.type ) o3 = o3.parent;
+		    o3 = o3.parent;
+		    console.log('no userdata type, bubble up',o3);
 		}
 	    // 	     intersects[0].object.userData.type !== 'pin' &&
 	    // 	     intersects[0].object.userData.type !== 'pinlabel' ) {
@@ -979,6 +1001,7 @@ window.onload = ( loadev ) => {
 		    RestoreCamPos( devdata.camstart );
 		    console.log( 'camstart loaclosefuncs', devdata.camstart );
 		}
+		
 	    });
 	}
 	if ( isbasic && target ) return target;
@@ -1028,6 +1051,21 @@ window.onload = ( loadev ) => {
     const unsetControls = () => {
 	if ( controls ) controls.dispose();
     }
+    const initCamPos = () => {
+	console.log('initCamPos');
+	RestoreCamPos({
+	    position: {
+		x : 212,
+		y : -932,
+		z : 858
+	    },
+	    rotation: {
+		x : 0.93,
+		y : 0.15,
+		z : 0
+	    }
+	});
+    }
     const RestoreCamPos = ( akt ) => {	
 //	console.log('restorecampos',akt, camera);
 	camera.position.x = akt.position.x;
@@ -1038,9 +1076,9 @@ window.onload = ( loadev ) => {
 	camera.rotation.y = akt.rotation.y;
 	camera.rotation.z = akt.rotation.z;
 	camera.updateProjectionMatrix();
-	//	controls.update();
+	//controls.update();
 //	constrols.saveState();
-	console.log('restorecampos',camera.rotation);
+	console.log('restorecampos',akt);
     };
     const fillDokLayer = () => {
 	const id = document.querySelector('#dbID span').innerHTML;
@@ -1111,9 +1149,12 @@ window.onload = ( loadev ) => {
 		if ( json.camstart ) {
 		    RestoreCamPos( json.camstart );
 		    console.log( 'delay camstart', json.camstart );
-		    setControls();
 		    //		    controls.update();
 		}
+		else {
+		    initCamPos();
+		}
+		setControls();
 		hideThrobber();
 		if ( cb && typeof cb === 'function' ) cb();
 	    }

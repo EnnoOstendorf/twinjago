@@ -394,7 +394,9 @@ window.onload = ( loadev ) => {
 	liel.appendChild(delel);
 	delel.onclick = ( ev ) => {
 	    //		console.log( 'delete device', ev.target.parentNode.getAttribute('data-devicedbid') );
-	    modalDlg( 'Möchten Sie wirklich das Device '+o.name+' löschen?',
+	    let types = 'den Twin';
+	    if ( o.type && o.type === 'basic' ) types = 'das Basic';
+	    modalDlg( 'Möchten Sie wirklich '+types+' '+o.name+' löschen?',
 		      () => { // ok callback
 			  sendDBDelete( ev.target.parentNode.getAttribute('data-devicedbid') );
 			  liel.remove();
@@ -475,7 +477,9 @@ window.onload = ( loadev ) => {
 	    const delit = it.querySelector('s');
 	    delit.onclick = ( ev ) => {
 //		console.log( 'delete device', ev.target.parentNode.getAttribute('data-devicedbid') );
-		modalDlg( 'Möchten Sie wirklich das Device '+o.name+' löschen?',
+		let types = 'den Twin';
+		if ( o.type && o.type === 'basic' ) types = 'das Basic';
+		modalDlg( 'Möchten Sie wirklich '+types+' '+o.name+' löschen?',
 		      () => { // ok callback
 			  sendDBDelete( ev.target.parentNode.getAttribute('data-devicedbid') );
 			  it.remove();
@@ -995,8 +999,8 @@ window.onload = ( loadev ) => {
 	    showEditDlg( 'part' );
 	};
 	DOMObj.querySelector('s').onclick = ( ev ) => {	    
-	    meshp.geometry.dispose();
-	    meshp.material.dispose();
+	    meshp.geometry?.dispose();
+	    meshp.material?.dispose();
 	    mainmesh.remove(meshp);
 	    DOMObj.remove();
 	    parts.splice(index,1);
@@ -1180,7 +1184,7 @@ window.onload = ( loadev ) => {
 	const col = data.color || '#ffffff';
 	const oname = data.name || fname;
 	const mesh = glb.scene;
-	mesh.scale.set(500,500,500);
+	mesh.scale.set(50,50,50);
 	mesh.userData.type = isbasicp ? 'basicpart' : 'part';
 	if ( !isbasicp ) {
 	    addPart(oname, mesh, fname, deviceid, tooltip, data);
@@ -1561,23 +1565,22 @@ window.onload = ( loadev ) => {
     const resetDevice = ( type ) => {	
 	console.log('reset device', type);
 	if ( type === 'basic' ) {
-//	    isbasic = true;
+	    isbasic = true;
 	    document.getElementById('saveDeviceBtn').classList.add('disabled');
 	    document.getElementById('saveBasicBtn').classList.remove('disabled');
 	    document.getElementById('liveBtn').classList.add('hidden');
 	    document.getElementById('newpart').classList.remove('disabled');
 	    document.getElementById('newgroup').classList.add('disabled');
-	    document.getElementById('globalbasiclabel').classList.add('active');
 	    document.getElementById( 'DokumenteBtn' ).classList.add('disabled');
 	    document.getElementById( 'RoutingBtn' ).classList.add('disabled');
+	    document.getElementById( 'devType' ).innerHTML = 'Basic';
 	}
 	else {
-//	    isbasic = false;
+	    isbasic = false;
 	    document.getElementById('saveDeviceBtn').classList.remove('disabled');
 	    document.getElementById('saveBasicBtn').classList.add('disabled');
 	    document.getElementById('newpart').classList.add('disabled');
 	    document.getElementById('liveBtn').classList.remove('hidden');
-	    document.getElementById('globalbasiclabel').classList.remove('active');
 	    document.getElementById( 'DokumenteBtn' ).classList.remove('disabled');
 	    document.getElementById( 'RoutingBtn' ).classList.remove('disabled');
 	    document.getElementById('filelist').replaceChildren();
@@ -1586,6 +1589,7 @@ window.onload = ( loadev ) => {
 	    document.getElementById('routelist').replaceChildren();
 	    document.getElementById('routingPinDlg').replaceChildren();
 	    document.getElementById('newgroup').classList.remove('disabled');
+	    document.getElementById( 'devType' ).innerHTML = 'Twin';
 	}
 	aktsign = null;
 	aktroute = null;
@@ -1600,7 +1604,6 @@ window.onload = ( loadev ) => {
 	document.getElementById('partsinner').replaceChildren();
 	document.getElementById('signsinner').replaceChildren();
 	document.getElementById('deviceName').value = '';
-	document.getElementById('loadCamBtn').classList.remove('active');
 	
 	//	document.getElementById('deviceID').value = '';
 	document.getElementById('dok1txt').value = '';
@@ -1680,14 +1683,12 @@ window.onload = ( loadev ) => {
 	    if ( devdata.type === 'basic' ) {
 		document.getElementById( 'newgroup' ).classList.add('disabled');
 		document.getElementById( 'DokumenteBtn' ).classList.add('disabled');
-		document.getElementById( 'globalbasiclabel' ).classList.add('active');
 		document.getElementById('newpart').classList.remove('disabled');
 	    }
 	    else {
 		document.getElementById('newpart').classList.add('disabled');
 		document.getElementById( 'newgroup' ).classList.remove('disabled');
 		document.getElementById( 'DokumenteBtn' ).classList.remove('disabled');
-		document.getElementById( 'globalbasiclabel' ).classList.remove('active');
 	    }
 	    if ( devdata.doks && devdata.doks.length === 3 ) {
 		for ( let i=0; i<devdata.doks.length; i++ ) {
@@ -1817,7 +1818,6 @@ window.onload = ( loadev ) => {
 		controls.reset();
 		if ( json.camstart ) {
 		    setCamStart( json.camstart );
-		    document.getElementById('loadCamBtn').classList.add('active');
 		    RestoreCamPos( json.camstart );
 		    controls.update();
 		}
@@ -1828,6 +1828,7 @@ window.onload = ( loadev ) => {
 		    document.getElementById('saveBasicBtn').classList.remove('disabled');
 		    document.getElementById( 'DokumenteBtn' ).classList.add('disabled');
 		    document.getElementById( 'RoutingBtn' ).classList.add('disabled');
+		    document.getElementById( 'devType' ).innerHTML = 'Basic';
 		}
 		else {
 		    isbasic = false;
@@ -1836,6 +1837,7 @@ window.onload = ( loadev ) => {
 		    document.getElementById('saveBasicBtn').classList.add('disabled');
 		    document.getElementById('saveDeviceBtn').classList.remove('disabled');
 		    document.getElementById( 'DokumenteBtn' ).classList.remove('disabled');
+		    document.getElementById( 'devType' ).innerHTML = 'Twin';
 		}
 		console.log('loaded device',json);
 		hideThrobber();
@@ -1992,6 +1994,7 @@ window.onload = ( loadev ) => {
 	    document.getElementById('dok2txt').value,
 	    document.getElementById('dok3txt').value
 	];
+	setCamStart( camera );
 	let devdata = { 'name': devicename, 'category': devicecat, 'type': type, 'camstart' : camstart, 'doks': devicedoks, 'parts': [], 'signs': [], 'files' : [], 'links' : [], 'routes' : [] };
 	let basiccount = 0;
 	for ( let i=0; i<parts.length; i++ ) {	    
@@ -2326,7 +2329,7 @@ window.onload = ( loadev ) => {
     }
     const initButtonEvents = () => {
 	document.getElementById( 'createDeviceBtn').onclick = ( ev ) => {
-	    modalDlg( 'Dies wird ihre aktuellen Bearbeitungen löschen! Wollen Sie wirklich ein neues Device anlegen?',
+	    modalDlg( 'Dies wird ihre aktuellen Bearbeitungen löschen! Wollen Sie wirklich ein neuen Twin anlegen?',
 		      () => { // ok callback
 			  resetDevice();
 		      },
@@ -2731,25 +2734,6 @@ window.onload = ( loadev ) => {
 	    document.getElementById('editlinkdlg').classList.remove('active');
 	    console.log('add link',url,linktext,tooltip);
 	    //	    document.getElementById('editlinkdlg').classList.remove('active');
-	}
-	document.getElementById('saveCamBtn').onclick = ( ev ) => {
-	    console.log('camstart before',camstart.position.x,camstart.position.y,camstart.position.z)
-	    camstart.position.x = camera.position.x;
-	    camstart.position.y = camera.position.y;
-	    camstart.position.z = camera.position.z;
-	    camstart.rotation.x = camera.rotation.x;
-	    camstart.rotation.y = camera.rotation.y;
-	    camstart.rotation.z = camera.rotation.z;
-	    console.log('camstart after',camstart.position.x)
-	    document.getElementById('loadCamBtn').classList.add('active');
-	}
-	document.getElementById('loadCamBtn').onclick = ( ev ) => {
-	    camera.position.x = camstart.position.x;
-	    camera.position.y = camstart.position.y;
-	    camera.position.z = camstart.position.z;
-	    camera.rotation.x = camstart.rotation.x;
-	    camera.rotation.y = camstart.rotation.y;
-	    camera.rotation.z = camstart.rotation.z;
 	}
 
 
