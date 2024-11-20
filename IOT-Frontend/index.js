@@ -5,6 +5,10 @@ const https = require('https');
 const express = require('express');
 const basicAuth = require('express-basic-auth');
 const mongoose = require('mongoose');
+
+const domain = process.env.DOMAIN;
+const port = process.env.PORT;
+const httpsport = process.env.HTTPSPORT;
 const mongoString = process.env.DATABASE_URL;
 const privKeyPath = process.env.PRIVKEYPATH;
 const certFilePath = process.env.CERTFILEPATH;
@@ -59,16 +63,16 @@ app.use(express.json());
 const httpServer = http.createServer(app);
 const httpsServer = https.createServer(credentials, app);
 
-httpServer.listen(3456, () => {
-	console.log('HTTP Server running on port 3456');
+httpServer.listen(port, () => {
+    console.log('HTTP Server running on port',port);
 });
 
-httpsServer.listen(3457, () => {
-	console.log('HTTPS Server running on port 3457');
+httpsServer.listen(httpsport, () => {
+    console.log('HTTPS Server running on port',httpsport);
 });
 
 // app.listen(3456, () => {
 //     console.log(`Server Started at ${3456}`)
 // })
 
-console.log('mongoString',mongoString);
+//console.log('mongoString',mongoString);

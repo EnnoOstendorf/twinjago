@@ -18,6 +18,26 @@ Additionally it has some maintenance endpoints that understand and speak JSON.
 
 A doc describing installation of each part and a dockerfile for running all (except MQTT Broker) on one host will be part of this repo soon.
 
+## Configuration
+configuration is done in the .env file, should be created in this directory, listed are the parameters
+- DOMAIN the domain of this instance
+- PORT the port which serves the web frontend
+- HTTPSPORT the https port which serves the web frontend
+- DATABASE_URL database url, for readonly access without credentials
+- MONGODB_URL database url with access creds
+- PRIVKEPATH, CERTFILEPATH, CAFILEPATH params needed for https negotiation, containing filepaths
+- Example:
+```
+DOMAIN=freetwin.de
+PORT=3456
+HTTPSPORT=3457
+DATABASE_URL=mongodb://localhost:27017/IoT-Devices
+MONGODB_URL=mongodb://dbuser:dbpassword@127.0.0.1:27017/IoT-Devices
+PRIVKEYPATH=/etc/letsencrypt/live/freetwin.de/privkey.pem
+CERTFILEPATH=/etc/letsencrypt/live/freetwin.de/cert.pem
+CAFILEPATH=/etc/letsencrypt/live/freetwin.de/chain.pem
+```
+
 ## Endpoints
 
 - **/post** - endpoint for retrieving and saving model to DB (POST)
