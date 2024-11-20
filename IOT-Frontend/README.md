@@ -37,6 +37,7 @@ PRIVKEYPATH=/etc/letsencrypt/live/freetwin.de/privkey.pem
 CERTFILEPATH=/etc/letsencrypt/live/freetwin.de/cert.pem
 CAFILEPATH=/etc/letsencrypt/live/freetwin.de/chain.pem
 ```
+- some content-related config such as infotext is configured through the web interface
 
 ## Endpoints
 
