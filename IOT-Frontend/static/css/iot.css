@@ -250,7 +250,7 @@ input.error {
 	/* background: #fc0; */
 	transition: all 0.3s ease-out;
 }
-#dokBtn {
+#dokBtn, #measureBtn {
 	background: url(../imgs/textdokument.png) center no-repeat rgba(200,200,200,0.95);
 	width: 40px;
 	height: 40px;
@@ -490,7 +490,7 @@ input.error {
 	font-size: 16px;
 }
 /* info layer */
-#infolayersuper {
+#infolayersuper,#measurelayersuper {
 	position: fixed;
 	right: 0;
 	top: 0;
@@ -713,6 +713,136 @@ button, #burger {
 .open #burger b, .show #dokBtn s {
     transform: translateY(-9px) rotate(-45deg);
 }
+/* Measure layer */
+#measurelayer {
+	position: relative;
+	height: 260px;
+	/* overflow: hidden; */
+	width: 200px;
+}
+#measurelayersuper.open {
+	right: 200px;
+}
+#measureBtn {
+	bottom: auto;
+	top: 50px;
+	border-radius: 10px 0 0 10px;
+	background-image: url(../imgs/measure.png);
+}
+#measureBtnCls {
+	position: absolute;
+	bottom: 0;
+	z-index: 2;
+	left: calc(50% - 40px);
+	width: 80px;
+	height: 24px;
+	font-size: 14px;
+	line-height: 20px;
+	cursor: pointer;
+}
+#measuretext {
+	font-size: 12px;
+	background: #ccc;
+	padding: 10px 10px 60px 10px;
+	position: absolute;
+	top: 50px;
+	border-radius: 0 0 0 20px;
+	z-index: 2;
+	transition: width 0.2s ease-out;
+}
+.open #measuretext {
+	width: 180px;
+}
+#measuretext h3 {
+	margin-bottom: 5px;
+}
+#measuretext table {
+	margin-bottom: 10px;
+}
+#measuretext table td {
+	font-size: 12px;
+	vertical-align: middle;
+	line-height: 12px;
+}
+#measuretext table td:first-child {
+	font-size: 16px;
+	font-weight: bold;
+	text-shadow: 0 0 2px #000;
+	padding-right: 7px;
+}
+#measuretext table .ddrow td:first-child {
+	text-shadow: none;
+	font-size: 14px;
+	padding-top: 5px;
+}
+.hrow {
+	font-weight: bold;
+	text-align: center;
+}
+.ddrow input {
+	color: #fff;
+}
+.msrInp {
+	width: 46px;
+	background: #000;
+	font-size: 12px;
+	font-weight: bold;
+	text-align: right;
+}
+.zrow {
+	color: #00f;
+}
+.yrow {
+	color: #0f0;
+}
+.xrow {
+	color: #f00;
+}
+
+.zrow input {
+	color: #77f;
+}
+.yrow input {
+	color: #7f7;
+}
+.xrow input {
+	color: #f77;
+}
+
+.col1,.col2,.col3 {
+    opacity: 0;
+    transition: opacity 0.2s ease-out;
+}
+.open .col1 {
+    opacity: 1;
+}
+.step1 .col2 {
+    opacity: 1;
+}
+.step2 .col3 {
+    opacity: 1;
+}
+#msrSetP2Btn, .step1 #msrSetP1Btn, .step2 #msrSetP2Btn {
+    display:none;
+}
+.step1 #msrSetP2Btn, .step1.step2 #msrSetP1Btn {
+    display:block;
+}
+.step1.step2 #msrSetP2Btn {
+    display:none;
+}
+
+/* End Measure layer */
+
+/* compass */
+#compass {
+	width: 200px;
+	height: 200px;
+	position: fixed;
+	right: 20px;
+	bottom: 5%;
+}
+
 @media screen and (max-width: 1000px) {
     .deviceNavi {
 	width: 35%;

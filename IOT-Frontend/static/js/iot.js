@@ -3,13 +3,21 @@ import { ArcballControls } from 'three/addons/controls/ArcballControls.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-console.log('Welcome to the IOT-System-Frontend of FH Münster');
+console.log('Welcome to the IOT-System-Frontend of FH Münster',cur3db64);
 const scene = new THREE.Scene();
+const scene2 = new THREE.Scene();
 const config = [];
 let playground = null;
 let aktdevice = null;
 let lastdevice = null;
 let HTMLready = false;
+
+/* Measurement vars */
+let measuremode = false;
+const measurep = [];
+const meascurs = [];
+let aktmeasure = 0;
+
 const HEADER_HIDE_AFTER = 20000; // time until header is hidden
 
 const url = 'wss://iot.fh-muenster.de/mqtt'
@@ -200,6 +208,11 @@ window.onload = ( loadev ) => {
 
     scene.background = new THREE.Color( '#000000' );
 
+    /* small view */
+    const smcam = new THREE.PerspectiveCamera( 27, 300/200, 1, 3500 );
+    smcam.position.z = 200;
+    smcam.position.x = 200;
+    smcam.position.y = 100;
     const camera = new THREE.PerspectiveCamera( 27, width/height, 1, 3500 );
     camera.position.z = 200;
     camera.position.x = 200;
@@ -208,10 +221,46 @@ window.onload = ( loadev ) => {
 
     const renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setSize( width, height );
-    renderer.setAnimationLoop( animation );
-    playground.appendChild( renderer.domElement );
+    const smrenderer = new THREE.WebGLRenderer( { antialias: true, alpha: true } );
+    smrenderer.setSize( 300, 200 );
 
+    renderer.setAnimationLoop( animation );
+    smrenderer.setAnimationLoop( smanimation );
+    playground.appendChild( renderer.domElement );
+    document.getElementById('compass').appendChild( smrenderer.domElement );
     
+    const gltfloader = new GLTFLoader();
+    gltfloader.load( cur3db64, ( glb ) => {
+	const mesh = glb.scene;
+	mesh.rotation.x+=Math.PI/2;
+	mesh.scale.set(2,2,2);
+	scene2.add( mesh );
+    });
+
+    /* Achsenkreuz */
+/*    const geox = new THREE.BoxGeometry( 100,10,10 );
+    const geoy = new THREE.BoxGeometry( 10,100,10 );
+    const geoz = new THREE.BoxGeometry( 10,10,100 );
+    const matx = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const maty = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const matz = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+    const mx = new THREE.Mesh( geox, matx );
+    scene2.add(mx);
+    const my = new THREE.Mesh( geoy, maty );
+    scene2.add(my);
+    const mz = new THREE.Mesh( geoz, matz );
+    scene2.add(mz);
+    */
+    const amb = new THREE.AmbientLight( 0xffffff );    
+    scene2.add( amb );
+/*    const smlight1 = new THREE.DirectionalLight( 0xffffff, 2.5 );
+    smlight1.position.set( 200, 100, 100 );
+    scene2.add( smlight1 );
+    const smlight2 = new THREE.DirectionalLight( 0xffffff, 0.01 );
+    smlight1.position.set( -200, 100, -100 );
+    scene2.add( smlight1 );
+    */
+
     let controls;/* = new ArcballControls( camera, renderer.domElement, scene );
     controls.target.set( 0, 0, 0 );
     controls.setGizmosVisible( false );
@@ -662,6 +711,9 @@ window.onload = ( loadev ) => {
 	renderer.render( scene, camera );
 
     }
+    function smanimation( time ) {
+	smrenderer.render( scene2, camera );
+    }
 
     let MOUSEDOWN = false;
     let MOUSESTART = { x : 0, y : 0 };
@@ -738,16 +790,28 @@ window.onload = ( loadev ) => {
 	raycaster.setFromCamera( pointer, camera );
 	const intersects = raycaster.intersectObjects( mainmesh.children );
 	if ( intersects.length > 0 ) {
-	    if ( intersects[0].object.type !== 'AxesHelper'  ) {
+	    if ( measuremode ) {
+		let o=intersects[0];
+		const idpre='msrInpP'+(aktmeasure+1);
+		document.getElementById(idpre+'X').value=o.point.x.toFixed(2);
+		document.getElementById(idpre+'Y').value=o.point.y.toFixed(2);
+		document.getElementById(idpre+'Z').value=o.point.z.toFixed(2);
+		if ( meascurs[aktmeasure] ) {
+		    meascurs[aktmeasure].position.set( o.point.x, o.point.y, o.point.z );
+		}
+		console.log('intersect',intersects[0]);
+	    }
+	    else if ( intersects[0].object.type !== 'AxesHelper'  ) {
 		let o3 = intersects[0].object;
 		lolightParts();
 //		console.log('intersects',xp,yp,o3);
 		if ( ! o3.userData.type ) {
 		    while ( o3.parent && ! o3.userData.type ) o3 = o3.parent;
 		    o3 = o3.parent;
-		}
+		}		
+		if ( !o3 ) return;
 		if ( o3.userData.type ) {
-		    console.log('highlight part', o3)
+//		    console.log('highlight part', o3)
 		    if ( o3.userData.type === 'part' ) {
 			hilightPart( o3 );
 			const ind = o3.userData.index;
@@ -1030,6 +1094,12 @@ window.onload = ( loadev ) => {
 	    }
 	}
 	controls = new ArcballControls( camera, renderer.domElement, scene );
+	controls.addEventListener( 'change', (ev) => {
+	    smcam.position.set( camera.position.x,camera.position.y,camera.position.z );
+	    smcam.rotation.set( camera.rotation.x,camera.rotation.y,camera.rotation.z );
+	    smcam.updateProjectionMatrix();
+//	    console.log('controlschange',camera,smcam);
+	});
 	controls.target.set( 0, 0, 0 );
 	controls.setGizmosVisible( false );
 	//    controls.enableGrid = true;
@@ -1076,6 +1146,15 @@ window.onload = ( loadev ) => {
 	camera.rotation.y = akt.rotation.y;
 	camera.rotation.z = akt.rotation.z;
 	camera.updateProjectionMatrix();
+
+	smcam.position.x = akt.position.x;
+	smcam.position.y = akt.position.y;
+	smcam.position.z = akt.position.z;
+//	smcam.lookAt(controls.target);
+	smcam.rotation.x = akt.rotation.x;
+	smcam.rotation.y = akt.rotation.y;
+	smcam.rotation.z = akt.rotation.z;
+	smcam.updateProjectionMatrix();
 	//controls.update();
 //	constrols.saveState();
 	console.log('restorecampos',akt);
@@ -1236,6 +1315,12 @@ window.onload = ( loadev ) => {
 	};
 	xhr.send();
     }
+
+    const unpinData = () => {
+	datapinned = false;
+	document.body.classList.remove('datapinned');
+	document.getElementById('liveData').classList.remove('show');
+    }
     const pinData = () => {
 //	console.log('pindevice',aktdevice);
 	if ( !aktdevice || aktdevice === '' ) return;
@@ -1259,8 +1344,14 @@ window.onload = ( loadev ) => {
 //	    console.log('mousemove',x,y);
 	    mouseOver3D( x, y );
 	};
-	playground.onclick = ( ev ) => {
-	    pinData();
+	playground.onmousedown = ( ev ) => {
+	    if ( measuremode ) {
+		setMeasurePoint();
+		ev.stopPropagation();
+		ev.preventDefault();
+		ev.stopImmediatePropagation();
+	    }
+	    else pinData();
 	};
 
 	/*	playground.onmousedown = ( ev ) => {
@@ -1405,7 +1496,8 @@ window.onload = ( loadev ) => {
 	if ( !aktdevice ) return;
 	const grdom = document.getElementById('grafana');
 	const grdata = getGrafanaData( aktdevice );
-//	const grurl = grdata.grafana.url;
+	if ( !grdata ) return;
+	//	const grurl = grdata.grafana.url;
 	const grurl = '/public-dashboards/'+grdata.grafana.pubtoken;
 	grdom.insertAdjacentHTML( 'beforeend', '<iframe width="100%" height="480" src="https://freetwin.de:3000'+grurl+'?kiosk" />' );
 //	console.log('renderGrafana',aktdevice,grdata);
@@ -1442,6 +1534,63 @@ window.onload = ( loadev ) => {
 //	composer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
 
     }
+    const finishMeasure = () => {
+	if ( meascurs.length < 2 ) return;
+	const pos0 = meascurs[0].position;
+	const pos1 = meascurs[1].position;
+	const distx = Math.abs(pos1.x - pos0.x);
+	const disty = Math.abs(pos1.y - pos0.y);
+	const distz = Math.abs(pos1.z - pos0.z);
+	const ddist = pos0.distanceTo(pos1);
+	document.getElementById('msrInpDX').value=distx.toFixed(2);
+	document.getElementById('msrInpDY').value=disty.toFixed(2);
+	document.getElementById('msrInpDZ').value=distz.toFixed(2);
+	document.getElementById('msrInpDD').value=ddist.toFixed(2);
+	aktmeasure = 0;
+	console.log('finish Measurement',distx,disty,distz,ddist);
+    }
+    const setMeasurePoint = () => {
+	measuremode = false;
+	measurep[aktmeasure] = {
+	    x: meascurs[aktmeasure].position.x,
+	    y: meascurs[aktmeasure].position.y,
+	    z: meascurs[aktmeasure].position.z,
+	}
+	const sup = document.getElementById('measurelayersuper');
+	aktmeasure++;
+	sup.classList.add( 'step'+aktmeasure );
+	if ( aktmeasure === 2 ) finishMeasure();
+    }
+    const startMeasuring = () => {
+	unpinData();
+	measuremode = true;
+	document.body.classList.add('measuring');
+	const curscols = [ 0xffcccc, 0xccccff ];
+	const cur = new THREE.Mesh(
+	    new THREE.SphereGeometry( 5 ),
+	    new THREE.MeshBasicMaterial({ color: curscols[aktmeasure] })
+	);
+	scene.add(cur);
+	meascurs.push( cur );
+    }
+    const endMeasuring = () => {	
+	measuremode = false;
+	const sup = document.getElementById('measurelayersuper');
+	sup.classList.remove('step1');
+	sup.classList.remove('step2');
+	sup.querySelectorAll('.msrInp').forEach( (o,i)=> {
+	    o.value='';
+	});
+	meascurs.forEach( ( o, i ) => {
+	    if ( !o ) return;
+	    o.geometry.dispose();
+	    o.material.dispose();
+	    scene.remove( o );
+	});
+	meascurs.splice(0);
+	document.body.classList.remove('measuring');
+	
+    }
     const initButtonEvents = () => {
 	document.getElementById( 'edtBtn' ).onclick = ( ev ) => {
 	    if ( ev.target.classList.contains('akt') ) return;
@@ -1474,6 +1623,31 @@ window.onload = ( loadev ) => {
 	    raiseDok();
 	    document.getElementById( 'dokSuper' ).classList.add('show');
 	    //	    console.log('dok',id, doks);
+	};
+	document.getElementById( 'measureBtn' ).onclick = ( ev ) => {
+	    const mlr = document.getElementById( 'measurelayersuper' );
+	    if ( mlr.classList.contains('open') ) {
+		mlr.classList.remove('open');
+		endMeasuring();
+		return;
+	    }
+	    else {
+		mlr.classList.add('open');
+		return;
+	    }
+	    //	    console.log('dok',id, doks);
+	};
+	document.getElementById( 'measureBtnCls' ).onclick = ( ev ) => {
+	    document.getElementById( 'measurelayersuper' ).classList.remove('open');
+	    endMeasuring();
+	    //	    console.log('dok',id, doks);
+	};
+	document.getElementById( 'msrSetP1Btn' ).onclick = ( ev ) => {
+	    endMeasuring();
+	    startMeasuring();
+	};
+	document.getElementById( 'msrSetP2Btn' ).onclick = ( ev ) => {
+	    startMeasuring();
 	};
 	document.getElementById( 'wireBtn' ).onclick = ( ev ) => {
 	    const domo = ev.target;

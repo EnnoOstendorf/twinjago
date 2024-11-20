@@ -14,6 +14,8 @@
 	</script>
 	<!--script src="js/three.min.js"></script-->
 	<script src="js/mqtt.min.js"></script>
+	<script src="3d/3d-achsen.js"></script>
+	<script src="3d/3d-cursor.js"></script>
 	<script type="module" src="js/iot.js"></script>
 	<link rel="stylesheet" type="text/css" href="css/iot.css" />
     </head>
@@ -54,6 +56,7 @@
 	  </div>
 	  <div id="tooltip">
 	  </div>
+	  <div id="compass"></div>
 	</div>
 	<div id="dokSuper">
 	  <div id="dokLyr">
@@ -83,6 +86,24 @@
 	  </div>
 	  <button id="infoBtnCls" title="Info schließen">Schließen</button>
 	  <button id="infoBtn" title="Über diese Seite">i</button>
+	</div>	  
+      </div>
+      <div id="measurelayersuper">
+	<div id="measurelayer">
+	  <div id="measuretext">
+	    <h3>Distanz Messen</h3>
+	    <table>
+	      <tr class="hrow"><td></td><td class="col1">Start</td><td class="col2">Ziel</td><td class="col3">Distanz</td></tr>
+	      <tr class="xrow"><td>X</td><td><input class="msrInp col1" id="msrInpP1X"></td><td><input class="msrInp col2" id="msrInpP2X"></td><td><input class="msrInp col3" id="msrInpDX"></td></tr>
+	      <tr class="yrow"><td>Y</td><td><input class="msrInp col1" id="msrInpP1Y"></td><td><input class="msrInp col2" id="msrInpP2Y"></td><td><input class="msrInp col3" id="msrInpDY"></td></tr>
+	      <tr class="zrow"><td>Z</td><td><input class="msrInp col1" id="msrInpP1Z"></td><td><input class="msrInp col2" id="msrInpP2Z"></td><td><input class="msrInp col3" id="msrInpDZ"></td></tr>
+	      <tr class="ddrow"><td colspan="4" class="col3">Direktdistanz: <input class="msrInp" id="msrInpDD"> </td></tr>
+	    </table>
+	    <button id="msrSetP1Btn" title="Startpunkt der Messung setzen">Start</button>
+	    <button id="msrSetP2Btn" title="Zielpunkt der Messung setzen">Ziel</button>	    
+	  </div>
+	  <button id="measureBtnCls" title="Messbox schließen">Schließen</button>
+	  <button id="measureBtn" title="Distanz messen"></button>
 	</div>	  
       </div>
       <div id="serverstats">
