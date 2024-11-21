@@ -839,8 +839,8 @@ button, #burger {
 	width: 200px;
 	height: 200px;
 	position: fixed;
-	right: 20px;
-	bottom: 5%;
+	right: 50px;
+	bottom: 2%;
 }
 
 @media screen and (max-width: 1000px) {

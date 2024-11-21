@@ -11,6 +11,7 @@ let playground = null;
 let aktdevice = null;
 let lastdevice = null;
 let HTMLready = false;
+let axiso3 = null;
 
 /* Measurement vars */
 let measuremode = false;
@@ -234,6 +235,7 @@ window.onload = ( loadev ) => {
 	const mesh = glb.scene;
 	mesh.rotation.x+=Math.PI/2;
 	mesh.scale.set(2,2,2);
+	axiso3=mesh;
 	scene2.add( mesh );
     });
 
@@ -712,7 +714,7 @@ window.onload = ( loadev ) => {
 
     }
     function smanimation( time ) {
-	smrenderer.render( scene2, camera );
+	smrenderer.render( scene2, smcam );
     }
 
     let MOUSEDOWN = false;
@@ -1080,6 +1082,40 @@ window.onload = ( loadev ) => {
 	to.classList.remove('show');
 	window.setTimeout( () => { to.classList.remove('on'); }, 300 );
     }
+    const calcSMCamPos = () => {
+	// This calculates the camera for the small axis cross.
+	// it uses an own renderer, scene and camera, but the camera should
+	// be syncronized to the main scene camera.
+	// First copy the camera orientation to the small camera
+	let x=new THREE.Vector3();
+	camera.getWorldDirection(x);
+	if ( Math.abs(x.z) < 0.02 ) return;
+	console.log('world dir',x);
+	smcam.position.set( camera.position.x,camera.position.y,camera.position.z );
+	smcam.rotation.set( camera.rotation.x,camera.rotation.y,camera.rotation.z );
+	// To find out the panning of the camera, calculate the hit point of the direction
+	// vector (where the camera is looking to) to the x,y plane, where z is 0
+	let cp = camera.position;
+	let y=new THREE.Vector3(cp.x,cp.y,cp.z);
+	// length is direction z divided by position z 
+	let scl = cp.z / x.z;
+	// multiply direction by length, negative to get the 0 values
+	x.multiplyScalar( -scl );
+	// finally add the result to the position to get the translation, the hit point
+	y.add( x );
+	y.multiplyScalar( -1 );
+	// translate the small camera to look at 0/0, which is the negative hit point
+	smcam.position.add(y);
+	// now we have to correct the scale, to make the cross have the same size,
+	// independent of the camera zoom
+	const zdist=smcam.position.distanceTo( axiso3.position );
+	// normalize the distance to 400, which is actually a good value for this Axis glb
+	let zscale= 400/zdist;	
+	// the camera position is corrected by the normalized value
+	smcam.position.multiplyScalar(zscale);
+	// finally update the small cameras projection matrix
+	smcam.updateProjectionMatrix();	
+    }
     const setControls = () => {
 	const ocampo = {
 	    'position' : {
@@ -1095,10 +1131,9 @@ window.onload = ( loadev ) => {
 	}
 	controls = new ArcballControls( camera, renderer.domElement, scene );
 	controls.addEventListener( 'change', (ev) => {
-	    smcam.position.set( camera.position.x,camera.position.y,camera.position.z );
-	    smcam.rotation.set( camera.rotation.x,camera.rotation.y,camera.rotation.z );
-	    smcam.updateProjectionMatrix();
-//	    console.log('controlschange',camera,smcam);
+	    // sync the small camera for the axis triade on change of the main camera
+	    calcSMCamPos();
+	    //	    let ncp = 
 	});
 	controls.target.set( 0, 0, 0 );
 	controls.setGizmosVisible( false );
@@ -1147,14 +1182,7 @@ window.onload = ( loadev ) => {
 	camera.rotation.z = akt.rotation.z;
 	camera.updateProjectionMatrix();
 
-	smcam.position.x = akt.position.x;
-	smcam.position.y = akt.position.y;
-	smcam.position.z = akt.position.z;
-//	smcam.lookAt(controls.target);
-	smcam.rotation.x = akt.rotation.x;
-	smcam.rotation.y = akt.rotation.y;
-	smcam.rotation.z = akt.rotation.z;
-	smcam.updateProjectionMatrix();
+	calcSMCamPos();
 	//controls.update();
 //	constrols.saveState();
 	console.log('restorecampos',akt);
