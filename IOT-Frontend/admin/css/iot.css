@@ -156,12 +156,27 @@ body {
 	margin: 0 10px 0 0;
 }
 
+#Measurescale {
+	position: absolute;
+	right: 0;
+	top: 0;
+}
+#Measurescale h3, #Measurescale p {
+	margin: 0;
+}
+#mscale {
+	width: 50px;
+	text-align: right;
+}
+#munit {
+	width: 40px;
+}
 /* editor */
 #deviceName {
 	width: 70%;
 	font-size: 24px;
 	margin: 0 0 0 20px;
-	max-width: 500px;
+	max-width: 400px;
 }
 #deviceCat {
 	margin: 0 11px;

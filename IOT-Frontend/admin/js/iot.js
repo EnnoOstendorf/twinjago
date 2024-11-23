@@ -1604,6 +1604,8 @@ window.onload = ( loadev ) => {
 	document.getElementById('partsinner').replaceChildren();
 	document.getElementById('signsinner').replaceChildren();
 	document.getElementById('deviceName').value = '';
+	document.getElementById('mscale').value = '';
+	document.getElementById('munit').value = 'Meter';
 	
 	//	document.getElementById('deviceID').value = '';
 	document.getElementById('dok1txt').value = '';
@@ -1829,6 +1831,7 @@ window.onload = ( loadev ) => {
 		    document.getElementById( 'DokumenteBtn' ).classList.add('disabled');
 		    document.getElementById( 'RoutingBtn' ).classList.add('disabled');
 		    document.getElementById( 'devType' ).innerHTML = 'Basic';
+		    document.getElementById( 'devStgHead' ).classList.add('basic');
 		}
 		else {
 		    isbasic = false;
@@ -1838,6 +1841,13 @@ window.onload = ( loadev ) => {
 		    document.getElementById('saveDeviceBtn').classList.remove('disabled');
 		    document.getElementById( 'DokumenteBtn' ).classList.remove('disabled');
 		    document.getElementById( 'devType' ).innerHTML = 'Twin';
+		    document.getElementById( 'devStgHead' ).classList.remove('basic');
+		}
+		if ( json.mscale ) {
+		    document.getElementById('mscale').value = json.mscale;
+		    if ( json.munit ) {
+			document.getElementById('munit').value = json.munit;
+		    }
 		}
 		console.log('loaded device',json);
 		hideThrobber();
@@ -1989,6 +1999,8 @@ window.onload = ( loadev ) => {
 	showThrobber();
 	const devicename = devicenameo.value;
 	const devicecat = devicecato.value;
+	const devicemscale = document.getElementById('mscale').value;
+	const devicemunit = document.getElementById('munit').value;
 	const devicedoks = [
 	    document.getElementById('dok1txt').value,
 	    document.getElementById('dok2txt').value,
@@ -1996,6 +2008,10 @@ window.onload = ( loadev ) => {
 	];
 	setCamStart( camera );
 	let devdata = { 'name': devicename, 'category': devicecat, 'type': type, 'camstart' : camstart, 'doks': devicedoks, 'parts': [], 'signs': [], 'files' : [], 'links' : [], 'routes' : [] };
+	if ( devicemscale && devicemscale != '' ) {
+	    devdata.mscale = devicemscale;
+	    devdata.munit = devicemunit;
+	};
 	let basiccount = 0;
 	for ( let i=0; i<parts.length; i++ ) {	    
 	    let apa = parts[i];	    

@@ -131,6 +131,8 @@ router.post('/post', async (req, res) => {
         name: o.name,
         category: o.category,
 	type: o.type,
+	mscale: o.mscale,
+	munit: o.munit,
         parts: o.parts,
         signs: o.signs,
         files: o.files,
@@ -202,15 +204,13 @@ router.post('/confpost', async (req, res) => {
     // Deactivated DB creation for test purposes
     const o=req.body;
     const data = new confModel({
-	info: o.infotext,
-	deftwin: o.deftwin
+	info: o.infotext
     })
 
     try {
         const dataToSave = await data.save();
 	config.push({
-	    info: o.infotext,
-	    deftwin: o.deftwin
+	    info: o.infotext
 	});
 //	console.log('dataToSave',dataToSave);
         res.status(200).json(dataToSave)

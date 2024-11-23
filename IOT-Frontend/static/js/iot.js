@@ -3,7 +3,7 @@ import { ArcballControls } from 'three/addons/controls/ArcballControls.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-console.log('Welcome to the IOT-System-Frontend of FH Münster',cur3db64);
+console.log('Welcome to the IOT-System-Frontend of FH Münster',axis3db64);
 const scene = new THREE.Scene();
 const scene2 = new THREE.Scene();
 const config = [];
@@ -12,12 +12,14 @@ let aktdevice = null;
 let lastdevice = null;
 let HTMLready = false;
 let axiso3 = null;
+let cur3d1,cur3d2 = null;
 
 /* Measurement vars */
 let measuremode = false;
 const measurep = [];
 const meascurs = [];
 let aktmeasure = 0;
+let mscale,munit;
 
 const HEADER_HIDE_AFTER = 20000; // time until header is hidden
 
@@ -231,12 +233,25 @@ window.onload = ( loadev ) => {
     document.getElementById('compass').appendChild( smrenderer.domElement );
     
     const gltfloader = new GLTFLoader();
-    gltfloader.load( cur3db64, ( glb ) => {
+    gltfloader.load( axis3db64, ( glb ) => {
 	const mesh = glb.scene;
 	mesh.rotation.x+=Math.PI/2;
 	mesh.scale.set(2,2,2);
 	axiso3=mesh;
 	scene2.add( mesh );
+    });
+    const stlloader = new STLLoader();
+    const processCur3D = ( geom, col ) => {
+	const material = new THREE.MeshPhongMaterial( { color: col, fog: false, flatShading: true } );
+	const mesh = new THREE.Mesh( geom, material );
+	mesh.userData.type = 'cursor';
+	mesh.visible=false;
+	scene.add(mesh);
+	return mesh;
+    }
+    stlloader.load( cur3db64, ( geometry ) => {
+	cur3d1 = processCur3D( geometry, 0x00ff00 );
+	cur3d2 = processCur3D( geometry, 0xff0000 );
     });
 
     /* Achsenkreuz */
@@ -710,6 +725,12 @@ window.onload = ( loadev ) => {
 //	    mainmesh.rotation.x = time / 2000;
 //	    mainmesh.rotation.y = time / 1000;
 	}
+	if ( measuremode ) {
+	    let aktcur = aktmeasure == 0 ? cur3d1 : cur3d2;
+	    aktcur.rotation.x += 0.05;
+	    aktcur.rotation.y += 0.05;
+//	    aktcur.rotation.z += 0.001;
+	}
 	renderer.render( scene, camera );
 
     }
@@ -1116,6 +1137,15 @@ window.onload = ( loadev ) => {
 	// finally update the small cameras projection matrix
 	smcam.updateProjectionMatrix();	
     }
+    const calc3DCursorSize = () => {
+	// This calculates the size of the 3D cursor depending of the camera distance to scene, the zoom
+	const zdist=camera.position.distanceTo( axiso3.position );
+	// normalize the distance to 400, which is actually a good value for this cursor size
+	let zscale= zdist/200;
+	cur3d1.scale.set(zscale,zscale,zscale);
+	console.log('calc3DCursorSize',zdist,zscale);
+	cur3d2.scale.set(zscale,zscale,zscale);
+    }
     const setControls = () => {
 	const ocampo = {
 	    'position' : {
@@ -1133,6 +1163,7 @@ window.onload = ( loadev ) => {
 	controls.addEventListener( 'change', (ev) => {
 	    // sync the small camera for the axis triade on change of the main camera
 	    calcSMCamPos();
+	    calc3DCursorSize();
 	    //	    let ncp = 
 	});
 	controls.target.set( 0, 0, 0 );
@@ -1261,6 +1292,13 @@ window.onload = ( loadev ) => {
 		else {
 		    initCamPos();
 		}
+		if ( json.mscale ) {
+		    mscale = json.mscale;
+		    if ( json.munit ) {
+			munit = json.munit;
+		    }
+		}
+
 		setControls();
 		hideThrobber();
 		if ( cb && typeof cb === 'function' ) cb();
@@ -1564,18 +1602,21 @@ window.onload = ( loadev ) => {
     }
     const finishMeasure = () => {
 	if ( meascurs.length < 2 ) return;
+	let tscale = mscale.replace( /\,/g, '.' );
+	tscale = parseFloat( tscale );
+	if ( isNaN( tscale ) ) tscale = 1;
 	const pos0 = meascurs[0].position;
 	const pos1 = meascurs[1].position;
-	const distx = Math.abs(pos1.x - pos0.x);
-	const disty = Math.abs(pos1.y - pos0.y);
-	const distz = Math.abs(pos1.z - pos0.z);
-	const ddist = pos0.distanceTo(pos1);
+	const distx = Math.abs(pos1.x - pos0.x) * tscale;
+	const disty = Math.abs(pos1.y - pos0.y) * tscale;
+	const distz = Math.abs(pos1.z - pos0.z) * tscale;
+	const ddist = pos0.distanceTo(pos1) * tscale;
 	document.getElementById('msrInpDX').value=distx.toFixed(2);
 	document.getElementById('msrInpDY').value=disty.toFixed(2);
 	document.getElementById('msrInpDZ').value=distz.toFixed(2);
 	document.getElementById('msrInpDD').value=ddist.toFixed(2);
 	aktmeasure = 0;
-	console.log('finish Measurement',distx,disty,distz,ddist);
+	console.log('finish Measurement',mscale,tscale,munit,distx,disty,distz,ddist);
     }
     const setMeasurePoint = () => {
 	measuremode = false;
@@ -1593,13 +1634,17 @@ window.onload = ( loadev ) => {
 	unpinData();
 	measuremode = true;
 	document.body.classList.add('measuring');
-	const curscols = [ 0xffcccc, 0xccccff ];
-	const cur = new THREE.Mesh(
-	    new THREE.SphereGeometry( 5 ),
-	    new THREE.MeshBasicMaterial({ color: curscols[aktmeasure] })
-	);
-	scene.add(cur);
-	meascurs.push( cur );
+	if ( munit ) document.querySelectorAll( '.unit' ).forEach( ( o, i ) => {
+	    o.innerHTML = munit;
+	});
+	if ( aktmeasure === 0 ) {
+	    cur3d1.visible=true;
+	    meascurs.push( cur3d1 );
+	}
+	else if ( aktmeasure === 1 ) {
+	    cur3d2.visible=true;
+	    meascurs.push( cur3d2 );
+	}
     }
     const endMeasuring = () => {	
 	measuremode = false;
@@ -1610,11 +1655,9 @@ window.onload = ( loadev ) => {
 	    o.value='';
 	});
 	meascurs.forEach( ( o, i ) => {
-	    if ( !o ) return;
-	    o.geometry.dispose();
-	    o.material.dispose();
-	    scene.remove( o );
+	    o.visible=false;
 	});
+	aktmeasure=0;
 	meascurs.splice(0);
 	document.body.classList.remove('measuring');
 	

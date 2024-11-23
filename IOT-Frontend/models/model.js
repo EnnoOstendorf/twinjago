@@ -17,6 +17,14 @@ const dataSchema = new mongoose.Schema({
         required: false,
         type: String
     },
+    mscale: {
+        required: false,
+        type: String
+    },
+    munit: {
+        required: false,
+        type: String
+    },
     doks: {
         required: false,
         type: Array

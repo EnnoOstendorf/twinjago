@@ -718,10 +718,10 @@ button, #burger {
 	position: relative;
 	height: 260px;
 	/* overflow: hidden; */
-	width: 200px;
+	width: 240px;
 }
 #measurelayersuper.open {
-	right: 200px;
+	right: 240px;
 }
 #measureBtn {
 	bottom: auto;
@@ -751,7 +751,7 @@ button, #burger {
 	transition: width 0.2s ease-out;
 }
 .open #measuretext {
-	width: 180px;
+	width: 240px;
 }
 #measuretext h3 {
 	margin-bottom: 5px;
