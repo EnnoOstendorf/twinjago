@@ -822,7 +822,7 @@ window.onload = ( loadev ) => {
 		if ( meascurs[aktmeasure] ) {
 		    meascurs[aktmeasure].position.set( o.point.x, o.point.y, o.point.z );
 		}
-		console.log('intersect',intersects[0]);
+//		console.log('intersect',intersects[0]);
 	    }
 	    else if ( intersects[0].object.type !== 'AxesHelper'  ) {
 		let o3 = intersects[0].object;
@@ -944,6 +944,10 @@ window.onload = ( loadev ) => {
 	aktmesh = null;
 	aktpin = null;
 	aktdevice = null;
+	mscale ='';
+	munit = '';
+	endMeasuring();
+	document.getElementById( 'measurelayersuper' ).classList.remove('open');
 	parts.splice( 0 );
 	routes.splice( 0 );
 	signs.splice( 0 );
@@ -1602,7 +1606,8 @@ window.onload = ( loadev ) => {
     }
     const finishMeasure = () => {
 	if ( meascurs.length < 2 ) return;
-	let tscale = mscale.replace( /\,/g, '.' );
+	let tscale = mscale ? mscale.replace( /\,/g, '.' ) : '1.0';
+	console.log('tscale',tscale);
 	tscale = parseFloat( tscale );
 	if ( isNaN( tscale ) ) tscale = 1;
 	const pos0 = meascurs[0].position;
@@ -1653,6 +1658,9 @@ window.onload = ( loadev ) => {
 	sup.classList.remove('step2');
 	sup.querySelectorAll('.msrInp').forEach( (o,i)=> {
 	    o.value='';
+	});
+	document.querySelectorAll( '.unit' ).forEach( ( o, i ) => {
+	    o.innerHTML = '';
 	});
 	meascurs.forEach( ( o, i ) => {
 	    o.visible=false;

@@ -1498,6 +1498,9 @@ window.onload = ( loadev ) => {
 	document.getElementById('pinx').value=obj3d.position.x;
 	document.getElementById('piny').value=obj3d.position.y;
 	document.getElementById('pinz').value=obj3d.position.z;
+	document.getElementById('pinsclx').value=obj3d.scale.x;
+	document.getElementById('pinscly').value=obj3d.scale.y;
+	document.getElementById('pinsclz').value=obj3d.scale.z;
 	document.getElementById('pinrotx').value=obj3d.rotation.x;
 	document.getElementById('pinroty').value=obj3d.rotation.y;
 	document.getElementById('pinrotz').value=obj3d.rotation.z;
@@ -3042,6 +3045,9 @@ window.onload = ( loadev ) => {
 		else if ( ev.target.id === 'pinx' ) aktpin.obj3d.position.x = parseFloat( ev.target.value );
 		else if ( ev.target.id === 'piny' ) aktpin.obj3d.position.y = parseFloat( ev.target.value );
 		else if ( ev.target.id === 'pinz' ) aktpin.obj3d.position.z = parseFloat( ev.target.value );
+		else if ( ev.target.id === 'pinsclx' ) aktpin.obj3d.scale.x = parseFloat( ev.target.value );
+		else if ( ev.target.id === 'pinscly' ) aktpin.obj3d.scale.y = parseFloat( ev.target.value );
+		else if ( ev.target.id === 'pinsclz' ) aktpin.obj3d.scale.z = parseFloat( ev.target.value );
 		else if ( ev.target.id === 'pinrotx' ) aktpin.obj3d.rotation.x = parseFloat( ev.target.value );
 		else if ( ev.target.id === 'pinroty' ) aktpin.obj3d.rotation.y = parseFloat( ev.target.value );
 		else if ( ev.target.id === 'pinrotz' ) aktpin.obj3d.rotation.z = parseFloat( ev.target.value );
