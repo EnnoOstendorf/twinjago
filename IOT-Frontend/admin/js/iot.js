@@ -267,6 +267,7 @@ window.onload = ( loadev ) => {
     let links = [];
     let signs = [];
     let routes = [];
+    let routespre = [];
 
     let isbasic = false;
     
@@ -743,7 +744,7 @@ window.onload = ( loadev ) => {
 	texture.magFilter = THREE.LinearFilter;
 	texture.colorSpace = THREE.SRGBColorSpace;
 	texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-	console.log('Create Sign mods',modifications);
+//	console.log('Create Sign mods',modifications);
 	const material = new THREE.MeshStandardMaterial( {
 	    map: texture,
 	    transparent: true,
@@ -860,6 +861,7 @@ window.onload = ( loadev ) => {
 	return texture;
     };
     const addPin = ( index, cont3d, pinscont, pinname, pincol, pinmods, pinlabelmods, isbasicp, ppinindex ) => {
+//	console.log('addPin',index,cont3d);
 	const col = pincol || 0xffff00;
 	let pname = pinname || 'Pin';
 	let pinDOM;
@@ -943,6 +945,7 @@ window.onload = ( loadev ) => {
 		if ( found > -1 ) parts[index].pins.splice( found, 1 );
 		pinscont.querySelector('b').innerHTML = parts[index].pins.length + ' Pins';
 	    };
+//	    console.log('addPin',parts[index].pins);
 	}
 	else {
 	    isbasicp.parts[index].pins[pinindex].obj3d = mesh;
@@ -1067,8 +1070,8 @@ window.onload = ( loadev ) => {
 			'label':basic.parts[i].pins[j].label
 			
 		    });
+//		    console.log('pinarr',i,j,basic.parts[i].pins[j],pinarr[pincount]);
 		    pincount++;
-//		    console.log('pinarr',basic.parts[i].pins[j]);
 		}
 	    }
 	    parts.push({ 'name' : basic.name, 'type' : 'basic', 'id' : basic.id, 'deviceid': basic.deviceid, 'tooltip' : basic.tooltip, 'mesh': meshp, 'pins' : pinarr });
@@ -1141,6 +1144,7 @@ window.onload = ( loadev ) => {
 		closePinmap(evi);
 	    });
 	    const copyallBtn = createButton( '*&gt;', 'copyAllPinTrans', ( evi ) => {
+		console.log('copyallbtn',pinarr);
 		for ( let i=0; i<pinarr.length; i++ ) {
 		    outputBox.querySelector('#pintrans'+i+' input').value = pinarr[i].name;
 		    pinarr[i].obj3d.visible = true;
@@ -1601,6 +1605,7 @@ window.onload = ( loadev ) => {
 	aktdevice = null;
 	parts.splice( 0 );
 	routes.splice( 0 );
+	routespre.splice( 0 );
 	signs.splice( 0 );
 	files.splice( 0 );
 	links.splice( 0 );
@@ -1648,8 +1653,11 @@ window.onload = ( loadev ) => {
 	}
     }
     const findPinObject = ( pin ) => {
+	console.log('findPinObject', pin, parts);
 	for ( let i=0; i<parts.length; i++ ) {
+	    console.log('findPinObject part', parts[i].name);
 	    if ( pin.part === parts[i].name ) {
+		console.log('findPinObject found part', pin.part);
 		const op = parts[i].pins;
 		for ( let j=0; j<op.length; j++ ) {
 		    if ( op[j] && op[j].name === pin.name ) {
@@ -1674,9 +1682,9 @@ window.onload = ( loadev ) => {
 	    }
 //	    console.log('route h',o.h);
 	});
-//	console.log( 'render routes', dra );
+	console.log( 'render routes', dra );
     }
-    const renderDevice = ( devdata, isbasicp ) => {
+    const renderDevice = ( devdata, isbasicp, fin ) => {
 	let target;
 	if ( isbasicp ) target = new THREE.Object3D();
 //	console.log('render device', devdata.name);
@@ -1732,6 +1740,7 @@ window.onload = ( loadev ) => {
 		let o3;
 		if ( o.origdata.type && o.origdata.type === 'stl' ) {
 		    const stlloader = new STLLoader();
+		    loadopencount++;
 		    stlloader.load( o.origdata.file, ( geometry ) => {
 			o3 = create3DFromGeom( geometry, o.fname, o.origdata, o.deviceid, o.tooltip, o.modifications, isbasicp );
 			applyModifications( o3, o.modifications );
@@ -1742,10 +1751,13 @@ window.onload = ( loadev ) => {
 			    addPin( i, o3, pinscont, p.name, p.color, p.modifications, p.labelmodifications, isbasicp, j );
 			});
 			if ( isbasicp && target ) target.add(o3);
+			loadopencount--;
+			CheckOpenCount();			
 		    });
 		}
 		else if ( o.origdata.type && o.origdata.type === 'glb' ) {
 		    const gltfloader = new GLTFLoader();
+		    loadopencount++;
 	    	    gltfloader.load( o.origdata.file, ( glb ) => {
 			o3=create3DFromGlb( glb, o.fname, o.origdata, o.deviceid, o.tooltip, o.modifications, isbasicp );
 			applyModifications( o3, o.modifications );
@@ -1756,6 +1768,8 @@ window.onload = ( loadev ) => {
 			    addPin( i, o3, pinscont, p.name, p.color, p.modifications, p.labelmodifications, isbasicp, j );
 			});
 			if ( isbasicp && target ) target.add(o3);
+			loadopencount--;
+			CheckOpenCount();			
 			console.log('loaded glb',glb);
 		    });
 		}
@@ -1777,9 +1791,16 @@ window.onload = ( loadev ) => {
 //	    console.log( 'render sign', o, i );
 	});
 	if ( devdata.routes && devdata.routes.length > 0 ) {
-	    loadclosefuncs.push( () => {
-		renderRoutes(devdata.routes);
+	    devdata.routes.forEach( (o,i) => {
+		routespre.push(o);
 	    });
+
+/*	    window.setTimeout( () => {
+		loadclosefuncs.push( () => {
+		    renderRoutes( devdata.routes );
+		});
+		}, 1000 );
+		*/
 	}
 	if ( isbasicp && target ) return target;
     }
@@ -2071,7 +2092,8 @@ window.onload = ( loadev ) => {
 			'index' : api.index,
 			'modifications' : {
 			    'position' : { 'x' : api.obj3d.position.x, 'y' : api.obj3d.position.y, 'z' : api.obj3d.position.z },
-			    'rotation' : { 'x' : api.obj3d.rotation.x, 'y' : api.obj3d.rotation.y, 'z' : api.obj3d.rotation.z }
+			    'rotation' : { 'x' : api.obj3d.rotation.x, 'y' : api.obj3d.rotation.y, 'z' : api.obj3d.rotation.z },
+			    'scale' : { 'x' : api.obj3d.scale.x, 'y' : api.obj3d.scale.y, 'z' : api.obj3d.scale.z }
 			},
 			'labelmodifications' : {
 			    'position' : { 'x' : api.label.position.x, 'y' : api.label.position.y, 'z' : api.label.position.z },
@@ -2254,13 +2276,15 @@ window.onload = ( loadev ) => {
 	    let f=null;
 	    for (let j=0; j<basic.parts.length; j++ ) {
 		for ( let k=0; k<basic.parts[j].pins.length; k++ ) {
+//		    console.log('basicpin',basic.parts[j].pins[k].name, o.name);
 		    if ( basic.parts[j].pins[k].name === o.name ) {
 			f = basic.parts[j].pins[k];
 			break;
 		    }
 		}
 	    }
-	    if ( f ) {
+//	    console.log('basicpin found', f);
+	    if ( f && f.obj3d ) {
 		if ( o.trans === '' ) f.obj3d.visible = false;
 		else {
 		    f.obj3d.visible = true;
@@ -2278,6 +2302,7 @@ window.onload = ( loadev ) => {
 		o();
 	    });
 	    loadclosefuncs.splice( 0 );
+	    renderRoutes( routespre );
 	}
     }
     const loadBasic = ( basic ) => {
@@ -2294,11 +2319,15 @@ window.onload = ( loadev ) => {
 		const index = parts.length-1;
 		o3.userData.index = index;
 		o3.userData.type = 'basic';
-		translateLabels(basic);
 //		console.log('loaded Basic',basic.name);
 		if ( basic.modifications ) applyModifications( o3, basic.modifications );
 		mainmesh.add(o3);
-		addBasicPart( basic, o3 );
+		loadclosefuncs.push( () => {
+//		    window.setTimeout( () => {
+			translateLabels(basic);
+			addBasicPart( basic, o3 );
+//		    }, 200 );
+		});
 		loadopencount--;
 		CheckOpenCount();
 	    }
@@ -2585,7 +2614,7 @@ window.onload = ( loadev ) => {
 	    const akt = parts[i];
 	    if ( akt.pins.length > 0 ) {
 		akt.pins.forEach( ( o, i ) => {
-//		    console.log('akt pin',o.name,o.trans,o.obj3d.position);
+		    console.log('akt pin',o.name,o.trans,o.obj3d);
 		    if ( o.name && o.trans === '' ) return;
 		    dp.push( o );
 		    const x=document.createElement( 'div' );
@@ -2952,7 +2981,7 @@ window.onload = ( loadev ) => {
 	    let DOMO = document.querySelector( '#pin'+aktpartindex+'-'+aktpin.index+' span' );
 	    aktpin.label.material.map.dispose();
 	    aktpin.label.material.map = getTextureFromText( aktpin.name );
-	    console.log('save pin',aktpin.name,DOMO);
+	    console.log('save pin',aktpin,DOMO);
 	    DOMO.textContent = aktpin.name;
 	    document.getElementById('pinDlg').classList.remove('vis');
 	    ev.preventDefault();
@@ -3102,6 +3131,9 @@ window.onload = ( loadev ) => {
 		else if ( dragtarget.id === 'pinxhs' ) aktpin.obj3d.position.x = newv;
 		else if ( dragtarget.id === 'pinyhs' ) aktpin.obj3d.position.y = newv;
 		else if ( dragtarget.id === 'pinzhs' ) aktpin.obj3d.position.z = newv;
+		else if ( dragtarget.id === 'pinsclxhs' ) aktpin.obj3d.scale.x = newv;
+		else if ( dragtarget.id === 'pinsclyhs' ) aktpin.obj3d.scale.y = newv;
+		else if ( dragtarget.id === 'pinsclzhs' ) aktpin.obj3d.scale.z = newv;
 		else if ( dragtarget.id === 'labelposxhs' ) aktpin.label.position.x = newv;
 		else if ( dragtarget.id === 'labelposyhs' ) aktpin.label.position.y = newv;
 		else if ( dragtarget.id === 'labelposzhs' ) aktpin.label.position.z = newv;

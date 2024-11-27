@@ -333,6 +333,7 @@ window.onload = ( loadev ) => {
     let files = [];
     let links = [];
     let routes = [];
+    let routespre = [];
 
 
     const flattenVerts = ( verts ) => {
@@ -950,6 +951,7 @@ window.onload = ( loadev ) => {
 	document.getElementById( 'measurelayersuper' ).classList.remove('open');
 	parts.splice( 0 );
 	routes.splice( 0 );
+	routespre.splice( 0 );
 	signs.splice( 0 );
 	files.splice( 0 );
 	links.splice( 0 );
@@ -1014,7 +1016,7 @@ window.onload = ( loadev ) => {
 		addRPin( po2,o.hmod );
 	    }
 	});
-//	console.log( 'render routes', dra );
+	console.log( 'render routes', dra );
     }
     const renderDevice = ( devdata, isbasic ) => {
 	let target;
@@ -1043,6 +1045,7 @@ window.onload = ( loadev ) => {
 		let o3;
 		if ( o.origdata.type && o.origdata.type === 'stl' ) {
 		    const stlloader = new STLLoader();
+		    loadopencount++;
 		    stlloader.load( o.origdata.file, ( geometry ) => {
 			o3 = create3DFromGeom( geometry, o.fname, o.origdata, o.deviceid, o.tooltip, o.modifications, isbasic );
 			if ( o.modifications ) applyModifications( o3, o.modifications );
@@ -1052,10 +1055,13 @@ window.onload = ( loadev ) => {
 			    addPin( i, o3, p.name, p.color, p.modifications, p.labelmodifications, isbasic, j );
 			});
 			if ( isbasic && target ) target.add(o3);
+			loadopencount--;
+			CheckOpenCount();			
 		    });
 		}
 		else if ( o.origdata.type && o.origdata.type === 'glb' ) {
 		    const gltfloader = new GLTFLoader();
+		    loadopencount++;
 	    	    gltfloader.load( o.origdata.file, ( glb ) => {
 			o3=create3DFromGlb( glb, o.fname, o.origdata, o.deviceid, o.tooltip, o.modifications, isbasic );
 			applyModifications( o3, o.modifications );
@@ -1065,6 +1071,8 @@ window.onload = ( loadev ) => {
 			    addPin( i, o3, p.name, p.color, p.modifications, p.labelmodifications, isbasic, j );
 			});
 			if ( isbasic && target ) target.add(o3);
+			loadopencount--;
+			CheckOpenCount();			
 			console.log('loaded glb',glb,o3);
 		    });
 		}
@@ -1086,13 +1094,8 @@ window.onload = ( loadev ) => {
 //	    console.log( 'render sign', o, i );
 	});
 	if ( devdata.routes && devdata.routes.length > 0 ) {
-	    loadclosefuncs.push( () => {
-		renderRoutes(devdata.routes);
-		if ( devdata.camstart ) {
-		    RestoreCamPos( devdata.camstart );
-		    console.log( 'camstart loaclosefuncs', devdata.camstart );
-		}
-		
+	    devdata.routes.forEach( (o,i) => {
+		routespre.push(o);
 	    });
 	}
 	if ( isbasic && target ) return target;
@@ -1115,7 +1118,6 @@ window.onload = ( loadev ) => {
 	let x=new THREE.Vector3();
 	camera.getWorldDirection(x);
 	if ( Math.abs(x.z) < 0.02 ) return;
-	console.log('world dir',x);
 	smcam.position.set( camera.position.x,camera.position.y,camera.position.z );
 	smcam.rotation.set( camera.rotation.x,camera.rotation.y,camera.rotation.z );
 	// To find out the panning of the camera, calculate the hit point of the direction
@@ -1147,7 +1149,7 @@ window.onload = ( loadev ) => {
 	// normalize the distance to 400, which is actually a good value for this cursor size
 	let zscale= zdist/200;
 	cur3d1.scale.set(zscale,zscale,zscale);
-	console.log('calc3DCursorSize',zdist,zscale);
+//	console.log('calc3DCursorSize',zdist,zscale);
 	cur3d2.scale.set(zscale,zscale,zscale);
     }
     const setControls = () => {
@@ -1493,7 +1495,7 @@ window.onload = ( loadev ) => {
 		    }
 		}
 	    }
-	    if ( f ) {
+	    if ( f && f.obj3d ) {
 		if ( o.trans === '' ) f.obj3d.visible = false;
 		else {
 		    f.obj3d.visible = true;
@@ -1506,11 +1508,15 @@ window.onload = ( loadev ) => {
 //	console.log('translate labels',basic.parts,basic);
     }
     const CheckOpenCount = () => {
+	console.log('CheckOpenCount',loadopencount,loadclosefuncs);
 	if ( loadopencount < 1 && loadclosefuncs.length > 0 ) {
 	    loadclosefuncs.forEach( ( o,i ) => {
 		o();
 	    });
 	    loadclosefuncs.splice( 0 );
+//	    window.setTimeout( () => {
+		renderRoutes( routespre );
+//	    }, 200 );
 	}
     }
     const loadBasic = ( basic ) => {
@@ -1527,11 +1533,14 @@ window.onload = ( loadev ) => {
 		const index = parts.length-1;
 		o3.userData.index = index;
 		o3.userData.type = 'basic';
-		translateLabels(basic);
 //		console.log('loaded Basic',basic);
 		if ( basic.modifications ) applyModifications( o3, basic.modifications );
 		mainmesh.add(o3);
-		addBasicPart( basic, o3 );
+		console.log('pushing loadclosefunc loadBasic');
+		loadclosefuncs.push( () => {
+		    translateLabels(basic);
+		    addBasicPart( basic, o3 );
+		});
 		loadopencount--;
 		CheckOpenCount();
 	    }
