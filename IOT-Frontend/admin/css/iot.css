@@ -396,6 +396,8 @@ input.error {
 	border-radius: 10px;
 	box-shadow: 2px 2px 4px;
 	display:none;
+	max-height: 230px;
+	overflow:auto;
 }
 .brokeridselect.show {
 	display:block;

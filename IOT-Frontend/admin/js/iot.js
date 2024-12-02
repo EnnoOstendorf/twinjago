@@ -860,11 +860,44 @@ window.onload = ( loadev ) => {
 	texture.wrapT = THREE.ClampToEdgeWrapping;
 	return texture;
     };
+    const addPinDOM = ( partindex, pinindex, pname, mesh ) => {
+//	let pinDOM;
+	const pinscont = document.querySelector( '#part'+partindex+' .pins');
+	pinscont.classList.add('open');
+	pinscont.insertAdjacentHTML( 'beforeend', '<div class="pin" id="pin'+partindex+'-'+pinindex
+				     +'" index="'+pinindex+'"><span>'+pname+'</span><i></i><s></s></div>');
+	const pinDOM = document.getElementById('pin'+partindex+'-'+pinindex);
+	parts[partindex].pins[pinindex].objDOM = pinDOM;
+	console.log('addPINDOM', partindex, pinindex, pinscont.innerHTML, pinDOM);
+	pinDOM.onmouseover = ( ev ) => {
+	    mesh.material.color.set( '#aaaa00' );
+	};
+	pinDOM.onmouseout = ( ev ) => {
+	    mesh.material.color.set( mesh.userData.origColor );
+	};
+	pinscont.querySelector('b').innerHTML = (parts[partindex].pins.length) + ' Pins';
+	pinDOM.querySelector( 'i' ).onclick = ( ev ) => {
+	    aktpin = parts[partindex].pins[pinindex];
+	    backupCoords( mesh );
+	    backupLabelCoords( aktpin.label );
+	    showPinDlg(partindex);
+	};
+	pinDOM.querySelector( 's' ).onclick = ( ev ) => {	   
+	    const tpi = parseInt(ev.target.parentNode.getAttribute('index'));
+	    if ( tpi != parts[partindex].pins.length-1 ) return;
+	    mesh.geometry.dispose();
+	    mesh.material.dispose();
+	    mesh.parent.remove(mesh);
+	    pinDOM.remove();
+	    let found = -1;
+	    parts[partindex].pins.splice( tpi, 1 );
+	    pinscont.querySelector('b').innerHTML = parts[partindex].pins.length + ' Pins';
+	};
+    }
     const addPin = ( index, cont3d, pinscont, pinname, pincol, pinmods, pinlabelmods, isbasicp, ppinindex ) => {
 //	console.log('addPin',index,cont3d);
 	const col = pincol || 0xffff00;
 	let pname = pinname || 'Pin';
-	let pinDOM;
 	let pinindex = parts[index]?parts[index].pins.length:0;
 	const partname = parts[index]?parts[index].name:'unknown';
 	const pin3D = new THREE.CylinderGeometry( 0.5, 0.5, 2.5 );
@@ -883,24 +916,6 @@ window.onload = ( loadev ) => {
 	    side: THREE.DoubleSide,
 	    flatShading: true
 	});
-	if ( !isbasicp ) {
-	    const ind = ppinindex || pinindex;
-//	    console.log('add Pin', ind, index);
-	    pname = pinname || 'Pin '+ind;
-	    pinscont.classList.add('open');
-	    pinscont.insertAdjacentHTML( 'beforeend', '<div class="pin" id="pin'+index+'-'+ind
-					 +'" index="'+ind+'"><span>'+pname+'</span><i></i><s></s></div>');
-	    pinDOM = document.getElementById('pin'+index+'-'+ind);
-	    pinDOM.onmouseover = ( ev ) => {
-		mesh.material.color.set( '#aaaa00' );
-	    };
-	    pinDOM.onmouseout = ( ev ) => {
-		mesh.material.color.set( mesh.userData.origColor );
-	    };
-	}
-	else {
-	    pinindex = ppinindex;
-	}
 	const nmesh = new THREE.Mesh( pinLabel, labelmaterial );
 	if ( pinlabelmods ) {
 	    applyModifications( nmesh, pinlabelmods );
@@ -919,32 +934,16 @@ window.onload = ( loadev ) => {
 	else copyPinStart( index, mesh, nmesh );
 	mesh.add(nmesh);
 
-
+	if ( isbasicp ) {
+	    pinindex = ppinindex;
+	}
 	if ( !isbasicp ) {
+	    const pinDOM = document.getElementById('pin'+index+'-'+pinindex);
 	    let newpin = { 'name': pname, 'objDOM': pinDOM, 'part' : partname, 'obj3d' : mesh, 'index':pinindex, 'label': nmesh, 'color' : col }
 	    parts[index].pins.push(newpin);
-	    pinscont.querySelector('b').innerHTML = parts[index].pins.length + ' Pins';
-	    pinDOM.querySelector( 'i' ).onclick = ( ev ) => {
-		aktpin = newpin;
-		backupCoords( mesh );
-		backupLabelCoords( aktpin.label );
-		showPinDlg(index);
-	    };
-	    pinDOM.querySelector( 's' ).onclick = ( ev ) => {	   
-		const tpi = parseInt(ev.target.parentNode.getAttribute('index'));
-		if ( tpi != parts[index].pins.length-1 ) return;
-		mesh.geometry.dispose();
-		mesh.material.dispose();
-		mesh.parent.remove(mesh);
-		pinDOM.remove();
-		let found = -1;
-		for ( let i=0; i<parts[index].pins.length; i++ )
-		    if ( parts[index].pins[i].objDOM.id === pinDOM.id ) {
-			found = i; break;
-		    }
-		if ( found > -1 ) parts[index].pins.splice( found, 1 );
-		pinscont.querySelector('b').innerHTML = parts[index].pins.length + ' Pins';
-	    };
+	    console.log('add Pin', pinindex, index);
+	    pname = pinname || 'Pin '+pinindex;
+	    addPinDOM( index, pinindex, pname, mesh );
 //	    console.log('addPin',parts[index].pins);
 	}
 	else {
@@ -954,31 +953,27 @@ window.onload = ( loadev ) => {
 	}
     }
     const rebuildPartsDom = () => {
-	document.getElementById('partsinner').innerHTML = '';
+	document.getElementById('partsinner').replaceChildren();
 	parts.forEach( ( o, i ) => {
-//	    console.log('renumber Parts',o,i);
+	    console.log('renumber Parts',o,i);
 	    if ( o.type === 'basic' ) {
 		addBasicPart( o, o.mesh, i+1 )
 	    }
 	    else {
-		addPart( o.name, o.mesh, o.fname, o.deviceid, o.tooltip, o.origdata, i+1 )
+		addPartDOM( o.name, o.fname, o.deviceid, o.brokerupmsg, o.tooltip, o.origdata, i+1 )
+		addPartDOMEvents( i, o.mesh );
+		if ( o.pins && o.pins.length > 0 ) {
+		    o.pins.forEach( ( p, j ) => {
+			addPinDOM( i, j, p.name, p.obj3d );
+			console.log('PIN',j,p)
+			
+		    });
+		}
 	    }
 	});
     }
-    const addPart = ( namep, meshp, fnamep, deviceidp, tooltipp, origdata, rebuild ) => {
-	let index=0;
-	if ( ! rebuild ) {
-	    parts.push({ 'name' : namep, 'fname': fnamep, 'deviceid': deviceidp, 'mesh': meshp, 'tooltip': tooltipp, 'origdata' : origdata, 'pins':[] });
-	    index = parts.length-1;
-	}
-	else {
-	    index = rebuild - 1;
-	}
-	meshp.userData.index = index;
-	const colcode = origdata.color||'#888';
-	document.getElementById('partsinner').insertAdjacentHTML(
-	    'beforeend',
-	    '<div id="part'+index+'" class="part" data-index="'+index+'"><strong>'+namep+'</strong><em>('+(fnamep||'-')+')</em><input class="partcolor" style="background:'+colcode+';" type="text" value="'+colcode+'" data-coloris /><div class="tooltip"><b>Tooltip</b> <textarea id="tooltip'+index+'" placeholder="mouseover Ballontext">'+(tooltipp||'')+'</textarea></div><div class="pins"><b>0 Pins</b><button id="addPintoPart'+index+'" data-index="'+index+'" class="addPinBtn">+</button><br /></div><i></i><s></s></div>' );
+    const addPartDOMEvents = ( index, meshp ) => {
+	console.log('finding DOMObj',index,document.getElementById('part'+index));
 	const DOMObj = document.getElementById('part'+index);
 	DOMObj.onmouseover = ( ev ) => {
 //	    console.log('hilite',meshp.userData.index);
@@ -988,6 +983,7 @@ window.onload = ( loadev ) => {
 	DOMObj.onmouseout = ( ev ) => {
 	    lolightParts();
 	};
+	    
 	DOMObj.querySelector( '.addPinBtn' ).onclick = ( ev ) => {
 	    const pinscont = ev.target.parentNode;
 	    addPin( index, meshp, pinscont );
@@ -1014,6 +1010,30 @@ window.onload = ( loadev ) => {
 	    aktmesh = meshp;
 	    Coloris();
 	};
+
+    }
+    const addPartDOM = ( namep, fnamep, deviceidp, brokerupmsg, tooltipp, origdata, rebuild ) => {
+	let index=0;
+	if ( ! rebuild ) {
+	    parts.push({ 'name' : namep, 'fname': fnamep, 'deviceid': deviceidp, 'brokerupmsg': brokerupmsg, 'tooltip': tooltipp, 'origdata' : origdata, 'pins':[] });
+	    index = parts.length-1;
+	}
+	else {
+	    index = rebuild - 1;
+	}
+	const colcode = origdata && origdata.color ? origdata.color : '#888';
+	document.getElementById('partsinner').insertAdjacentHTML(
+	    'beforeend',
+	    '<div id="part'+index+'" class="part" data-index="'+index+'"><strong>'+namep+'</strong><em>('+(fnamep||'-')+')</em><input class="partcolor" style="background:'+colcode+';" type="text" value="'+colcode+'" data-coloris /><div class="tooltip"><b>Tooltip</b> <textarea id="tooltip'+index+'" placeholder="mouseover Ballontext">'+(tooltipp||'')+'</textarea></div><div class="pins"><b>0 Pins</b><button id="addPintoPart'+index+'" data-index="'+index+'" class="addPinBtn">+</button><br /></div><i></i><s></s></div>' );
+	console.log('adding part DOM', index, document.getElementById( 'part'+index ).innerHTML);
+	return index;
+    }
+    const addPartMesh = ( meshp, datap, index ) => {
+	console.log('adding part Mesh', index);
+	parts[index].mesh = meshp;
+	parts[index].origdata = datap;
+	addPartDOMEvents( index, meshp );
+	meshp.userData.index = index;
     }
     document.addEventListener('coloris:pick', event => {
 	const col = event.detail.color;
@@ -1084,10 +1104,11 @@ window.onload = ( loadev ) => {
 	}
 	meshp.userData.index = index;
 	const deviceidp = basic.deviceid || '';
+	const brokerupmsg = basic.brokerupmsg || '';
 //	console.log('Dound deviceid',deviceidp);
 	document.getElementById('partsinner').insertAdjacentHTML(
 	    'beforeend',
-	    '<div id="part'+index+'" class="part"><strong>'+basic.name+'</strong><c data-id="'+basic.id+'" title="zum Basic">BASIC</c><div class="deviceidbox"><b>Device ID</b> <input name="deviceID" class="deviceID" placeholder="ID im Broker" autocomplete="off" value="'+deviceidp+'" /><button class="brokerselectbtn">Broker</button><div class="brokeridselect"></div><div class="sensorout"></div></div><div class="tooltip"><b>Tooltip</b> <textarea id="tooltip'+index+'" placeholder="mouseover Ballontext">'+(basic.tooltip||'')+'</textarea></div><div class="pins"><b>'+pinarr.length+' Pins</b> <button id="basicpinmap'+index+'" data-index="'+index+'" class="basicPinBtn">Anpassen</button><div class="pinmap"></div><br /></div><i></i><s></s></div>' );
+	    '<div id="part'+index+'" class="part"><strong>'+basic.name+'</strong><c data-id="'+basic.id+'" title="zum Basic">BASIC</c><div class="deviceidbox"><b>Device ID</b> <input name="deviceID" class="deviceID" placeholder="ID im Broker" autocomplete="off" value="'+deviceidp+'" /><div class="brokeridselect"></div><div class="sensorout"></div><br /><b>Broker Up</b> <input class="brokerUpMsg" autocomplete="off" value="'+brokerupmsg+'" /></div><div class="tooltip"><b>Tooltip</b> <textarea id="tooltip'+index+'" placeholder="mouseover Ballontext">'+(basic.tooltip||'')+'</textarea></div><div class="pins"><b>'+pinarr.length+' Pins</b> <button id="basicpinmap'+index+'" data-index="'+index+'" class="basicPinBtn">Anpassen</button><div class="pinmap"></div><br /></div><i></i><s></s></div>' );
 	const DOMObj = document.getElementById('part'+index);
 /*	DOMObj.onmouseover = ( ev ) => {
 //	    console.log('hilite',meshp.userData.index);
@@ -1117,8 +1138,14 @@ window.onload = ( loadev ) => {
 	    }
 	    par.parentNode.querySelector('.hide').classList.remove('hide');
 	}
-	DOMObj.querySelector( '.brokerselectbtn' ).onclick = ( ev ) => {
-	    fillBrokerSelect( DOMObj.querySelector( '.brokeridselect' ) );
+	const selBox = DOMObj.querySelector( '.brokeridselect' );
+	DOMObj.querySelector( '.deviceID' ).onfocus = ( ev ) => {
+	    fillBrokerSelect( selBox );
+	};
+	DOMObj.querySelector( '.deviceID' ).onblur = ( ev ) => {
+	    window.setTimeout( () => {
+		selBox.classList.remove('show');
+	    }, 100 );
 	};
 	DOMObj.querySelector('.basicPinBtn').onclick = ( ev ) => {	    
 	    const outputBox = ev.target.nextSibling;
@@ -1184,19 +1211,20 @@ window.onload = ( loadev ) => {
 	};
     }
 
-    const create3DFromGlb = ( glb, fname, data, deviceid, tooltip, mods, isbasicp ) => {
+    const create3DFromGlb = ( index, glb, fname, data, deviceid, brokerupmsg, tooltip, mods, isbasicp ) => {
 	const col = data.color || '#ffffff';
 	const oname = data.name || fname;
 	const mesh = glb.scene;
 	mesh.scale.set(50,50,50);
 	mesh.userData.type = isbasicp ? 'basicpart' : 'part';
 	if ( !isbasicp ) {
-	    addPart(oname, mesh, fname, deviceid, tooltip, data);
+//	    addPartDOM(oname, fname, deviceid, brokerupmsg, tooltip, data);
+	    addPartMesh(mesh, data, index);
 	    mainmesh.add( mesh );
 	}
 	return mesh;
     };
-    const create3DFromGeom = ( geom, fname, data, deviceid, tooltip, mods, isbasicp ) => {
+    const create3DFromGeom = ( index, geom, fname, data, deviceid, brokerupmsg, tooltip, mods, isbasicp ) => {
 	let material;
 	const col = data.color || '#ffffff';
 	const oname = data.name || fname;
@@ -1217,12 +1245,13 @@ window.onload = ( loadev ) => {
 	mesh.origcolor = col;
 	mesh.userData.type = isbasicp ? 'basicpart' : 'part';
 	if ( !isbasicp ) {
-	    addPart(oname, mesh, fname, deviceid, tooltip, data);
+//	    addPartDOM(oname, fname, deviceid, brokerupmsg, tooltip, data);
+	    addPartMesh(mesh, data, index);
 	    mainmesh.add( mesh );
 	}
 	return mesh;
     };
-    const create3D = ( data, fname, deviceid, tooltip, mods, isbasicp ) => {
+    const create3D = ( index, data, fname, deviceid, brokerupmsg, tooltip, mods, isbasicp ) => {
 	const geometry = new THREE.BufferGeometry();
 	const verts = flattenVerts( data.vertices );
 	const inds = flattenVerts( data.facets );
@@ -1232,7 +1261,7 @@ window.onload = ( loadev ) => {
 	geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( verts, 3 ) );
 	geometry.setAttribute( 'normal', new THREE.Float32BufferAttribute( norms, 3 ) );
 	geometry.computeBoundingSphere();	
-	return create3DFromGeom( geometry, fname, data, deviceid, tooltip, mods, isbasicp );
+	return create3DFromGeom( index, geometry, fname, data, deviceid, brokerupmsg, tooltip, mods, isbasicp );
     }
     const finput = document.querySelector('input#newpartfile');
     finput.onchange = ( ev ) => {
@@ -1241,12 +1270,13 @@ window.onload = ( loadev ) => {
 	const reader = new FileReader();
 	const ext = fname.substr(fname.lastIndexOf('.')+1);
 	console.log('file:',ext);
+	const index = addPartDOM( fname.replace('.'+ext,''), fname );
 	if ( ext == 'json' ) {
 	    reader.onload = (e) => {
 		console.log('loading JSON:',e);
 		const rawfile = e.target.result;
 		const parsed = JSON.parse(rawfile);
-		create3D( parsed.objects[0], fname );
+		create3D( index, parsed.objects[0], fname );
 	    };
 	    reader.readAsText(finput.files[0]);
 	}
@@ -1255,7 +1285,7 @@ window.onload = ( loadev ) => {
 		const stlloader = new STLLoader();
 		console.log('loading stl',e.target);
 	    	stlloader.load( e.target.result, ( geometry ) => {
-		    create3DFromGeom( geometry, fname, { type: 'stl', color: '#888888', file: e.target.result, name: fname.replace('.stl','') } );
+		    create3DFromGeom( index, geometry, fname, { type: 'stl', color: '#888888', file: e.target.result, name: fname.replace('.stl','') } );
 		    console.log('loaded stl',geometry);
 		});
 	    };
@@ -1266,7 +1296,7 @@ window.onload = ( loadev ) => {
 		const gltfloader = new GLTFLoader();
 		console.log('loading glb',e.target);
 	    	gltfloader.load( e.target.result, ( glb ) => {
-		    create3DFromGlb( glb, fname, { type: 'glb', color: '#888888', file: e.target.result, name: fname.replace('.gltf','') } );
+		    create3DFromGlb( index, glb, fname, { type: 'glb', color: '#888888', file: e.target.result, name: fname.replace('.gltf','') } );
 		    console.log('loaded glb',glb);
 		});
 	    };
@@ -1367,7 +1397,7 @@ window.onload = ( loadev ) => {
 	const ind = obj.userData.index;
 	const type = obj.userData.type;
 	if ( type === 'part' ) {
-	    document.getElementById('part'+ind).classList.add('over');
+	    document.getElementById('part'+ind)?.classList.add('over');
 	    if ( obj.material?.color ) 
 		obj.material.color.set( '#33aa88' );
 	}
@@ -1375,10 +1405,10 @@ window.onload = ( loadev ) => {
 	    let t = obj;
 	    while ( t != mainmesh && !t.userData || !t.userData.type || t.userData.type != 'basic' )
 		t = t.parent;
-	    document.getElementById('part'+t.userData.index).classList.add('over');
+	    document.getElementById('part'+t.userData.index)?.classList.add('over');
 	}
 	else if ( type === 'basic' ) {
-	    document.getElementById('part'+ind).classList.add('over');
+	    document.getElementById('part'+ind)?.classList.add('over');
 	}
 	else if ( type === 'sign' ) {
 	    const t=document.getElementById('sign'+ind);
@@ -1738,16 +1768,18 @@ window.onload = ( loadev ) => {
 	    }
 	    else {
 		let o3;
-		if ( o.origdata.type && o.origdata.type === 'stl' ) {
+		if ( !isbasicp ) addPartDOM( o.name, o.fname, o.deviceid, o.brokerupmsg, o.tooltip, o.origdata );
+		console.log('render part',o.origdata,isbasicp);
+		if ( o.origdata && o.origdata.type && o.origdata.type === 'stl' ) {
 		    const stlloader = new STLLoader();
 		    loadopencount++;
 		    stlloader.load( o.origdata.file, ( geometry ) => {
-			o3 = create3DFromGeom( geometry, o.fname, o.origdata, o.deviceid, o.tooltip, o.modifications, isbasicp );
+			o3 = create3DFromGeom( i, geometry, o.fname, o.origdata, o.deviceid, o.brokerupmsg, o.tooltip, o.modifications, isbasicp );
 			applyModifications( o3, o.modifications );
-			console.log('loaded stl',geometry,o3);
+//			console.log('loaded stl',geometry,o3);
 			o.pins.forEach( ( p, j ) => {
 			    const pinscont = document.querySelector('#part'+i+' .pins');
-			    //		    console.log('add pin',p);
+//			    console.log('add pin',p,pinscont);
 			    addPin( i, o3, pinscont, p.name, p.color, p.modifications, p.labelmodifications, isbasicp, j );
 			});
 			if ( isbasicp && target ) target.add(o3);
@@ -1755,16 +1787,16 @@ window.onload = ( loadev ) => {
 			CheckOpenCount();			
 		    });
 		}
-		else if ( o.origdata.type && o.origdata.type === 'glb' ) {
+		else if ( o.origdata && o.origdata.type && o.origdata.type === 'glb' ) {
 		    const gltfloader = new GLTFLoader();
 		    loadopencount++;
 	    	    gltfloader.load( o.origdata.file, ( glb ) => {
-			o3=create3DFromGlb( glb, o.fname, o.origdata, o.deviceid, o.tooltip, o.modifications, isbasicp );
+			o3=create3DFromGlb( i, glb, o.fname, o.origdata, o.deviceid, o.brokerupmsg, o.tooltip, o.modifications, isbasicp );
 			applyModifications( o3, o.modifications );
-			console.log('loaded glb',glb,o3);
+//			console.log('loaded glb',glb,o3);
 			o.pins.forEach( ( p, j ) => {
 			    const pinscont = document.querySelector('#part'+i+' .pins');
-			    //		    console.log('add pin',p);
+//			    console.log('add pin',p,pinscont);
 			    addPin( i, o3, pinscont, p.name, p.color, p.modifications, p.labelmodifications, isbasicp, j );
 			});
 			if ( isbasicp && target ) target.add(o3);
@@ -1774,11 +1806,11 @@ window.onload = ( loadev ) => {
 		    });
 		}
 		else {
-		    o3 = create3D( o.origdata, o.fname, o.deviceid, o.tooltip, o.modifications, isbasicp );
+		    o3 = create3D( i, o.origdata, o.fname, o.deviceid, o.brokerupmsg, o.tooltip, o.modifications, isbasicp );
 		    applyModifications( o3, o.modifications );
 		    o.pins.forEach( ( p, j ) => {
 			const pinscont = document.querySelector('#part'+i+' .pins');
-			//		    console.log('add pin',p);
+//			console.log('add pin json',i,p,pinscont,document.getElementById('partsinner').innerHTML);
 			addPin( i, o3, pinscont, p.name, p.color, p.modifications, p.labelmodifications, isbasicp, j );
 		    });
 		    if ( isbasicp && target ) target.add(o3);
@@ -2081,6 +2113,8 @@ window.onload = ( loadev ) => {
 	    if ( ttpdom ) partdata.tooltip = ttpdom.value;
 	    const deviddom = document.querySelector( '#part'+i+' .deviceID' );
 	    if ( deviddom ) partdata.deviceid = deviddom.value;
+	    const devupdom = document.querySelector( '#part'+i+' .brokerUpMsg' );
+	    if ( devupdom ) partdata.brokerupmsg = devupdom.value;
 	    
 //	    console.log('saveDevice', partdata.deviceid);
 	    if ( apa.pins ) for ( let j=0; j<apa.pins.length; j++ ) {

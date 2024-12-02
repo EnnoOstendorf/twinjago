@@ -408,7 +408,7 @@ input.error {
 	text-decoration: none;
 	cursor: default;
 }
-.datapin {
+.datapin,.doublepin {
 	position: absolute;
 	width: 8px;
 	height: 8px;
@@ -426,17 +426,49 @@ input.error {
 	cursor:pointer;
 	z-index:1;
 }
-.datapinned .datapin {
+.datapin:hover,.doublepin:hover {
+    background: #eee;
+    color: #444;
+}
+.doublepin {
+	left: 20px;
+}
+.double .doublepin {
+    background:#4c4;
+}
+.double.select .doublepin {
+    animation: yellowblink 0.5s infinite alternate;
+}
+.double #histtab {
+	display: block;
+}
+.double #livetab {
+	display: none;
+}
+@keyframes yellowblink {
+    from {
+	background-color: #000;
+    }
+    to {
+	background-color: #ee0;
+    }
+}
+.datapinned .datapin,.datapinned .doublepin {
 	opacity:1;
 }
-#sensormeters {
+.sensormeters {
 	margin: 0 0 10px 5px;
 }
-#sensortooltip {
+.sensortooltip {
 	margin: 10px;
 	font-size: 18px;
 }
-#liveData #sensorid {
+.double .sensortooltip {
+	width: 48%;
+	margin: 1px;
+	display: inline-block;
+}
+.sensorid {
 	height: 20px;
 	margin: 0px 10px 5px;
 	display: inline-block;
@@ -446,12 +478,21 @@ input.error {
 	border-radius: 10px;
 	/* vertical-align: top; */
 	width: auto;
-/*	position: absolute;
-	top: 6px;
+	position: relative;
+/*	top: 6px;
 	right: 10px;*/
 	text-align: center;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
-#sensorout {
+.double .sensorid {
+	font-size: 12px;
+	width: 40%;
+	display: inline-block;
+	margin: 3px;
+	white-space: nowrap;
+}
+.sensorout {
 	/* position: absolute; */
 	display: block;
 	margin: 0 0 0 10px;
@@ -465,6 +506,25 @@ input.error {
 	/* z-index: 0; */
 	width: 92%;
 	transition: all 0.2s ease-in-out;
+}
+#sensorid2,#sensortooltip2,#sensormeters2 {
+    display: none;
+}
+.double .double #sensormeters2 {
+    display: block;
+}
+.double #sensorid2,.double #sensortooltip2 {
+    display: inline-block;
+}
+.double .grafana {
+	height: 240px;
+	width: 90%;
+	text-align: center;
+	margin-left: 5%;
+	margin-bottom: 10px;
+}
+.double .grafana iframe {
+	height: 240px;
 }
 .meterroot {
 	display: inline-block;
@@ -488,6 +548,23 @@ input.error {
 .meterroot h4 {
 	margin: 4px 0;
 	font-size: 16px;
+}
+.sendbrokerbtn {
+	position: absolute;
+	background: #0b0;
+	display: block;
+	right: -120px;
+	padding: 3px 10px;
+	border-radius: 10px;
+	font-size: 14px;
+	font-weight: bold;
+	border: 1px solid #fff;
+	width: 90px;
+	color: #fff;
+	text-shadow: 1px 1px 2px #000;
+	box-shadow: 0 0 4px #000;
+	top: 0;
+	cursor: pointer;
 }
 /* info layer */
 #infolayersuper,#measurelayersuper {

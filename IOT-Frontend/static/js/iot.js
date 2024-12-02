@@ -9,10 +9,12 @@ const scene2 = new THREE.Scene();
 const config = [];
 let playground = null;
 let aktdevice = null;
+let aktdevicei = null;
 let lastdevice = null;
 let HTMLready = false;
 let axiso3 = null;
 let cur3d1,cur3d2 = null;
+let doubleselect = false;
 
 /* Measurement vars */
 let measuremode = false;
@@ -89,6 +91,10 @@ const aktMeter = ( vals ) => {
 //    console.log( 'aktMeter', vals, meterdom );
 }
 
+const pubMessage = ( id, msg ) => {
+    client.publish( 'sensor/'+id, msg );
+}
+
 const parseMessage = ( idp, msg ) => {
 
     const [ type, id ] = idp.split( /\// );
@@ -104,30 +110,30 @@ const parseMessage = ( idp, msg ) => {
     else if ( type === 'sensor' ) {
 	broker.devices[id].datacount++;
 	let message = '';
-	const outcontainer = document.getElementById( 'sensorout' );
-	const devidcontainer = document.getElementById( 'sensorid' );
 	if ( !broker.devices[id].meta || !broker.devices[id].meta.payloadStructure ) {
 	    // Devices wich do net send a payload Structure on the meta channel could not be handled atm
 	    // nothing will be written to influx
 	    //	    console.log('no payloadStructure for id '+id+', no writePoint(',msg,')');
 	    return;
 	};
+	const outcontainer = document.getElementById( 'sensorout'+(doubleselect?'2':'') );
+	const devidcontainer = document.getElementById( 'sensorid'+(doubleselect?'2':'') );
 	const meterdom = document.getElementById('sensormeters');
-	const meters = [];
-	for( let i=0; i<broker.devices[id].meta.payloadStructure.length; i++ ) {
-	    const o = broker.devices[id].meta.payloadStructure[i];
-	    message += o.name + ': ' + msg[i] + '  ';
-	    meters.push( { 'measure' : o.name, 'value' : msg[i] } );
-	    //	    writePoint( broker.devices[id].meta.payloadStructure[i].name,id,msg[i] );
-//	    console.log('writePoint(',devices[id].meta.payloadStructure[i].name,id,msg[i],')');
-	};
+	if ( aktdevice && aktdevice === id ) {
+	    const meters = [];
+	    for( let i=0; i<broker.devices[id].meta.payloadStructure.length; i++ ) {
+		const o = broker.devices[id].meta.payloadStructure[i];
+		message += o.name + ': ' + msg[i] + '  ';
+		meters.push( { 'measure' : o.name, 'value' : msg[i] } );
+		//	    writePoint( broker.devices[id].meta.payloadStructure[i].name,id,msg[i] );
+		//	    console.log('writePoint(',devices[id].meta.payloadStructure[i].name,id,msg[i],')');
+	    };
+	    if ( outcontainer ) outcontainer.innerHTML = broker.devices[id].lastdata.join('<br />');
+	    aktMeter( meters );
+	}
 	broker.devices[id].lastdata.push( message );
 	while ( broker.devices[id].lastdata.length > MSGBUFFERLINES ) {
 	    broker.devices[id].lastdata.shift();
-	}
-	if ( aktdevice && aktdevice === id ) {
-	    if ( outcontainer ) outcontainer.innerHTML = broker.devices[id].lastdata.join('<br />');
-	    aktMeter( meters );
 	}
 	if ( !aktdevice || aktdevice !== lastdevice ) {
 	    if ( devidcontainer ) devidcontainer.innerHTML = aktdevice;
@@ -593,10 +599,10 @@ window.onload = ( loadev ) => {
 //	    console.log('addPin isbasic',isbasic.parts[index].pins, pinindex);
 	}
     }
-    const addPart = ( namep, meshp, fnamep, deviceidp, tooltipp, origdata, rebuild ) => {
+    const addPart = ( namep, meshp, fnamep, deviceidp, brokerupmsg, tooltipp, origdata, rebuild ) => {
 	let index=0;
 	if ( ! rebuild ) {
-	    parts.push({ 'name' : namep, 'fname': fnamep, 'mesh': meshp, 'deviceid': deviceidp, 'tooltip': tooltipp, 'origdata' : origdata, 'pins':[] });
+	    parts.push({ 'name' : namep, 'fname': fnamep, 'mesh': meshp, 'deviceid': deviceidp, 'brokerupmsg' : brokerupmsg, 'tooltip': tooltipp, 'origdata' : origdata, 'pins':[] });
 	    index = parts.length-1;
 	}
 	else {
@@ -642,7 +648,7 @@ window.onload = ( loadev ) => {
 //		    console.log('pinarr',o);
 		}
 	    }
-	    parts.push({ 'name' : basic.name, 'type' : 'basic', 'id' : basic.id, 'deviceid': basic.deviceid, 'tooltip' : basic.tooltip, 'mesh': meshp, 'pins' : pinarr });
+	    parts.push({ 'name' : basic.name, 'type' : 'basic', 'id' : basic.id, 'deviceid': basic.deviceid, 'brokerupmsg': basic.brokerupmsg, 'tooltip' : basic.tooltip, 'mesh': meshp, 'pins' : pinarr });
 	
 	    const pl = document.getElementById('partlist');
 	    pl.insertAdjacentHTML( 'beforeend',
@@ -659,7 +665,7 @@ window.onload = ( loadev ) => {
 	meshp.userData.index = index;
     }
 
-    const create3DFromGlb = ( glb, fname, data, deviceid, tooltip, mods, isbasicp ) => {
+    const create3DFromGlb = ( glb, fname, data, deviceid, brokerupmsg, tooltip, mods, isbasicp ) => {
 	const col = data.color || '#ffffff';
 	const oname = data.name || fname;
 	const mesh = glb.scene;
@@ -667,14 +673,14 @@ window.onload = ( loadev ) => {
 	mesh.userData.type = isbasicp ? 'basicpart' : 'part';
 	mesh.userData.tooltip = tooltip;
 	if ( !isbasicp ) {
-	    addPart(oname, mesh, fname, deviceid, tooltip, data);
+	    addPart(oname, mesh, fname, deviceid, brokerupmsg, tooltip, data);
 	    mainmesh.add( mesh );
 	    console.log('adding glb',mainmesh);
 	}
 	return mesh;
     };
 
-    const create3DFromGeom = ( geom, fname, data, deviceid, tooltip, mods, isbasicp ) => {
+    const create3DFromGeom = ( geom, fname, data, deviceid, brokerupmsg, tooltip, mods, isbasicp ) => {
 	let material;
 	const col = data.color || '#ffffff';
 	const oname = data.name || fname;
@@ -696,13 +702,13 @@ window.onload = ( loadev ) => {
 	    mesh.visible = false;
 	}
 	if ( !isbasicp ) {
-	    addPart(oname, mesh, fname, deviceid, tooltip, data);
+	    addPart(oname, mesh, fname, deviceid, brokerupmsg, tooltip, data);
 	    mainmesh.add( mesh );
 	}
 	return mesh;
     };
 
-    const create3D = ( data, fname, deviceid, tooltip, mods, isbasic ) => {
+    const create3D = ( data, fname, deviceid, brokerupmsg, tooltip, mods, isbasic ) => {
 	const geometry = new THREE.BufferGeometry();
 	const verts = flattenVerts( data.vertices );
 	const inds = flattenVerts( data.facets );
@@ -713,7 +719,7 @@ window.onload = ( loadev ) => {
 	geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( verts, 3 ) );
 	geometry.setAttribute( 'normal', new THREE.Float32BufferAttribute( norms, 3 ) );
 	geometry.computeBoundingSphere();
-	return create3DFromGeom( geometry, fname, data, deviceid, tooltip, mods, isbasic );
+	return create3DFromGeom( geometry, fname, data, deviceid, brokerupmsg, tooltip, mods, isbasic );
     }
     console.log('loaded threejs',THREE);
     scene.add(mainmesh);
@@ -789,19 +795,24 @@ window.onload = ( loadev ) => {
 	ttpdom.style.left = ( x + 20 ) + 'px';
 	ttpdom.style.top = ( y ) + 'px';
 	ttpdom.classList.add('show');
-	const ttcontainer = document.getElementById( 'sensortooltip' );
+	const ttname='sensortooltip'+(doubleselect?'2':'');
+	const ttcontainer = document.getElementById( ttname );
 	ttcontainer.innerHTML = text;
 	document.getElementById('liveData').classList.add('show');
 //	console.log('show tooltip');
     }
     const hideTooltip = () => {
+	if ( doubleselect ) return;
 	const ttpdom = document.getElementById( 'tooltip' );
 	ttpdom.classList.remove('show');
 	document.getElementById( 'sensortooltip' ).replaceChildren();
+	document.getElementById( 'sensortooltip2' ).replaceChildren();
 	document.getElementById( 'sensormeters' ).style.display='block';
 	document.getElementById( 'sensorout' ).style.display='block';
 	document.getElementById( 'grafana' ).replaceChildren();
 	document.getElementById( 'grafana' ).style.display='none';
+	document.getElementById( 'grafana2' ).replaceChildren();
+	document.getElementById( 'grafana2' ).style.display='none';
 	const livetab = document.querySelector('#liveData h2.act');
 	if ( livetab && livetab.classList ) livetab.classList.remove('act');
 	document.getElementById( 'livetab' ).classList.add('act');
@@ -846,8 +857,12 @@ window.onload = ( loadev ) => {
 			    }
 			    if ( parts[ind].deviceid && parts[ind].deviceid != '' ) {
 				aktdevice = parts[ind].deviceid;
+				aktdevicei = ind;
 			    }
-			    else aktdevice = '';
+			    else {
+				aktdevice = '';
+				aktdevicei = -1;
+			    }
 			    
 			}
 		    }
@@ -860,8 +875,12 @@ window.onload = ( loadev ) => {
 			    }
 			    if ( parts[ind].deviceid && parts[ind].deviceid != '' ) {
 				aktdevice = parts[ind].deviceid;
+				aktdevicei = ind;
 			    }
-			    else aktdevice = '';
+			    else {
+				aktdevice = '';
+				aktdevicei = -1;
+			    }
 			    showTooltip( xp, yp, label );
 			}
 //			console.log('highlight basic', ind)
@@ -880,16 +899,24 @@ window.onload = ( loadev ) => {
 
 			if ( parts[ind] && parts[ind].deviceid && parts[ind].deviceid != '' ) {
 			    aktdevice = parts[ind].deviceid;
+			    aktdevicei = ind;
 			}
-			else aktdevice = '';
+			else {
+			    aktdevice = '';
+			    aktdevicei = -1;
+			}
+
 		    }
 		    else {
 			console.log('highlight nothing', o3)
 			lolightParts();
 			aktdevice = '';
+			aktdevicei = -1;
 			hideTooltip();
-			document.getElementById('sensorid').innerHTML = '';
-			document.getElementById('sensorout').innerHTML = '';
+			if ( ! doubleselect ) {
+			    document.getElementById('sensorid').innerHTML = '';
+			    document.getElementById('sensorout').innerHTML = '';
+			}
 		    }
 		}
 		else {
@@ -907,9 +934,12 @@ window.onload = ( loadev ) => {
 	else {
 	    lolightParts();
 	    aktdevice = '';
+	    aktdevicei = -1;
 	    hideTooltip();
-	    document.getElementById('sensorid').innerHTML = '';
-	    document.getElementById('sensorout').innerHTML = '';
+	    if ( ! doubleselect ) {
+		document.getElementById('sensorid').innerHTML = '';
+		document.getElementById('sensorout').innerHTML = '';
+	    }
 	}
     }
 
@@ -945,6 +975,7 @@ window.onload = ( loadev ) => {
 	aktmesh = null;
 	aktpin = null;
 	aktdevice = null;
+	aktdevicei = -1;
 	mscale ='';
 	munit = '';
 	endMeasuring();
@@ -960,6 +991,7 @@ window.onload = ( loadev ) => {
 	removeMeshes( routemesh );
 	hideTooltip();
 	datapinned = false;
+	doubleselect = false;
 	document.body.classList.remove('datapinned');
 	document.getElementById('sensorid').replaceChildren();
 	document.getElementById('sensorout').replaceChildren();
@@ -1047,7 +1079,7 @@ window.onload = ( loadev ) => {
 		    const stlloader = new STLLoader();
 		    loadopencount++;
 		    stlloader.load( o.origdata.file, ( geometry ) => {
-			o3 = create3DFromGeom( geometry, o.fname, o.origdata, o.deviceid, o.tooltip, o.modifications, isbasic );
+			o3 = create3DFromGeom( geometry, o.fname, o.origdata, o.deviceid, o.brokerupmsg, o.tooltip, o.modifications, isbasic );
 			if ( o.modifications ) applyModifications( o3, o.modifications );
 			console.log('loaded stl',geometry,o3);
 			o.pins.forEach( ( p, j ) => {
@@ -1063,7 +1095,7 @@ window.onload = ( loadev ) => {
 		    const gltfloader = new GLTFLoader();
 		    loadopencount++;
 	    	    gltfloader.load( o.origdata.file, ( glb ) => {
-			o3=create3DFromGlb( glb, o.fname, o.origdata, o.deviceid, o.tooltip, o.modifications, isbasic );
+			o3=create3DFromGlb( glb, o.fname, o.origdata, o.deviceid, o.brokerupmsg, o.tooltip, o.modifications, isbasic );
 			applyModifications( o3, o.modifications );
 			console.log('loaded glb',glb,o3);
 			o.pins.forEach( ( p, j ) => {
@@ -1077,7 +1109,7 @@ window.onload = ( loadev ) => {
 		    });
 		}
 		else {
-		    o3 = create3D( o.origdata, o.fname, o.deviceid, o.tooltip, o.modifications, isbasic );
+		    o3 = create3D( o.origdata, o.fname, o.deviceid, o.brokerupmsg, o.tooltip, o.modifications, isbasic );
 		    if ( o.modifications ) applyModifications( o3, o.modifications );
 		    o.pins.forEach( ( p, j ) => {
 			const pinscont = document.querySelector('#part'+i+' .pins');
@@ -1390,26 +1422,50 @@ window.onload = ( loadev ) => {
 
     const unpinData = () => {
 	datapinned = false;
+	doubleselect = false;
 	document.body.classList.remove('datapinned');
 	document.getElementById('liveData').classList.remove('show');
+	document.getElementById('liveData').classList.remove('double');
+	document.getElementById('liveData').classList.remove('select');
     }
     const pinData = () => {
 //	console.log('pindevice',aktdevice);
 	if ( !aktdevice || aktdevice === '' ) return;
-	if ( datapinned ) {
+	const ldcont = document.getElementById('liveData');
+	if ( doubleselect ) {
+	    showGrafana();
+	    doubleselect=false;
+	    ldcont.classList.remove('select');
+	}
+	else if ( datapinned ) {
 	    datapinned = false;
+	    doubleselect = false;
 	    document.body.classList.remove('datapinned');
-	    document.getElementById('liveData').classList.remove('show');
+	    ldcont.classList.remove('double');
+	    ldcont.classList.remove('select');
+	    ldcont.classList.remove('show');
 	}
 	else {
 	    datapinned = true;
 	    document.body.classList.add('datapinned');
+	    const idcont = document.getElementById('sensorid');
+	    const p=parts[aktdevicei];
+	    if ( p.brokerupmsg ) {
+		let x=document.createElement( 'span' );
+		x.classList.add('sendbrokerbtn');
+		x.innerHTML = 'Action';
+		x.onclick = ( ev ) => {
+		    pubMessage( aktdevice, p.brokerupmsg );
+		};
+		idcont.appendChild(x);
+	    }
+	    console.log('pin data',aktdevice,aktdevicei,p);
 	    showGrafana();
 	}
     }
     const initMouseEvents = () => {
 	playground.onmousemove = ( ev ) => {
-	    if ( datapinned ) return;
+	    if ( datapinned && !doubleselect ) return;
 	    const rect = ev.target.getBoundingClientRect();
 	    const x = ev.clientX - rect.left; //x position within the element.
 	    const y = ev.clientY - rect.top;  //y position within the element.
@@ -1573,7 +1629,8 @@ window.onload = ( loadev ) => {
     }
     const renderGrafana = () => {
 	if ( !aktdevice ) return;
-	const grdom = document.getElementById('grafana');
+	const grname='grafana'+(doubleselect?'2':'');
+	const grdom = document.getElementById(grname);
 	const grdata = getGrafanaData( aktdevice );
 	if ( !grdata ) return;
 	//	const grurl = grdata.grafana.url;
@@ -1594,7 +1651,8 @@ window.onload = ( loadev ) => {
 	document.getElementById('histtab').classList.add('act');
 	document.getElementById('sensormeters').style.display='none';
 	document.getElementById('sensorout').style.display='none';
-	const grdom = document.getElementById('grafana');
+	const grname='grafana'+(doubleselect?'2':'');
+	const grdom = document.getElementById(grname);
 	grdom.style.display='block';
 	if ( grdom.innerHTML === '' ) renderGrafana();
     }
@@ -1679,6 +1737,12 @@ window.onload = ( loadev ) => {
 	document.body.classList.remove('measuring');
 	
     }
+    const startDoublePin = ( ev ) => {
+	const ld=document.getElementById( 'liveData' );
+	ld.classList.add('double');
+	ld.classList.add('select');
+	doubleselect=true;
+    }
     const initButtonEvents = () => {
 	document.getElementById( 'edtBtn' ).onclick = ( ev ) => {
 	    if ( ev.target.classList.contains('akt') ) return;
@@ -1693,6 +1757,9 @@ window.onload = ( loadev ) => {
 	};
 	document.getElementById( 'datapin' ).onclick = ( ev ) => {
 	    pinData();
+	};
+	document.getElementById( 'doublepin' ).onclick = ( ev ) => {
+	    startDoublePin();
 	};
 	document.getElementById( 'dokBtnCls' ).onclick = ( ev ) => {
 	    const dbtn = document.getElementById( 'dokBtn' );
@@ -1840,7 +1907,7 @@ window.onload = ( loadev ) => {
 	    return rp;
 	}
 	const addRTCylinder = ( p1, p2, h, rot, col ) => {
-	    const cylg = new THREE.CylinderGeometry( 0.3, 0.3, h + 0.1, 4 );
+	    const cylg = new THREE.CylinderGeometry( 0.2, 0.2, h + 0.1, 4 );
 	    //		const cylm = new THREE.MeshBasicMaterial( { color: 0xffffff } );
 	    const cylm = new THREE.MeshBasicMaterial( { color: col } );
 	    const cyl = new THREE.Mesh( cylg, cylm );
