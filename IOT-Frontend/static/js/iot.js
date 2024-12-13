@@ -14,6 +14,8 @@ let lastdevice = null;
 let HTMLready = false;
 let axiso3 = null;
 let cur3d1,cur3d2 = null;
+const pinned = [];
+let markergeom = null;
 let doubleselect = false;
 
 /* Measurement vars */
@@ -258,6 +260,7 @@ window.onload = ( loadev ) => {
     stlloader.load( cur3db64, ( geometry ) => {
 	cur3d1 = processCur3D( geometry, 0x00ff00 );
 	cur3d2 = processCur3D( geometry, 0xff0000 );
+	markergeom = geometry;
     });
 
     /* Achsenkreuz */
@@ -738,6 +741,13 @@ window.onload = ( loadev ) => {
 	    aktcur.rotation.y += 0.05;
 //	    aktcur.rotation.z += 0.001;
 	}
+	if ( datapinned ) {
+	    pinned.forEach( ( o, i ) => {
+		let aktpin = o.marker;
+		aktpin.rotation.x += 0.05;
+		aktpin.rotation.y += 0.05;
+	    });
+	}
 	renderer.render( scene, camera );
 
     }
@@ -795,28 +805,27 @@ window.onload = ( loadev ) => {
 	ttpdom.style.left = ( x + 20 ) + 'px';
 	ttpdom.style.top = ( y ) + 'px';
 	ttpdom.classList.add('show');
-	const ttname='sensortooltip'+(doubleselect?'2':'');
-	const ttcontainer = document.getElementById( ttname );
+	const ttcontainer = document.getElementById( 'sensortooltip' );
 	ttcontainer.innerHTML = text;
 	document.getElementById('liveData').classList.add('show');
+//	document.getElementById('liveCont').classList.add('act');
 //	console.log('show tooltip');
     }
     const hideTooltip = () => {
-	if ( doubleselect ) return;
+//	if (  ) return;
 	const ttpdom = document.getElementById( 'tooltip' );
 	ttpdom.classList.remove('show');
 	document.getElementById( 'sensortooltip' ).replaceChildren();
-	document.getElementById( 'sensortooltip2' ).replaceChildren();
 	document.getElementById( 'sensormeters' ).style.display='block';
 	document.getElementById( 'sensorout' ).style.display='block';
-	document.getElementById( 'grafana' ).replaceChildren();
-	document.getElementById( 'grafana' ).style.display='none';
-	document.getElementById( 'grafana2' ).replaceChildren();
-	document.getElementById( 'grafana2' ).style.display='none';
-	const livetab = document.querySelector('#liveData h2.act');
-	if ( livetab && livetab.classList ) livetab.classList.remove('act');
-	document.getElementById( 'livetab' ).classList.add('act');
-	document.getElementById('liveData').classList.remove('show');
+	if ( !datapinned ) {
+	    document.getElementById('liveData').classList.remove('show');
+//	    document.getElementById('liveCont').classList.remove('act');
+	}
+//	document.getElementById( 'grafana' ).replaceChildren();
+//	document.getElementById( 'livetab' ).classList.add('act');
+	if ( !datapinned )
+	    document.getElementById('liveData').classList.remove('show');
     }
     const mouseOver3D = ( xp, yp ) => {
 	const raycaster = new THREE.Raycaster();
@@ -940,6 +949,7 @@ window.onload = ( loadev ) => {
 		document.getElementById('sensorid').innerHTML = '';
 		document.getElementById('sensorout').innerHTML = '';
 	    }
+	    document.getElementById('sensorout').style.display = 'none';
 	}
     }
 
@@ -990,9 +1000,7 @@ window.onload = ( loadev ) => {
 	removeMeshes( signmesh );
 	removeMeshes( routemesh );
 	hideTooltip();
-	datapinned = false;
-	doubleselect = false;
-	document.body.classList.remove('datapinned');
+	unpinAll();
 	document.getElementById('sensorid').replaceChildren();
 	document.getElementById('sensorout').replaceChildren();
 	document.getElementById('dokLyr').replaceChildren();
@@ -1420,59 +1428,90 @@ window.onload = ( loadev ) => {
 	xhr.send();
     }
 
-    const unpinData = () => {
+    const unpinAll = ( ) => {
+	document.getElementById('liveData').classList.remove('multi');
+	document.getElementById('liveData').classList.remove('double');
+	document.getElementById('liveCont').classList.add('act');
+	datapinned = false;
+	document.body.classList.remove('datapinned');
+	pinned.forEach( ( o, i ) => {
+	    let aktpin = o.marker;
+	    aktpin.geometry.dispose();
+	    aktpin.material.dispose();
+	    aktpin.parent.remove(aktpin);
+	});
+
+	pinned.splice(0);
+	document.getElementById('histCont').replaceChildren();
+    }
+    const unpinData = ( aktdevice ) => {
 	datapinned = false;
 	doubleselect = false;
 	document.body.classList.remove('datapinned');
-	document.getElementById('liveData').classList.remove('show');
+	document.getElementById('liveData').classList.remove('multi');
 	document.getElementById('liveData').classList.remove('double');
-	document.getElementById('liveData').classList.remove('select');
+    }
+    const isPinned = ( ad ) => {
+	for ( let i=0; i<pinned.length; i++ ) {
+	    const o=pinned[i];
+	    console.log( 'isPinned?', o.id, ad, o.id === ad );
+	    if ( o.id === ad ) {
+		return true;
+		break;
+	    };
+	};
+	return false;
     }
     const pinData = () => {
-//	console.log('pindevice',aktdevice);
-	if ( !aktdevice || aktdevice === '' ) return;
+	console.log('pindevice',aktdevice,isPinned( aktdevice ));
+	if ( !aktdevice || aktdevice === '' || aktdevice === 'no data' || isPinned( aktdevice ) ) return;
 	const ldcont = document.getElementById('liveData');
-	if ( doubleselect ) {
+	const lvcont = document.getElementById('liveCont');
+	const hscont = document.getElementById('histCont');
+	datapinned = true;
+	document.body.classList.add('datapinned');
+	const idcont = document.getElementById('sensorid');
+	const p=parts[aktdevicei];
+	const grdom=renderGrafana( aktdevice, p.tooltip, palette[pinned.length] );
+	
+	const mark3d = processCur3D( markergeom, palette[pinned.length] );
+	mark3d.position.set(p.mesh.position.x,p.mesh.position.y,p.mesh.position.z);
+	mark3d.visible = true;
+	mark3d.scale.set( 5,5,5 );
+	scene.add( mark3d );
+	pinned.push( {
+	    id : aktdevice,
+	    marker: mark3d,
+	    dom: grdom
+	});
+	if ( pinned.length > 2 ) ldcont.classList.add( 'multi' );
+	else if ( pinned.length > 1 ) ldcont.classList.add( 'double' );
+	else ldcont.classList.remove( 'multi' );
+//	grdom.scrollIntoView({ behaviour: 'smooth', inline: 'end' });
+	if ( p.brokerupmsg ) {
+	    let x=document.createElement( 'span' );
+	    x.classList.add('sendbrokerbtn');
+	    x.innerHTML = 'Action';
+	    x.onclick = ( ev ) => {
+		pubMessage( aktdevice, p.brokerupmsg );
+	    };
+	    idcont.appendChild(x);
+	}
+	console.log('pin data',aktdevice,aktdevicei,p.mesh);
+	window.setTimeout( () => {
 	    showGrafana();
-	    doubleselect=false;
-	    ldcont.classList.remove('select');
-	}
-	else if ( datapinned ) {
-	    datapinned = false;
-	    doubleselect = false;
-	    document.body.classList.remove('datapinned');
-	    ldcont.classList.remove('double');
-	    ldcont.classList.remove('select');
-	    ldcont.classList.remove('show');
-	}
-	else {
-	    datapinned = true;
-	    document.body.classList.add('datapinned');
-	    const idcont = document.getElementById('sensorid');
-	    const p=parts[aktdevicei];
-	    if ( p.brokerupmsg ) {
-		let x=document.createElement( 'span' );
-		x.classList.add('sendbrokerbtn');
-		x.innerHTML = 'Action';
-		x.onclick = ( ev ) => {
-		    pubMessage( aktdevice, p.brokerupmsg );
-		};
-		idcont.appendChild(x);
-	    }
-	    console.log('pin data',aktdevice,aktdevicei,p);
-	    showGrafana();
-	}
+	}, 100 );
     }
     const initMouseEvents = () => {
 	playground.onmousemove = ( ev ) => {
-	    if ( datapinned && !doubleselect ) return;
+//	    if ( datapinned && !doubleselect ) return;
 	    const rect = ev.target.getBoundingClientRect();
 	    const x = ev.clientX - rect.left; //x position within the element.
 	    const y = ev.clientY - rect.top;  //y position within the element.
 //	    console.log('mousemove',x,y);
 	    mouseOver3D( x, y );
 	};
-	playground.onmousedown = ( ev ) => {
+	playground.onmouseup = ( ev ) => {
 	    if ( measuremode ) {
 		setMeasurePoint();
 		ev.stopPropagation();
@@ -1627,34 +1666,38 @@ window.onload = ( loadev ) => {
 	    }
 	}
     }
-    const renderGrafana = () => {
+    const renderGrafana = ( aktdevice, tooltip, col ) => {
 	if ( !aktdevice ) return;
+	
 	const grname='grafana'+(doubleselect?'2':'');
-	const grdom = document.getElementById(grname);
+	const grdom = document.createElement('div');
+	grdom.id='grafana'+pinned.length;
+	grdom.classList.add('grafana');
+	grdom.innerHTML='<h3>'+tooltip+'</h3>';
+	const markicn = document.createElement('span');
+	markicn.classList.add('markicn');
+	markicn.style.background = col;
+	grdom.appendChild(markicn);
 	const grdata = getGrafanaData( aktdevice );
 	if ( !grdata ) return;
 	//	const grurl = grdata.grafana.url;
 	const grurl = '/public-dashboards/'+grdata.grafana.pubtoken;
 	grdom.insertAdjacentHTML( 'beforeend', '<iframe width="100%" height="480" src="https://freetwin.de:3000'+grurl+'?kiosk" />' );
+	document.getElementById('histCont').appendChild(grdom);
+	return grdom;
 //	console.log('renderGrafana',aktdevice,grdata);
     }
     const showLivedata = () => {
-	document.querySelector('#liveData h2.act').classList.remove('act');
+	document.getElementById('liveCont').classList.add('act');
+	document.getElementById('histCont').classList.remove('act');
 	document.getElementById('livetab').classList.add('act');
-	document.getElementById('sensormeters').style.display='block';
-	document.getElementById('sensorout').style.display='block';
-//	document.getElementById('grafana').replaceChildren();
-	document.getElementById('grafana').style.display='none';
+	document.getElementById('histtab').classList.remove('act');
     }
     const showGrafana = () => {
-	document.querySelector('#liveData h2.act').classList.remove('act');
+	document.getElementById('liveCont').classList.remove('act');
+	document.getElementById('histCont').classList.add('act');
+	document.getElementById('livetab').classList.remove('act');
 	document.getElementById('histtab').classList.add('act');
-	document.getElementById('sensormeters').style.display='none';
-	document.getElementById('sensorout').style.display='none';
-	const grname='grafana'+(doubleselect?'2':'');
-	const grdom = document.getElementById(grname);
-	grdom.style.display='block';
-	if ( grdom.innerHTML === '' ) renderGrafana();
     }
 
     const onWindowResize = () => {
@@ -1743,6 +1786,17 @@ window.onload = ( loadev ) => {
 	ld.classList.add('select');
 	doubleselect=true;
     }
+    const scrollHistLayer = ( dir ) => {
+	const TILE = 400;
+	const hc=document.getElementById( 'histCont' );
+	hc.scrollTo({
+	    top: 0,
+	    left: hc.scrollLeft+dir*TILE,
+	    behavior: 'smooth'
+	})
+	console.log('scrollHistLayer',dir,hc);
+	
+    }
     const initButtonEvents = () => {
 	document.getElementById( 'edtBtn' ).onclick = ( ev ) => {
 	    if ( ev.target.classList.contains('akt') ) return;
@@ -1756,10 +1810,7 @@ window.onload = ( loadev ) => {
 //	    console.log('edit',id);
 	};
 	document.getElementById( 'datapin' ).onclick = ( ev ) => {
-	    pinData();
-	};
-	document.getElementById( 'doublepin' ).onclick = ( ev ) => {
-	    startDoublePin();
+	    unpinAll();
 	};
 	document.getElementById( 'dokBtnCls' ).onclick = ( ev ) => {
 	    const dbtn = document.getElementById( 'dokBtn' );
@@ -1822,6 +1873,12 @@ window.onload = ( loadev ) => {
 	document.getElementById( 'histtab' ).onclick = ( ev ) => {
 	    if ( ev.target.classList.contains('act') ) return;
 	    showGrafana();
+	};
+	document.getElementById( 'histCmpLeft' ).onclick = ( ev ) => {
+	    scrollHistLayer( -1 );
+	};
+	document.getElementById( 'histCmpRight' ).onclick = ( ev ) => {
+	    scrollHistLayer( 1 );
 	};
 	document.getElementById( 'burger' ).onclick = ( ev ) => {
 	    const d=document.getElementById( 'deviceNavi' );
