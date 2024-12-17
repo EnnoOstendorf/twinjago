@@ -1,14 +1,17 @@
+require('dotenv').config();
 
 // First the Influx Part
 const {InfluxDB, Point} = require('@influxdata/influxdb-client');
 
 // ENVS - 
-const INFLUX_URL = 'http://localhost:8086';
-//const INFLUX_TOKEN = 'gGy8VrOP2MviQWr-7bjAROT-9eZ0XJgsJJ9AyWEZr9QE-PJ8POheN8sdItc_4zBajLZMBixEXlB_IacZlxTbNQ==';
-//const INFLUX_TOKEN = 'SxoqlAtvyoHhUr0K-lDDzLvBkuEaXYNFKtpgiMqH5vlYKDBGPeMjTDBG7LhdyhkdFhiztYOhyxdp4FTFlID09Q==';
-const INFLUX_TOKEN = '_cacSJ3b2TXCWTGFlmDI71Y0AaN0IPpOV48fLiUdFoVKrTi_GX0dqoY2Q9gwy--rHXZu6h64ciAyQJSaIJ01rA==';
-const INFLUX_ORG = 'fh-muenster';
-const INFLUX_BUCKET = 'iot-sensors';
+const INFLUX_URL = process.env.INFLUX_URL;
+//const INFLUX_URL = 'http://localhost:8086';
+const INFLUX_TOKEN = process.env.INFLUX_TOKEN;
+//const INFLUX_TOKEN = '_cacSJ3b2TXCWTGFlmDI71Y0AaN0IPpOV48fLiUdFoVKrTi_GX0dqoY2Q9gwy--rHXZu6h64ciAyQJSaIJ01rA==';
+const INFLUX_ORG = process.env.INFLUX_ORG;
+//const INFLUX_ORG = 'fh-muenster';
+const INFLUX_BUCKET = process.env.INFLUX_BUCKET;
+//const INFLUX_BUCKET = 'iot-sensors';
 
 const influxDB = new InfluxDB({ 'url': INFLUX_URL, 'token': INFLUX_TOKEN });
 const writeApi = influxDB.getWriteApi(INFLUX_ORG, INFLUX_BUCKET)
@@ -25,11 +28,15 @@ const DASHJSON = require('./grafana-dash.json');
 const PANELJSON = require('./grafana-panel.json');
 const rawstate = require('./pipestate.json');
 
-console.log('Connect to InfluxDB');
+console.log('Connect to InfluxDB',process.env.INFLUX_URL);
+
+
 
 // GRAFANA STUFF
-const GRAFANA_URL = 'https://localhost:3000';
-const GRAFANA_TOKEN = 'glsa_L0Y091GkqFgeEKRCGqICCnd7gVjL6LN6_c2a11d40';
+const GRAFANA_URL = process.env.GRAFANA_URL;
+const GRAFANA_TOKEN = process.env.GRAFANA_TOKEN;
+//const GRAFANA_URL = 'https://freetwin.de:3000';
+//const GRAFANA_TOKEN = 'glsa_L0Y091GkqFgeEKRCGqICCnd7gVjL6LN6_c2a11d40';
 
 const axios = require('axios');
 
@@ -50,6 +57,7 @@ const sendGrafanaApi = ( met, url, dat, succb, errcb ) => {
     });
 }
 
+
 // Now the MQTT Part
 
 const mqtt = require('mqtt')
@@ -58,10 +66,14 @@ const http = require('http');
 const https = require('https');
 const express = require('express');
 
-const mqtturl = 'wss://iot.fh-muenster.de/mqtt'
-const privateKey = fs.readFileSync('/etc/letsencrypt/live/freetwin.de/privkey.pem', 'utf8');
-const certificate = fs.readFileSync('/etc/letsencrypt/live/freetwin.de/cert.pem', 'utf8');
-const ca = fs.readFileSync('/etc/letsencrypt/live/freetwin.de/chain.pem', 'utf8');
+const mqtturl = process.env.MQTTURL;
+//const mqtturl = 'wss://iot.fh-muenster.de/mqtt'
+const privateKey = fs.readFileSync( process.env.PRIVKEYPATH, 'utf8');
+//const privateKey = fs.readFileSync('/etc/letsencrypt/live/freetwin.de/privkey.pem', 'utf8');
+const certificate = fs.readFileSync(process.env.CERTFILEPATH, 'utf8');
+//const certificate = fs.readFileSync('/etc/letsencrypt/live/freetwin.de/cert.pem', 'utf8');
+const ca = fs.readFileSync(process.env.CAFILEPATH, 'utf8');
+//const ca = fs.readFileSync('/etc/letsencrypt/live/freetwin.de/chain.pem', 'utf8');
 const credentials = {
 	key: privateKey,
 	cert: certificate,
@@ -72,8 +84,10 @@ const options = {
     // Clean session
     clean: true,
     // Authentication
-    username: 'user000',
-    password: 'zAJ5T2mW',
+    username: process.env.MQTTUSER,
+//    username: 'user000',
+    password: process.env.MQTTPASS,
+//    password: 'zAJ5T2mW',
     protocolVersion: 4,
     keepalive: 30,
     protocolId: 'MQTT',
@@ -163,13 +177,14 @@ const publishDashboard = ( id, uid ) => {
 const parseMessage = ( id, msg ) => {
     [ type, id ] = id.split( /\// );
     if ( ! devices[id] ) {
-	devices[id] = { 'meta' : '', 'datacount' : 0, 'beaconcount' : 0 };
+	devices[id] = { 'meta' : '', 'datacount' : 0, 'beaconcount' : 0, 'lastdata' : [] };
 	deviceids.push( id );	
 	console.log( 'new device', id );
     }
     if ( type === 'meta' ) {
 //	console.log('meta',id,msg);
 	devices[id].meta = msg;
+
 	if ( !devices[id].grafana ) {
 	    createGrafanaDash( id, msg );
 	}
@@ -185,6 +200,9 @@ const parseMessage = ( id, msg ) => {
 	    //	    console.log('no payloadStructure for id '+id+', no writePoint(',msg,')');
 	    return;
 	};
+	if ( ! devices[id].lastdata ) devices[id].lastdata = [];
+	devices[id].lastdata.push( msg );
+	while ( devices[id].lastdata.length > 5 ) devices[id].lastdata.shift();
 	for( let i=0; i<devices[id].meta.payloadStructure.length; i++ ) {
 	    writePoint( devices[id].meta.payloadStructure[i].name,id,msg[i] );
 //	    console.log('writePoint(',devices[id].meta.payloadStructure[i].name,id,msg[i],')');
@@ -240,7 +258,12 @@ client.on('close', function () {
 client.on('message', function (topic, message) {
   // message is Buffer
     //console.log('MSG:',topic,JSON.parse(message.toString()))
-    parseMessage( topic, JSON.parse(message.toString()) );
+    if ( message.toString() === '' ) return;
+    try {
+	parseMessage( topic, JSON.parse(message.toString()) );
+    } catch (e) {
+	console.log('error parsing message',topic, message.toString());
+    };
     //    client.end()
 })
 
@@ -266,6 +289,7 @@ app.get('/getAll', (req, res) => {
 	const o = devices[key];
 	allDevs.push( { 'id': key, 'data' : o } );
     };
+    console.log('getAll called');
 //    console.log( 'getAll', allDevs );
 //    res.header('Access-Control-Allow-Origin', '*')
     res.json( allDevs );
@@ -292,12 +316,12 @@ app.get('/delete/:id', (req, res) => {
 const httpServer = http.createServer(app);
 const httpsServer = https.createServer(credentials, app);
 
-httpServer.listen(3458, () => {
-	console.log('HTTP Server running on port 3458');
+httpServer.listen(process.env.PORT, () => {
+    console.log('HTTP Server running on port ',process.env.PORT);
 });
 
-httpsServer.listen(3459, () => {
-	console.log('HTTPS Server running on port 3459');
+httpsServer.listen(process.env.HTTPSPORT, () => {
+    console.log('HTTPS Server running on port ',process.env.HTTPSPORT);
 });
 
 
