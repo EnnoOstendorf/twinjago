@@ -57,13 +57,16 @@ Configuration is done in a textfile with the name *.env* located in the root dir
   During generation of a dashboard, the panel json is included into the dash json once for each sensor below the panels array. Therefore you have to cut the json out of grafana into these two parts.
   After changing the files you have to re-initiate the demon by resetting the state and deleting all device dashboards in grafana.
 
-- the state of the devices is saved into a file pipestate.json and loaded upon restart. It could be necessary to reset the demon state when you made manual changes to the grafana dashboards. To reinitiate the demon there is a shellscript __reset_mqtt_InfluxGrafanaPipe.sh__ which is mainly for documentation purposes atm. critical parts are commented out. Please do it manually following these steps:
-  1 stop the demon (pm2 list, pm2 delete <processid of mqttInfluxGrafanaPipe.js>)
-  2 reset state: __echo \'\[\]' > pipestat.json__
-  3 in grafana frontend delete every sensor dashboard
-  4 restart demon
+- the state of the devices is saved into a file pipestate.json and loaded upon restart. It could be necessary to reset the demon state when you made manual changes to the grafana dashboards.
 
-If you do not know exactly, which dashboard to delete, you can try step 4 without the processmanager, simply start the demon by hand: __node mqttInfluxGrafanaPipe.js__
+- To reinitiate the demon there is a shellscript __reset_mqtt_InfluxGrafanaPipe.sh__ which is mainly for documentation purposes atm. critical parts are commented out.
+  *Please do it manually following these steps:*
+  + stop the demon (pm2 list, pm2 delete <processid of mqttInfluxGrafanaPipe.js>)
+  + reset state: __echo \'\[\]' > pipestat.json__
+  + in grafana frontend delete every sensor dashboard
+  + restart demon
+
+- If you do not know exactly, which dashboard to delete, you can try step 4 without the processmanager, simply start the demon by hand: __node mqttInfluxGrafanaPipe.js__
 If there are dashboards existing, that can not be overwritten by the demon, you see an error in the console identifying the device id of the dashboard and you can delete it in grafana. Stop the demon using <STRG-C> and try again.
 When there are no more errors, stop the demon and start again using processmanager: __pm2 start mqttInfluxGrafanaPipe.js__
 
