@@ -52,7 +52,8 @@ Configuration is done in a textfile with the name *.env* located in the root dir
 - the grafana dashboards are created using the grafana API, the demon takes the skeleton for the API calls out of these files:
   + grafana-panel.json (for creating a panel)
   + grafana-dash.json (for creating a dashboard)
-  + grafana-inlux-query.txt (the query for grafana to access the influxdb, NOT used by the demon, just for your information)
+  + grafana-influx-query.txt (the query for grafana to access the influxdb, NOT used by the demon, just for your information)
+
   if you make changes to the dashboards in grafana and want to update the json for generation of sensor dashboards by the demon, you have to copy the JSON out of grafana to the files *grafana-dash.json* and *grafana-panel.json*.
   During generation of a dashboard, the panel json is included into the dash json once for each sensor below the panels array. Therefore you have to cut the json out of grafana into these two parts.
   After changing the files you have to re-initiate the demon by resetting the state and deleting all device dashboards in grafana.
