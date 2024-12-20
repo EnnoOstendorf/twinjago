@@ -385,7 +385,7 @@ input.error {
 	border-radius: 20px;
 	display: none;
 	z-index:1;
-
+	transition: width 0.3s ease-in-out;
 }
 #liveData.show {
 	display: inline-block;
@@ -395,6 +395,9 @@ input.error {
 }
 #liveData.multi, #liveData.multi.double {
 	width: 40%;
+}
+.ispinnedmax #liveData.multi.double, .ispinnedmax #liveData.double, .ispinnedmax #liveData {
+	width: 95%;
 }
 #liveData h2 {
 	margin: 5px 10px 10px;
@@ -413,7 +416,7 @@ input.error {
 	text-decoration: none;
 	cursor: default;
 }
-.datapin,.doublepin {
+.datapin,.pinnedanz,.pinnedmin,.pinnedmax {
 	position: absolute;
 	width: 8px;
 	height: 8px;
@@ -430,10 +433,46 @@ input.error {
 	padding: 3px 5px 8px 6px;
 	cursor:pointer;
 	z-index:1;
+	font-weight: bold;
 }
-.datapin:hover,.doublepin:hover {
+.datapin:hover,.pinnedmin:hover,.pinnedmax:hover {
     background: #eee;
     color: #444;
+}
+.pinnedanz {
+	left: 90px;
+	background: #fff;
+	z-index: 7;
+	box-shadow: 0 0 5px #000;
+	color: #000;
+	padding: 0;
+	width: 15px;
+	height: 15px;
+	text-align: center;
+	cursor: default;
+}
+.pinnedmin {
+	left: 20px;
+}
+.pinnedmax {
+    left: 50px;
+    padding: 2px 7px 9px 4px;
+}
+.ispinnedmax .pinnedmax,.ispinnedmin .pinnedmin {
+	background-color: #060;
+}
+.ispinnedmax .multi .livesensor {
+	width: 25%;
+}
+.ispinnedmin #liveData, .ispinnedmin #liveData.multi, .ispinnedmin #liveData.multi.double {
+	height: 80px;
+	width: 20%;
+}
+.ispinnedmin #histHead {
+	display: none;
+}
+.ispinnedmin #liveCont {
+	display: none;
 }
 @keyframes yellowblink {
     from {
@@ -443,14 +482,35 @@ input.error {
 	background-color: #ee0;
     }
 }
-.datapinned .datapin,.datapinned .doublepin {
+.datapinned .datapin,.datapinned .pinnedanz,.datapinned .pinnedmin,.datapinned .pinnedmax {
 	opacity:1;
 }
 .sensormeters {
-	margin: 0 0 10px 5px;
+	padding: 0 0 10px 5px;
+}
+.datapinned .sensormeters,.datapinned .sensorout {
+    display:none;
+}
+.datapinned .livesensor .sensormeters,.datapinned .livesensor .sensorout {
+    display:block;
+}
+.livesensor .sensormeters {
+	white-space: nowrap;
+	overflow: auto;
+	padding: 0 0 14px 0;
+}
+.timestamp {
+	position: absolute;
+	font-size: 10px;
+	margin-left: 5px;
+}
+.livesensor .sensorout {
+	margin-left: 2px;
+	background: #fff;
+	height: 20px;
 }
 .sensortooltip {
-	margin: 0px 10px 40px;
+	margin: 20px 10px 40px;
 	font-size: 18px;
 	height: 40px;
 }
@@ -465,7 +525,7 @@ input.error {
 	/* vertical-align: top; */
 	width: auto;
 	position: absolute;
-	top: 86px;
+	top: 50px;
 	right: 0;
 	text-align: center;
 	white-space: nowrap;
@@ -479,21 +539,20 @@ input.error {
 	padding: 5px;
 	font-size: 12px;
 	font-weight: normal;
-	max-height: 500px;
 	overflow: auto;
 	background: #ccc;
 	/* z-index: 0; */
 	width: 92%;
 	transition: all 0.2s ease-in-out;
 }
-#sensorid2,#sensortooltip2,#sensormeters2 {
-    display: none;
-}
 #histHead {
 	text-align: center;
-	position: relative;
+	position: absolute;
 	opacity: 0;
-	transition: opacity 0.1s ease-in-out;	
+	transition: opacity 0.1s ease-in-out;
+	bottom: 0;
+	width: 100%;
+	z-index: 1;
 }
 .multi #histHead {
     opacity: 1;
@@ -503,34 +562,48 @@ input.error {
 }
 .histCmpBtn {
 	position: absolute;
-	top: 0;
+	bottom: 0;
 	cursor: pointer;
+	height: 100px;
+	margin-top: -50px;
+	font-size: 26px;
+	font-weight: bold;
+	opacity: 0.3;
+	background: rgba(255,255,255,0.8);
+	border-radius: 20px;
+	transition: opacity 0.2s ease-in-out;
 }
 #histCmpLeft {
-	left: 0;
+	left: -3px;
 }
 #histCmpRight {
-	right: 0;
+	right: 5px;
+}
+.histCmpBtn:hover {
+	opacity: 1;
 }
 #histCont,#liveCont {
-    display:none;
+    Xdisplay:none;
 }
-#histCont.act,#liveCont.act {
-    display:inline-block;
-}
-#histCont {
+#histCont,#liveCont {
 	white-space: nowrap;
 	overflow: auto;
 	width:100%;
 }
-.grafana {
+.livesensor {
 	position: relative;
 	text-align: center;
 	display: inline-block;
+	width: 100%;
+	background: #ccc;
+	border: 1px solid #4b4b4b;
+	overflow: hidden;
 }
-.grafana h3 {
+.livesensor h3 {
 	font-size: 12px;
-	margin: 5px 0 1px;
+	margin: 5px 0px 1px 25px;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 .markicn {
 	width: 13px;
@@ -541,31 +614,36 @@ input.error {
 	border-radius: 10px;
 	left: 10px;
 	box-shadow: 0 0 5px #fff;
+	/* font-weight: bold; */
+	text-shadow: 0 0 3px #000;
+	padding: 3px;
+	color: #fff;
 }
-.double .double #sensormeters2 {
-    display: block;
-}
-.double #sensorid2,.double #sensortooltip2 {
-    display: inline-block;
-}
-.double .grafana {
+.double .livesensor {
 	width: 50%;
 	text-align: center;
 	margin-left: 1%;
+	vertical-align: top;
 	/* margin-bottom: 10px; */
 }
-.multi .grafana {
+.multi .livesensor {
 	width: 31%;
+}
+.livesensor iframe {
+	margin-top: 10px;
 }
 .meterroot {
 	display: inline-block;
 	text-align: center;
 	margin: 5px;
-	background: #ccc;
+	background: #ababab;
 	padding: 8px;
 	border-radius: 10px;
 	border: 1px solid #ccc;
-	width:90px;
+	width: 90px;
+}
+.multi .meterroot,.double .meterroot {
+	width: 50px;
 }
 .meterroot span {
 	font-size: 16px;
@@ -576,25 +654,33 @@ input.error {
 	overflow: hidden;
 	text-align: left;
 }
+.multi .meterroot span,.double .meterroot span {
+	font-size: 12px;
+	width: 30px;
+}
 .meterroot h4 {
 	margin: 4px 0;
 	font-size: 16px;
+	overflow: hidden;
+}
+.multi .meterroot h4,.double .meterroot h4 {
+	font-size: 12px;
 }
 .sendbrokerbtn {
 	position: absolute;
 	background: #0b0;
 	display: block;
-	right: -120px;
-	padding: 3px 10px;
+	right: 5px;
+	padding: 1px 6px;
 	border-radius: 10px;
-	font-size: 14px;
+	font-size: 12px;
 	font-weight: bold;
 	border: 1px solid #fff;
-	width: 90px;
+	width: auto;
 	color: #fff;
 	text-shadow: 1px 1px 2px #000;
 	box-shadow: 0 0 4px #000;
-	top: 0;
+	top: 2px;
 	cursor: pointer;
 }
 /* info layer */

@@ -1207,6 +1207,7 @@ window.onload = ( loadev ) => {
 	    mainmesh.remove(meshp);
 	    DOMObj.remove();
 	    parts.splice(index,1);
+	    rebuildPartsDom();
 //	    console.log( 'clicked delete button', parts, index, parts[index] );
 	};
     }
@@ -1707,8 +1708,8 @@ window.onload = ( loadev ) => {
 		o.broken = true;		
 	    }
 	    else {
-		addRPin( po1,o.hmod );
-		addRPin( po2,o.hmod );
+		addRPin( po1,o.hmod,o.dmod );
+		addRPin( po2,o.hmod,o.dmod );
 	    }
 //	    console.log('route h',o.h);
 	});
@@ -2195,6 +2196,7 @@ window.onload = ( loadev ) => {
 	    devdata.routes.push({
 		id: o.id,
 		hmod: o.hmod,
+		dmod: o.dmod||1,
 		pin1: {
 		    col: o.pin1.col,
 		    name: o.pin1.name,
@@ -2506,6 +2508,7 @@ window.onload = ( loadev ) => {
     }
     const ROUTEHEIGHT = 5;
     const add3DRoute = ( ro ) => {
+	console.log('adding 3D route',ro);
 	const rtmsh = new THREE.Object3D();
 	const pinoffs = { 'x':0, 'y':0,'z':-1 };
 	const routeh = ROUTEHEIGHT + (ro.hmod?ro.hmod:0) + routes.length;
@@ -2567,8 +2570,8 @@ window.onload = ( loadev ) => {
 	    rp.z = p1.z + dz;
 	    return rp;
 	}
-	const addRTCylinder = ( p1, p2, h, rot, col ) => {
-	    const cylg = new THREE.CylinderGeometry( 0.2, 0.2, h + 0.1, 4 );
+	const addRTCylinder = ( p1, p2, h, d, rot, col ) => {
+	    const cylg = new THREE.CylinderGeometry( 0.2 * d, 0.2 * d, h + 0.1, 8 );
 	    //		const cylm = new THREE.MeshBasicMaterial( { color: 0xffffff } );
 	    const cylm = new THREE.MeshBasicMaterial( { color: col } );
 	    const cyl = new THREE.Mesh( cylg, cylm );
@@ -2579,7 +2582,7 @@ window.onload = ( loadev ) => {
 	};
 	for ( let i=0; i<points.length-1; i++ ) {
 	    const h = calcHeight( points[i], points[i+1] );
-	    addRTCylinder( points[i], points[i+1], h, rtcylrots[i], ro.pin1.col );
+	    addRTCylinder( points[i], points[i+1], h, ro.dmod, rtcylrots[i], ro.pin1.col );
 	}
 	routemesh.add( rtmsh );
 	ro.obj3d = rtmsh;
@@ -2588,9 +2591,10 @@ window.onload = ( loadev ) => {
     const idify = ( name ) => {
 	return name.replace( /\ /g, '_' );
     }
-    const addRPin = ( o, h ) => {
+    const addRPin = ( o, h, d ) => {
 	const cont = document.getElementById('routelist');
 	const rpd = document.getElementById('routingPinDlg');
+	d=d||1;
 	if ( cont.classList.contains('target') ) {
 	    cont.classList.remove('target');
 	    aktroute.pin2 = o; aktroute.state = 2;
@@ -2626,16 +2630,22 @@ window.onload = ( loadev ) => {
 	    const route = {
 		'pin1' : o,
 		'hmod' : h?h:0,
+		'dmod' : d?d:1,
 		'state' : 1
 	    }
 	    aktroute = route;
 	    routes.push( route );
 	    cont.classList.add('target');
 	    rpd.classList.add('pin2');
-	    cont.insertAdjacentHTML( 'beforeend', '<div class="route active"><div class="rpin firstpin"><i>'+shortenPartName(o.part)+'</i><b>'+o.name+'</b> </div> <div class="rmid"><b style="color:'+o.col+'"></b><br />H mod <input class="rhmod" id="rhmod'+routes.length+'" value="'+(h?h:0)+'" /></div> </div>' );
+	    cont.insertAdjacentHTML( 'beforeend', '<div class="route active"><div class="rpin firstpin"><i>'+shortenPartName(o.part)+'</i><b>'+o.name+'</b> </div> <div class="rmid"><b style="color:'+o.col+'"></b><br />H <input class="rhmod" id="rhmod'+routes.length+'" value="'+(h?h:0)+'" /> D <input class="rhmod" id="rdmod'+routes.length+'" value="'+(d?d:0)+'" /></div> </div>' );
 	    const hinp = document.getElementById('rhmod'+routes.length);
 	    hinp.onblur = ( ev ) => {
 		route.hmod = parseInt(hinp.value);
+//		console.log('route hmod',route)
+	    }
+	    const dinp = document.getElementById('rdmod'+routes.length);
+	    dinp.onblur = ( ev ) => {
+		route.dmod = parseInt(dinp.value);
 //		console.log('route hmod',route)
 	    }
 	    // set first pin

@@ -71,18 +71,19 @@
 	  <button id="dokBtnCls" title="Dokumentation schließen">Schließen</button>
 	  <button id="dokBtn" title="Informationen zum Device"><b><i></i><s></s></b></button>
 	</div>
-	<div id="liveData"><span class="datapin" id="datapin">X</span>
-	  <h2 id="livetab" class="live act">Live Daten</h2><h2 id="histtab" class="history">Historie</h2>
+	<div id="liveData"><span class="datapin" id="datapin" title="Schließen">X</span>
+	  <span class="pinnedanz" id="pinnedanz" title="Anzahl gepinnter Teile"></span>
+	  <span class="pinnedmin" id="pinnedmin" title="Minifizieren">_</span>
+	  <span class="pinnedmax" id="pinnedmax" title="Maxifizieren">[]</span>
 	  <div id="sensorid" class="sensorid"></div>
 	  <div id="sensortooltip" class="sensortooltip"></div>
-	  <div id="liveCont" class="act">
-	    <div id="sensormeters" class="sensormeters"></div>
-	    <div id="sensorout" class="sensorout"></div>
-	  </div>
+	  <div id="sensormeters" class="sensormeters"></div>
+	  <div id="sensorout" class="sensorout"></div>
 	  <div id="histHead">
-	    <h3>Vergleich</h3>
 	    <button id="histCmpLeft" class="histCmpBtn">&lt;</button>
 	    <button id="histCmpRight" class="histCmpBtn">&gt;</button>
+	  </div>
+	  <div id="liveCont" class="act">
 	  </div>
 	  <div id="histCont"></div>
 	</div>

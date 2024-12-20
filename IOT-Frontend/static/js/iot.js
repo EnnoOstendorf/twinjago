@@ -31,6 +31,7 @@ const url = 'wss://iot.fh-muenster.de/mqtt'
 
 const broker = {
     'connected' : false,
+    'paused' : false,
     'devices' : [],
     'deviceids' : []   
 };
@@ -58,6 +59,26 @@ const options = {
 
 const MSGBUFFERLINES = 4;
 
+// fetch devices from the pipe service
+let pipedevs = [];
+const loadAllPipedDevices = () => {
+    const url = 'https://freetwin.de:3459/getAll';
+    const xhr = new XMLHttpRequest();
+    xhr.open('get',url,true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onreadystatechange = function () {
+	if (xhr.readyState === 4 && xhr.status === 200) {
+	    var json = JSON.parse(xhr.responseText);
+	    pipedevs=json;
+	    document.getElementById( 'influximport' ).classList.add('ready');
+	    
+	    console.log('loaded all piped devices', broker, json );
+	}
+    };
+    xhr.send();
+}
+loadAllPipedDevices();
+
 const client  = mqtt.connect(url, options)
 console.log('connecting to ',url);
     document.getElementById('mqtttask')?.classList.add('pending');
@@ -83,34 +104,102 @@ client.on('error', function (err) {
 const writePoint = ( field, id, value ) => {
 }
 
-const aktMeter = ( vals ) => {
-    const meterdom = document.getElementById('sensormeters');
+const pubMessage = ( id, msg ) => {
+    client.publish( 'sensor/'+id, msg );
+}
+
+const aktMeter = ( id, msg, ind ) => {
+    if ( !broker.devices[id].meta.payloadStructure || !msg ) return;
+    let mname = 'sensormeters' + (ind>0?ind-1:'');;
+//    if ( i>0 ) mname += (i-1);
+    const meterdom = document.getElementById(mname);
+    const meters = [];    
+    let timestamp = 0;
+    let label = '';
+    for( let i=0; i<broker.devices[id].meta.payloadStructure.length; i++ ) {
+	const o = broker.devices[id].meta.payloadStructure[i];
+	if ( o.name.toLowerCase() === 'timestamp' ) {
+	    label = 'eingegangen';
+	    timestamp = msg[i];
+	}
+	else if ( o.name.toLowerCase() === 'uptime' ) {
+	    label = 'läuft seit';
+	    const dt = new Date(msg[i]);
+	    timestamp = dt.getMonth() + ' Mon ' + dt.getDate() + ' Tag ' + dt.getHours() + ' h ' + dt.getMinutes() + ' min ' + dt.getSeconds() + ' sec ' + dt.getMilliseconds() + ' ms';
+	}
+	else {
+	    let value = msg[i] || '0';
+	    if ( typeof value === 'float' ) value = value.toFixed(2);
+	    meters.push( { 'measure' : o.name, 'value' : value } );
+	}
+    }
     let htmlbuf = '';
-    for ( let i=0; i<vals.length; i++ ) {
-	htmlbuf += '<div class="meterroot"><span>'+vals[i].value+'</span><h4>'+vals[i].measure+'</h4></div>';
+    for ( let i=0; i<meters.length; i++ ) {
+	htmlbuf += '<div class="meterroot"><span>'+meters[i].value+'</span><h4>'+meters[i].measure+'</h4></div>';
+    }
+    if ( timestamp !== 0 ) {
+	htmlbuf += '<div class="timestamp">'+label+': '+timestamp+'</div>';
     }
     meterdom.innerHTML = htmlbuf;
 //    console.log( 'aktMeter', vals, meterdom );
 }
 
-const pubMessage = ( id, msg ) => {
-    client.publish( 'sensor/'+id, msg );
+
+const aktSensorout = ( id, msg, ind ) => {
+    if ( !broker.devices[id].meta.payloadStructure ) return;
+    const nname = 'sensorout' + (ind>0?ind-1:'');
+    const out = document.getElementById( nname );
+    let message = '';
+    for( let i=0; i<broker.devices[id].meta.payloadStructure.length; i++ ) {
+	const o = broker.devices[id].meta.payloadStructure[i];
+	message += o.name + ': ' + msg[i] + '  ';
+    };
+    broker.devices[id].lastdata.push( message );
+//    console.log('aktSensorout',id,out,broker.devices[id].lastdata);
+    out.innerHTML = broker.devices[id].lastdata.join('<br />');//message;    
 }
+
+    const getGrafanaData = ( id ) => {
+	for ( let i=0; i<pipedevs.length; i++ ) {
+	    const o = pipedevs[i];
+	    if ( o && o.id && o.id === id ) {
+		return o.data;
+	    }
+	}
+    }
 
 const parseMessage = ( idp, msg ) => {
 
     const [ type, id ] = idp.split( /\// );
     if ( ! broker.devices[id] ) {
-	broker.devices[id] = { 'meta' : '', 'datacount' : 0, 'beaconcount' : 0, 'lastdata' : [] };
+	broker.devices[id] = { 'meta' : '', 'datacount' : 0, 'beaconcount' : 0, 'lastdata' : [], 'lastmsg' : 0 };
 	broker.deviceids.push( id );
-//	console.log( 'new device', id );
+	const grdata = getGrafanaData(id);
+	if ( grdata && grdata.lastdata ){
+	    const msg2 = grdata.lastdata[grdata.lastdata.length-1];
+	    broker.devices[id].lastmsg = msg2;
+	    aktSensorout( id, msg2 );
+	    aktMeter( id, msg2 );
+	}
+	console.log( 'new device', id,grdata );
     }
     if ( type === 'meta' ) {
 //	console.log('meta',id,msg);
 	broker.devices[id].meta = msg;
     }
     else if ( type === 'sensor' ) {
+	if ( broker.paused ) return;
 	broker.devices[id].datacount++;
+	broker.devices[id].lastmsg = msg;
+	/*
+	  if ( !broker.devices[id].lastdata || broker.devices[id].lastdata.length == 0 ) {
+	    const grdata = getGrafanaData(id);
+	    if ( grdata && grdata.lastdata ) {
+		broker.devices[id].lastdata.push( grdata.lastdata[grdata.lastdata.length-1] );
+		console.log('found lastdata for', id);
+	    }
+	    }
+	    */
 	let message = '';
 	if ( !broker.devices[id].meta || !broker.devices[id].meta.payloadStructure ) {
 	    // Devices wich do net send a payload Structure on the meta channel could not be handled atm
@@ -118,11 +207,11 @@ const parseMessage = ( idp, msg ) => {
 	    //	    console.log('no payloadStructure for id '+id+', no writePoint(',msg,')');
 	    return;
 	};
-	const outcontainer = document.getElementById( 'sensorout'+(doubleselect?'2':'') );
-	const devidcontainer = document.getElementById( 'sensorid'+(doubleselect?'2':'') );
+	const outcontainer = document.getElementById( 'sensorout' );
+	const devidcontainer = document.getElementById( 'sensorid' );
 	const meterdom = document.getElementById('sensormeters');
 	if ( aktdevice && aktdevice === id ) {
-	    const meters = [];
+/*	    const meters = [];
 	    for( let i=0; i<broker.devices[id].meta.payloadStructure.length; i++ ) {
 		const o = broker.devices[id].meta.payloadStructure[i];
 		message += o.name + ': ' + msg[i] + '  ';
@@ -131,9 +220,21 @@ const parseMessage = ( idp, msg ) => {
 		//	    console.log('writePoint(',devices[id].meta.payloadStructure[i].name,id,msg[i],')');
 	    };
 	    if ( outcontainer ) outcontainer.innerHTML = broker.devices[id].lastdata.join('<br />');
-	    aktMeter( meters );
+*/
+	    aktSensorout( id, msg );
+	    aktMeter( id, msg );
 	}
-	broker.devices[id].lastdata.push( message );
+//	broker.devices[id].lastdata.push( message );
+	if ( pinned.length > 0 ) {
+	    for ( let i=0; i<pinned.length; i++ ) {
+		if ( pinned[i].id === id ) {
+//		    console.log('pinned',id,broker.devices[id].lastdata,pinned[i],msg);
+		    aktSensorout( id, msg, i+1 );
+		    aktMeter( id, msg, i+1 );
+		    //		    document.getElementById( 'sensorout'+i ).innerHTML = broker.devices[id].lastdata.join('<br />');
+		}
+	    };
+	}
 	while ( broker.devices[id].lastdata.length > MSGBUFFERLINES ) {
 	    broker.devices[id].lastdata.shift();
 	}
@@ -170,24 +271,6 @@ client.on('message', function (topic, message) {
 })
 
 
-// fetch devices from the pipe service
-let pipedevs = [];
-const loadAllPipedDevices = () => {
-    const url = 'https://freetwin.de:3459/getAll';
-    const xhr = new XMLHttpRequest();
-    xhr.open('get',url,true);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onreadystatechange = function () {
-	if (xhr.readyState === 4 && xhr.status === 200) {
-	    var json = JSON.parse(xhr.responseText);
-	    pipedevs=json;
-	    document.getElementById( 'influximport' ).classList.add('ready');
-	    console.log('loaded all piped devices',json);
-	}
-    };
-    xhr.send();
-}
-loadAllPipedDevices();
 
 window.onload = ( loadev ) => {
     const palette = ['#101010','#808080','#800000','#FF0000','#008000','#00FF00','#808000','#FFFF00','#000080','#0000FF','#800080','#FF00FF','#008080','#00FFFF','#C0C0C0','#FFFFFF'];
@@ -816,8 +899,8 @@ window.onload = ( loadev ) => {
 	const ttpdom = document.getElementById( 'tooltip' );
 	ttpdom.classList.remove('show');
 	document.getElementById( 'sensortooltip' ).replaceChildren();
-	document.getElementById( 'sensormeters' ).style.display='block';
-	document.getElementById( 'sensorout' ).style.display='block';
+	//document.getElementById( 'sensormeters' ).style.display='block';
+	//document.getElementById( 'sensorout' ).style.display='block';
 	if ( !datapinned ) {
 	    document.getElementById('liveData').classList.remove('show');
 //	    document.getElementById('liveCont').classList.remove('act');
@@ -949,7 +1032,6 @@ window.onload = ( loadev ) => {
 		document.getElementById('sensorid').innerHTML = '';
 		document.getElementById('sensorout').innerHTML = '';
 	    }
-	    document.getElementById('sensorout').style.display = 'none';
 	}
     }
 
@@ -1052,8 +1134,8 @@ window.onload = ( loadev ) => {
 		o.broken = true;		
 	    }
 	    else {
-		addRPin( po1,o.hmod );
-		addRPin( po2,o.hmod );
+		addRPin( po1,o.hmod,o.dmod );
+		addRPin( po2,o.hmod,o.dmod );
 	    }
 	});
 	console.log( 'render routes', dra );
@@ -1434,6 +1516,8 @@ window.onload = ( loadev ) => {
 	document.getElementById('liveCont').classList.add('act');
 	datapinned = false;
 	document.body.classList.remove('datapinned');
+	document.body.classList.remove('ispinnedmin');
+	document.body.classList.remove('ispinnedmax');
 	pinned.forEach( ( o, i ) => {
 	    let aktpin = o.marker;
 	    aktpin.geometry.dispose();
@@ -1443,6 +1527,7 @@ window.onload = ( loadev ) => {
 
 	pinned.splice(0);
 	document.getElementById('histCont').replaceChildren();
+	document.getElementById('liveCont').replaceChildren();
     }
     const unpinData = ( aktdevice ) => {
 	datapinned = false;
@@ -1472,8 +1557,8 @@ window.onload = ( loadev ) => {
 	document.body.classList.add('datapinned');
 	const idcont = document.getElementById('sensorid');
 	const p=parts[aktdevicei];
-	const grdom=renderGrafana( aktdevice, p.tooltip, palette[pinned.length] );
-	
+	const lvdom=renderLivedata( aktdevice, p, palette[pinned.length] );
+	renderGrafana( aktdevice, p.tooltip, palette[pinned.length], lvdom );
 	const mark3d = processCur3D( markergeom, palette[pinned.length] );
 	mark3d.position.set(p.mesh.position.x,p.mesh.position.y,p.mesh.position.z);
 	mark3d.visible = true;
@@ -1482,25 +1567,15 @@ window.onload = ( loadev ) => {
 	pinned.push( {
 	    id : aktdevice,
 	    marker: mark3d,
-	    dom: grdom
+	    livedom: lvdom
 	});
 	if ( pinned.length > 2 ) ldcont.classList.add( 'multi' );
 	else if ( pinned.length > 1 ) ldcont.classList.add( 'double' );
 	else ldcont.classList.remove( 'multi' );
+	document.getElementById('pinnedanz').innerHTML = pinned.length;
+	document.getElementById('pinnedanz').title = pinned.length + ' gepinnte Teile';
 //	grdom.scrollIntoView({ behaviour: 'smooth', inline: 'end' });
-	if ( p.brokerupmsg ) {
-	    let x=document.createElement( 'span' );
-	    x.classList.add('sendbrokerbtn');
-	    x.innerHTML = 'Action';
-	    x.onclick = ( ev ) => {
-		pubMessage( aktdevice, p.brokerupmsg );
-	    };
-	    idcont.appendChild(x);
-	}
 	console.log('pin data',aktdevice,aktdevicei,p.mesh);
-	window.setTimeout( () => {
-	    showGrafana();
-	}, 100 );
     }
     const initMouseEvents = () => {
 	playground.onmousemove = ( ev ) => {
@@ -1658,46 +1733,63 @@ window.onload = ( loadev ) => {
 	nl.innerHTML = '<a href="'+links[i].url+'" title="'+links[i].tooltip+'" target="_blank">'+links[i].linktext+'</a>';
 	return nl;
     }
-    const getGrafanaData = ( id ) => {
-	for ( let i=0; i<pipedevs.length; i++ ) {
-	    const o = pipedevs[i];
-	    if ( o && o.id && o.id === id ) {
-		return o.data;
-	    }
-	}
-    }
-    const renderGrafana = ( aktdevice, tooltip, col ) => {
+    const renderGrafana = ( aktdevice, tooltip, col, lvdom ) => {
 	if ( !aktdevice ) return;
 	
-	const grname='grafana'+(doubleselect?'2':'');
-	const grdom = document.createElement('div');
-	grdom.id='grafana'+pinned.length;
-	grdom.classList.add('grafana');
-	grdom.innerHTML='<h3>'+tooltip+'</h3>';
+//	const grdom = document.createElement('div');
+	const grid='grafana'+pinned.length;
+//	grdom.classList.add('grafana');
+/*	grdom.innerHTML='<h3>'+tooltip+'</h3>';
 	const markicn = document.createElement('span');
 	markicn.classList.add('markicn');
 	markicn.style.background = col;
 	grdom.appendChild(markicn);
+*/
 	const grdata = getGrafanaData( aktdevice );
 	if ( !grdata ) return;
 	//	const grurl = grdata.grafana.url;
 	const grurl = '/public-dashboards/'+grdata.grafana.pubtoken;
-	grdom.insertAdjacentHTML( 'beforeend', '<iframe width="100%" height="480" src="https://freetwin.de:3000'+grurl+'?kiosk" />' );
-	document.getElementById('histCont').appendChild(grdom);
-	return grdom;
+	lvdom.insertAdjacentHTML( 'beforeend', '<iframe width="100%" height="350" src="https://freetwin.de:3000'+grurl+'?kiosk" id="'+grid+'" />' );
+//	lvdom.appendChild(grdom);
+//	return grdom;
 //	console.log('renderGrafana',aktdevice,grdata);
     }
-    const showLivedata = () => {
-	document.getElementById('liveCont').classList.add('act');
-	document.getElementById('histCont').classList.remove('act');
-	document.getElementById('livetab').classList.add('act');
-	document.getElementById('histtab').classList.remove('act');
-    }
-    const showGrafana = () => {
-	document.getElementById('liveCont').classList.remove('act');
-	document.getElementById('histCont').classList.add('act');
-	document.getElementById('livetab').classList.remove('act');
-	document.getElementById('histtab').classList.add('act');
+    const renderLivedata = ( aktdevice, part, col ) => {
+	if ( !aktdevice ) return;
+	const tooltip = part.tooltip;
+	const lvdom = document.createElement('div');
+	lvdom.id='livesensor'+pinned.length;
+	lvdom.classList.add('livesensor');
+	lvdom.innerHTML='<h3 title="Sensor: '+aktdevice+'">'+tooltip+'</h3>';
+	if ( part.brokerupmsg ) {
+	    let x=document.createElement( 'span' );
+	    x.classList.add('sendbrokerbtn');
+	    x.innerHTML = 'Action';
+	    x.onclick = ( ev ) => {
+		pubMessage( aktdevice, p.brokerupmsg );
+	    };
+	    lvdom.appendChild(x);
+	}
+	const markicn = document.createElement('span');
+	markicn.classList.add('markicn');
+	markicn.innerHTML = pinned.length+1;
+	markicn.style.background = col;
+	lvdom.appendChild(markicn);
+	const smdom = document.createElement('div');
+	smdom.id='sensormeters'+pinned.length;
+	smdom.classList.add('sensormeters');
+	lvdom.appendChild(smdom);
+	const sodom = document.createElement('div');
+	sodom.id='sensorout'+pinned.length;
+	sodom.classList.add('sensorout');
+	lvdom.appendChild(sodom);
+	document.getElementById('liveCont').appendChild(lvdom);
+	if ( broker.devices[aktdevice].lastmsg ) {
+	    aktMeter( aktdevice, broker.devices[aktdevice].lastmsg, pinned.length+1 );
+	    aktSensorout( aktdevice, broker.devices[aktdevice].lastmsg, pinned.length+1 );
+	}
+	console.log('renderLivedata',aktdevice,broker.devices[aktdevice].lastmsg);
+	return lvdom;
     }
 
     const onWindowResize = () => {
@@ -1787,14 +1879,14 @@ window.onload = ( loadev ) => {
 	doubleselect=true;
     }
     const scrollHistLayer = ( dir ) => {
-	const TILE = 400;
-	const hc=document.getElementById( 'histCont' );
-	hc.scrollTo({
+	let TILE = 300;
+	if ( document.body.classList.contains('ispinnedmax') ) TILE = 500;
+	const lc=document.getElementById( 'liveCont' );
+	lc.scrollTo({
 	    top: 0,
-	    left: hc.scrollLeft+dir*TILE,
+	    left: lc.scrollLeft+dir*TILE,
 	    behavior: 'smooth'
 	})
-	console.log('scrollHistLayer',dir,hc);
 	
     }
     const initButtonEvents = () => {
@@ -1811,6 +1903,18 @@ window.onload = ( loadev ) => {
 	};
 	document.getElementById( 'datapin' ).onclick = ( ev ) => {
 	    unpinAll();
+	};
+	document.getElementById( 'pinnedmax' ).onclick = ( ev ) => {
+	    if ( document.body.classList.contains('ispinnedmax' ) )
+		document.body.classList.remove('ispinnedmax');
+	    else
+		document.body.classList.add('ispinnedmax');
+	};
+	document.getElementById( 'pinnedmin' ).onclick = ( ev ) => {
+	    if ( document.body.classList.contains('ispinnedmin' ) )
+		document.body.classList.remove('ispinnedmin');
+	    else
+		document.body.classList.add('ispinnedmin');
 	};
 	document.getElementById( 'dokBtnCls' ).onclick = ( ev ) => {
 	    const dbtn = document.getElementById( 'dokBtn' );
@@ -1866,14 +1970,6 @@ window.onload = ( loadev ) => {
 		routemesh.visible = false;
 	    }
 	};
-	document.getElementById( 'livetab' ).onclick = ( ev ) => {
-	    if ( ev.target.classList.contains('act') ) return;
-	    showLivedata();
-	};
-	document.getElementById( 'histtab' ).onclick = ( ev ) => {
-	    if ( ev.target.classList.contains('act') ) return;
-	    showGrafana();
-	};
 	document.getElementById( 'histCmpLeft' ).onclick = ( ev ) => {
 	    scrollHistLayer( -1 );
 	};
@@ -1893,6 +1989,9 @@ window.onload = ( loadev ) => {
 	document.getElementById( 'infoBtnCls' ).onclick = ( ev ) => {
 	    const d=document.getElementById( 'infolayersuper' );
 	    d.classList.remove('open');	    
+	};
+	document.getElementById( 'mqtttask' ).onclick = ( ev ) => {
+	    broker.paused = !broker.paused;
 	};
 	
 	window.addEventListener( 'resize', onWindowResize );
@@ -1963,8 +2062,8 @@ window.onload = ( loadev ) => {
 	    rp.z = p1.z + dz;
 	    return rp;
 	}
-	const addRTCylinder = ( p1, p2, h, rot, col ) => {
-	    const cylg = new THREE.CylinderGeometry( 0.2, 0.2, h + 0.1, 4 );
+	const addRTCylinder = ( p1, p2, h, d, rot, col ) => {
+	    const cylg = new THREE.CylinderGeometry( 0.2*d, 0.2*d, h + 0.1, 8 );
 	    //		const cylm = new THREE.MeshBasicMaterial( { color: 0xffffff } );
 	    const cylm = new THREE.MeshBasicMaterial( { color: col } );
 	    const cyl = new THREE.Mesh( cylg, cylm );
@@ -1975,7 +2074,7 @@ window.onload = ( loadev ) => {
 	};
 	for ( let i=0; i<points.length-1; i++ ) {
 	    const h = calcHeight( points[i], points[i+1] );
-	    addRTCylinder( points[i], points[i+1], h, rtcylrots[i], ro.pin1.col );
+	    addRTCylinder( points[i], points[i+1], h, ro.dmod, rtcylrots[i], ro.pin1.col );
 	}
 	routemesh.add( rtmsh );
 	ro.obj3d = rtmsh;
@@ -1984,7 +2083,7 @@ window.onload = ( loadev ) => {
     const idify = ( name ) => {
 	return name.replace( /\ /g, '_' );
     }
-    const addRPin = ( o, h ) => {
+    const addRPin = ( o, h, d ) => {
 	const cont = document.getElementById('routelist');
 	if ( cont.classList.contains('target') ) {
 	    cont.classList.remove('target');
@@ -2002,6 +2101,7 @@ window.onload = ( loadev ) => {
 	    const route = {
 		'pin1' : o,
 		'hmod' : h?h:0,
+		'dmod' : d?d:0,
 		'state' : 1
 	    }
 	    aktroute = route;
