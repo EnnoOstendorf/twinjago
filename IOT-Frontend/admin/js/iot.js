@@ -1499,6 +1499,9 @@ window.onload = ( loadev ) => {
 	document.getElementById('sclx').value=aktmesh.scale.x;
 	document.getElementById('scly').value=aktmesh.scale.y;
 	document.getElementById('sclz').value=aktmesh.scale.z;
+	document.querySelectorAll('#editDlg .inprow input').forEach( ( o, i ) => {
+	    o.value = o.value.replace( '.',',' );
+	});
 	if ( ! aktmesh.material ) {
 	    document.getElementById('editpartconf').classList.add('hidden');	    
 	}
@@ -1547,6 +1550,9 @@ window.onload = ( loadev ) => {
 	document.getElementById('labelposz').value=label.position.z;
 	document.getElementById('pinname').value=aktpin.name;
 	document.getElementById('pincolor').style.backgroundColor=aktpin.color;
+	document.querySelectorAll('#pinDlg .inprow input').forEach( ( o, i ) => {
+	    o.value = o.value.replace( '.',',' );
+	});
     }
     const mouseUp = ( x, y ) => {
 	MOUSEDOWN = false;
@@ -2939,7 +2945,7 @@ window.onload = ( loadev ) => {
 	document.getElementById('pinrotxhs').onclick = ( ev ) => {
 	    aktpin.obj3d.rotation.x+=Math.PI/2;
 	    if ( aktpin.obj3d.rotation.x > Math.PI ) aktpin.obj3d.rotation.x=-Math.PI/2;
-	    ev.preventDefault();
+//	    ev.preventDefault();
 	    aktPinCoords();
 	};
 	document.getElementById('pinrotyhs').onclick = ( ev ) => {
@@ -3011,7 +3017,8 @@ window.onload = ( loadev ) => {
 	    ev.preventDefault();
 	};
 	document.getElementById('pinname').onblur = ( ev ) => {
-	    console.log('pinname',aktpin);
+	    aktpin.name = ev.target.value;
+//	    console.log('pinname',aktpin,ev.target.value);
 	};
 	document.getElementById('pinConfirm').onclick = ( ev ) => {
 //	    editmode = false;
@@ -3042,36 +3049,6 @@ window.onload = ( loadev ) => {
 	    }
 	};
 */
-	document.querySelector('#parts h2 i').onclick = ( ev ) => {
-	    const pa = document.getElementById('deviceStage');
-	    pa.classList.add('partsfocus');
-	    pa.classList.remove('signsfocus');		
-	};
-	document.querySelector('#parts h2 s').onclick = ( ev ) => {
-	    const pa = document.getElementById('deviceStage');
-	    pa.classList.remove('partsfocus');
-	    pa.classList.add('signsfocus');		
-	};
-	document.querySelector('#parts h2 b').onclick = ( ev ) => {
-	    const pa = document.getElementById('deviceStage');
-	    pa.classList.remove('partsfocus');
-	    pa.classList.remove('signsfocus');		
-	};
-	document.querySelector('#signs h2 s').onclick = ( ev ) => {
-	    const pa = document.getElementById('deviceStage');
-	    pa.classList.add('partsfocus');
-	    pa.classList.remove('signsfocus');		
-	};
-	document.querySelector('#signs h2 i').onclick = ( ev ) => {
-	    const pa = document.getElementById('deviceStage');
-	    pa.classList.remove('partsfocus');
-	    pa.classList.add('signsfocus');		
-	};
-	document.querySelector('#signs h2 b').onclick = ( ev ) => {
-	    const pa = document.getElementById('deviceStage');
-	    pa.classList.remove('partsfocus');
-	    pa.classList.remove('signsfocus');		
-	};
 	document.getElementById('deviceName').onblur = ( ev ) => {
 	    if ( ev.target.value !== '' ) ev.target.classList.remove('error');
 	};
@@ -3127,6 +3104,8 @@ window.onload = ( loadev ) => {
 		else if ( ev.target.id === 'labelposx' ) aktpin.label.position.x = parseFloat( ev.target.value );
 		else if ( ev.target.id === 'labelposy' ) aktpin.label.position.y = parseFloat( ev.target.value );
 		else if ( ev.target.id === 'labelposz' ) aktpin.label.position.z = parseFloat( ev.target.value );
+		aktPinCoords();
+		aktEditCoords();
 		console.log('changed coord',ev.target.id);
 	    };
 	});
@@ -3145,12 +3124,16 @@ window.onload = ( loadev ) => {
 	window.onmouseup = ( ev ) => {
 	    if ( dragmode ) {
 		dragmode = false;
+		aktPinCoords();
+		aktEditCoords();
 		console.log('Leave Dragmode',dragtarget);
 	    };
 	};
 	window.onmouseleave = ( ev ) => {
 	    if ( dragmode ) {
 		dragmode = false;
+		aktPinCoords();
+		aktEditCoords();
 		console.log('Leave Dragmode',dragtarget);
 	    };
 	};

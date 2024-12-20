@@ -153,13 +153,16 @@ body {
 	line-height: 27px;
 	position: relative;
 	cursor: pointer;
-	margin: 0 10px 0 0;
+	margin: 0 0 0 10px;
 }
 
 #Measurescale {
 	position: absolute;
 	right: 0;
 	top: 0;
+}
+.basic #Measurescale {
+    display:none;
 }
 #Measurescale h3, #Measurescale p {
 	margin: 0;
@@ -179,7 +182,7 @@ body {
 	max-width: 400px;
 }
 #deviceCat {
-	margin: 0 11px;
+	margin: 0 13px;
 }
 #devType {
 	width: 60px;
@@ -303,7 +306,7 @@ input.error {
 #parts, #signs {
 	display: block;
 	width: 33%;
-	height: 350px;
+	height: 600px;
 	float: left;
 	margin: -80px 10px 20px 0;
 	transition: all 0.5s ease-in-out;
@@ -313,27 +316,18 @@ input.error {
 	position: absolute;
 	right: 0;
 }
-.partsfocus #parts {
-    height: 600px;
-}
-.signsfocus #signs {
-    top: 120px;
-    height: 600px;
-}
-.signsfocus #parts {
-    height: 50px;
-}
-.partsfocus #signs {
-    height: 50px;
-    top: 650px;
-}
-
 #signs {
-    margin-top: 0;
-    top: 400px;
+	margin-top: 0;
+	height: auto;
+	top: 630px;
+	padding-bottom: 20px;
+}
+#signsinner {
+	height: 100px;
+	overflow: auto;
 }
 #partsinner {
-    max-height: 70%;
+    max-height: 80%;
     overflow: auto;
     padding: 0 20px 0 0;
 }
@@ -1027,6 +1021,15 @@ input.error {
 	margin: 10px 6px 0;
 	float: left;
 }
+.pinmap > button {
+	width: 80px;
+	text-align: center;
+	margin: 0 10px 0 0;
+}
+.pinmap > button#copyAllPinTrans {
+	width: 24px;
+	margin-left: 50px;
+}
 #pinDlg label {
 	display: block;
 	float: left;
@@ -1035,7 +1038,22 @@ input.error {
 }
 .pintrans input {
 	width: 50px;
-	margin: 0 20px;
+	margin: 0 0 0 10px;
+}
+.pintrans > span,.pintrans > b {
+	display: inline-block;
+	width: 100px;
+	text-align: center;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	line-height: 12px;
+	position: relative;
+	top: 4px;
+	white-space: nowrap;
+}
+.pintrans b {
+    width: 120px;
+    text-align: left;
 }
 .pins button.hide {
 	display: none;
