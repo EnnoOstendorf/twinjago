@@ -1,0 +1,76 @@
+/* wilco css */
+* {
+    user-select:none;
+    font-family: brownpro;
+}
+body {
+	font: normal 12px brownpro;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+h1, #filter, #cat {
+	width: 150px;
+	display: inline-block;
+	height: 28px;
+	/* background: #fcc; */
+	border: 1px solid #ccc;
+	vertical-align: top;
+	padding: 7px 0 1px;
+	margin: 0;
+}
+h1 {
+	position: relative;
+	top: -3px;
+	padding: 5px 4px;
+}
+h1 span {
+	font-size: 10px;
+	display: block;
+	margin: -11px 0 0 5px;
+}
+h2 {
+	display: inline-block;
+	margin: 0;
+}
+#cat {
+	text-align: center;
+}
+
+#filter {
+	width: 300px;
+	text-align: center;
+}
+#playground {
+	height: 90%;
+	overflow: auto;
+}
+#playground a {
+    margin: 2px;
+    padding: 3px;
+	width: 30%;
+	display: inline-block;
+	cursor: pointer;
+	transition: all 0.5s ease-out;
+}
+#playground a:hover {
+    background: #000;
+    color: #fff;
+}
+.logoicon {
+	height: 35px;
+	position: absolute;
+	top: 0;
+	right: 20px;
+}
+#attributions {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+}
+@font-face {
+    font-family: brownpro;
+    src: url('BrownPro-Light.otf') format('opentype');
+}

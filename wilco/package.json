@@ -1,0 +1,26 @@
+{
+  "name": "wilco",
+  "version": "1.0.0",
+    "description": "This is a demon for twinjago that cleans up sensor data and packetize it into timeseries as CSV to make it exportable. (Roger Wilco was the main character in Space Quest. He was a janitor on a spaceship)",
+  "main": "wilco.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "janitor",
+    "sensordata",
+    "DB"
+  ],
+  "author": "Enno Ostendorf <no@007-supersmart.de>",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "@influxdata/influxdb-client": "^1.33.2",
+    "@influxdata/influxdb-client-apis": "^1.33.2",
+    "axios": "^1.6.8",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "fs": "^0.0.1-security",
+    "influx": "^5.9.3"
+  }
+}
