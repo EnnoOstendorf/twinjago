@@ -9,6 +9,7 @@ let playground = null;
 let aktdevice = null;
 let aktsensorout = null;
 let HTMLready = false;
+let controls;
 
 const url = 'wss://iot.fh-muenster.de/mqtt'
 
@@ -127,6 +128,26 @@ client.on('message', function (topic, message) {
     //    client.end()
 })
 
+const genControls = ( camera, renderer ) => {
+    controls = new ArcballControls( camera, renderer.domElement, scene );
+    controls.target.set( 0, 0, 0 );
+//    controls.adjustNearFar = true;
+    controls.setGizmosVisible( false );
+//    controls.enableGrid = true;
+    controls.cursorZoom = true;
+    controls.rotateSpeed = 1.0;
+    controls.zoomSpeed = 1.2;
+    controls.panSpeed = 0.8;
+
+    controls.noZoom = false;
+    controls.noPan = false;
+    
+    controls.staticMoving = false;
+    controls.dynamicDampingFactor = 0.15;
+    controls.saveState();
+    controls.keys = [ 65, 83, 68 ];
+    console.log('generate controls',controls);
+}
 
 window.onload = ( loadev ) => {
     Coloris({ alpha: false });
@@ -199,24 +220,9 @@ window.onload = ( loadev ) => {
     renderer.setSize( width, height );
     renderer.setAnimationLoop( animation );
     playground.appendChild( renderer.domElement );
-
+    genControls( camera, renderer );
     
-    const controls = new ArcballControls( camera, renderer.domElement, scene );
-    controls.target.set( 0, 0, 0 );
-    controls.setGizmosVisible( false );
-//    controls.enableGrid = true;
-    controls.rotateSpeed = 1.0;
-    controls.zoomSpeed = 1.2;
-    controls.panSpeed = 0.8;
-
-    controls.noZoom = false;
-    controls.noPan = false;
     
-    controls.staticMoving = false;
-    controls.dynamicDampingFactor = 0.15;
-    controls.saveState();
-    controls.keys = [ 65, 83, 68 ];
-
     const camstart = {
 	'position' : {
 	    'x' : camera.position.x,
@@ -1106,11 +1112,18 @@ window.onload = ( loadev ) => {
 	const deviceidp = basic.deviceid || '';
 	const brokerupmsg = basic.brokerupmsg || '';
 //	console.log('Dound deviceid',deviceidp);
-	document.getElementById('partsinner').insertAdjacentHTML(
+	const pi = document.getElementById('partsinner');
+	pi.insertAdjacentHTML(
 	    'beforeend',
-	    '<div id="part'+index+'" class="part"><strong>'+basic.name+'</strong><c data-id="'+basic.id+'" title="zum Basic">BASIC</c><div class="deviceidbox"><b>Device ID</b> <input name="deviceID" class="deviceID" placeholder="ID im Broker" autocomplete="off" value="'+deviceidp+'" /><div class="brokeridselect"></div><div class="sensorout"></div><br /><b>Broker Up</b> <input class="brokerUpMsg" autocomplete="off" value="'+brokerupmsg+'" /></div><div class="tooltip"><b>Tooltip</b> <textarea id="tooltip'+index+'" placeholder="mouseover Ballontext">'+(basic.tooltip||'')+'</textarea></div><div class="pins"><b>'+pinarr.length+' Pins</b> <button id="basicpinmap'+index+'" data-index="'+index+'" class="basicPinBtn">Anpassen</button><div class="pinmap"></div><br /></div><i></i><s></s></div>' );
+	    '<div id="part'+index+'" class="part"><strong>'+basic.name+'</strong><c data-id="'+basic.id+'" title="zum Basic">BASIC</c><div class="deviceidbox"><b>Device ID</b> <input name="deviceID" class="deviceID" placeholder="ID im Broker" autocomplete="off" value="'+deviceidp+'" /><div class="brokeridselect"></div><div class="sensorout"></div><br /><b>Broker Up</b> <input class="brokerUpMsg" autocomplete="off" value="'+brokerupmsg+'" /></div><div class="tooltip"><b>Tooltip</b> <textarea id="tooltip'+index+'" placeholder="mouseover Ballontext">'+(basic.tooltip||'')+'</textarea></div><div class="pins"><b>'+pinarr.length+' Pins</b> <button id="basicpinmap'+index+'" data-index="'+index+'" class="basicPinBtn">Anpassen</button><div class="pinmap"></div></div><i></i><s></s></div>' );
+	pi.scrollTo({
+	    top: pi.scrollHeight,
+	    left: 0,
+	    behavior: 'smooth'
+	})
 	const DOMObj = document.getElementById('part'+index);
-/*	DOMObj.onmouseover = ( ev ) => {
+
+	/*	DOMObj.onmouseover = ( ev ) => {
 //	    console.log('hilite',meshp.userData.index);
 	    hilightPart( meshp );
 
@@ -1145,7 +1158,7 @@ window.onload = ( loadev ) => {
 	DOMObj.querySelector( '.deviceID' ).onblur = ( ev ) => {
 	    window.setTimeout( () => {
 		selBox.classList.remove('show');
-	    }, 100 );
+	    }, 200 );
 	};
 	DOMObj.querySelector('.basicPinBtn').onclick = ( ev ) => {	    
 	    const outputBox = ev.target.nextSibling;
@@ -1707,6 +1720,8 @@ window.onload = ( loadev ) => {
 	return 0;
     }
     const renderRoutes = ( dra ) => {
+	document.getElementById('routelist').replaceChildren();
+	routes.splice(0);
 	dra.forEach( ( o, i ) => {
 	    const po1 = findPinObject( o.pin1 );
 	    const po2 = findPinObject( o.pin2 );
@@ -1833,7 +1848,7 @@ window.onload = ( loadev ) => {
 	    devdata.routes.forEach( (o,i) => {
 		routespre.push(o);
 	    });
-
+//	    devdata.routes.splice(0);
 /*	    window.setTimeout( () => {
 		loadclosefuncs.push( () => {
 		    renderRoutes( devdata.routes );
@@ -1880,12 +1895,7 @@ window.onload = ( loadev ) => {
 	    if (xhr.readyState === 4 && xhr.status === 200) {
 		var json = JSON.parse(xhr.responseText);
 		renderDevice(json);		
-		controls.reset();
-		if ( json.camstart ) {
-		    setCamStart( json.camstart );
-		    RestoreCamPos( json.camstart );
-		    controls.update();
-		}
+//		controls.reset();
 		if ( json.type === 'basic' ) {
 		    isbasic = true;
 		    document.getElementById('liveBtn').classList.add('hidden');
@@ -1898,6 +1908,12 @@ window.onload = ( loadev ) => {
 		}
 		else {
 		    isbasic = false;
+		    if ( json.camstart ) {
+			setCamStart( json.camstart );
+			RestoreCamPos( json.camstart );
+//			controls.update();
+			console.log('CAMSTART');
+		    }
 		    document.getElementById('liveBtn').classList.remove('hidden');
 		    document.getElementById( 'RoutingBtn' ).classList.remove('disabled');
 		    document.getElementById('saveBasicBtn').classList.add('disabled');
@@ -2347,10 +2363,10 @@ window.onload = ( loadev ) => {
 	    renderRoutes( routespre );
 	}
     }
-    const loadBasic = ( basic ) => {
+    const loadBasic = ( basic, noloadopen ) => {
 	const url = '/api/getOne/'+basic.id;
 	const xhr = new XMLHttpRequest();
-	loadopencount++;
+	if ( !noloadopen ) loadopencount++;
 	xhr.open('GET',url,true);
 	xhr.setRequestHeader("Content-Type", "application/json");
 	xhr.onreadystatechange = function () {
@@ -2364,21 +2380,28 @@ window.onload = ( loadev ) => {
 //		console.log('loaded Basic',basic.name);
 		if ( basic.modifications ) applyModifications( o3, basic.modifications );
 		mainmesh.add(o3);
-		loadclosefuncs.push( () => {
-//		    window.setTimeout( () => {
+		if ( noloadopen ) {
+		    translateLabels(basic);
+		    addBasicPart( basic, o3 );
+		}
+		else {
+		    loadclosefuncs.push( () => {
+			//		    window.setTimeout( () => {
 			translateLabels(basic);
 			addBasicPart( basic, o3 );
-//		    }, 200 );
-		});
-		loadopencount--;
-		CheckOpenCount();
+			//		    }, 200 );
+		    });
+		    loadopencount--;
+		    CheckOpenCount();
+		}
+		
 	    }
 	};
 	xhr.send();
     }
     const selectBasic = ( id ) => {
 	const dev = findDevice( id );
-	loadBasic( dev );
+	loadBasic( dev, true );
 //	console.log('selecting',dev);
     }
     const getBasics = () => {
@@ -2386,6 +2409,14 @@ window.onload = ( loadev ) => {
 	const cont = document.getElementById('basicselect');
 	
 	cont.innerHTML = '';
+	const x = document.createElement('div');
+	x.classList.add('basicselcls');
+	x.innerHTML = 'X';
+	x.onclick = ( ev ) => {
+	    cont.classList.remove('show');
+	    cont.replaceChildren();
+	}
+	cont.appendChild(x);
 	devices.forEach( ( o, i ) => {
 	    if ( o.type === 'basic' ) {
 		const n = document.createElement('div');
@@ -2577,7 +2608,7 @@ window.onload = ( loadev ) => {
 	    return rp;
 	}
 	const addRTCylinder = ( p1, p2, h, d, rot, col ) => {
-	    const cylg = new THREE.CylinderGeometry( 0.2 * d, 0.2 * d, h + 0.1, 8 );
+	    const cylg = new THREE.CylinderGeometry( 0.1 * d, 0.1 * d, h + 0.1, 8 );
 	    //		const cylm = new THREE.MeshBasicMaterial( { color: 0xffffff } );
 	    const cylm = new THREE.MeshBasicMaterial( { color: col } );
 	    const cyl = new THREE.Mesh( cylg, cylm );
@@ -2596,6 +2627,11 @@ window.onload = ( loadev ) => {
     }
     const idify = ( name ) => {
 	return name.replace( /\ /g, '_' );
+    }
+    const hideRoutingPinDlg = () => {
+	const rpd = document.getElementById('routingPinDlg');
+	rpd.replaceChildren();
+	rpd.classList.remove('vis');
     }
     const addRPin = ( o, h, d ) => {
 	const cont = document.getElementById('routelist');
@@ -2654,6 +2690,11 @@ window.onload = ( loadev ) => {
 		route.dmod = parseInt(dinp.value);
 //		console.log('route hmod',route)
 	    }
+	    cont.scrollTo({
+		top: cont.scrollHeight,
+		left: 0,
+		behavior: 'smooth'
+	    })
 	    // set first pin
 	}
 //	console.log('adding RPin',o);
@@ -2665,12 +2706,13 @@ window.onload = ( loadev ) => {
 	    if ( akt.pins.length > 0 ) {
 		akt.pins.forEach( ( o, i ) => {
 		    console.log('akt pin',o.name,o.trans,o.obj3d);
-		    if ( o.name && o.trans === '' ) return;
+		    let pname = o.name;
+		    if ( o.trans !== '' ) pname = o.trans;
 		    dp.push( o );
 		    const x=document.createElement( 'div' );
 		    x.id=('selpin'+i);
 		    x.classList.add('selpin');
-		    x.innerHTML='<i>'+o.part+'</i> -&gt; <b>'+o.name+'</b>';
+		    x.innerHTML='<i>'+o.part+'</i> -&gt; <b>'+pname+'</b>';
 		    x.onclick = ( ev ) => { addRPin( o ); }
 		    cont.appendChild(x);
 		});
@@ -2773,16 +2815,27 @@ window.onload = ( loadev ) => {
 	    }
 	}
 	document.getElementById('routingclose').onclick = ( ev ) => {
+	    hideRoutingPinDlg();
 	    document.getElementById('routingDlg').classList.remove( 'vis' );
 	    document.body.classList.remove('modalmode');
 	}
-	document.getElementById('newroute').onclick = ( ev ) => {
+	const addRouteDecoration = () => {
 	    const cont = document.getElementById('routingPinDlg');
 	    cont.replaceChildren();
-	    cont.classList.add('vis');
 	    cont.insertAdjacentHTML( 'beforeend', '<h3>Wählen Sie einen Pin:</h3>');
+	    const cls = document.createElement( 'div' );
+	    cls.classList.add('routingPinDlgCls');
+	    cls.innerHTML = 'X';
+	    cls.onclick = ( ev ) => {
+		hideRoutingPinDlg();
+	    }
+	    cont.appendChild(cls);
+	}
+	document.getElementById('newroute').onclick = ( ev ) => {
+	    const cont = document.getElementById('routingPinDlg');
+	    addRouteDecoration();
+	    cont.classList.add('vis');
 	    const devicepins = addDevicePins(cont);
-//	    cont.insertAdjacentHTML( '<button id="close"');
 	    
 	}
 	document.getElementById('reroute').onclick = ( ev ) => {

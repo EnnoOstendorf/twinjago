@@ -461,7 +461,7 @@ input.error {
 .ispinnedmax .pinnedmax,.ispinnedmin .pinnedmin {
 	background-color: #060;
 }
-.ispinnedmax .multi .livesensor {
+.ispinnedmax .multi .livesensor,.ispinnedmax .livesensor {
 	width: 25%;
 }
 .ispinnedmin #liveData, .ispinnedmin #liveData.multi, .ispinnedmin #liveData.multi.double {
@@ -494,6 +494,10 @@ input.error {
 .datapinned .livesensor .sensormeters,.datapinned .livesensor .sensorout {
     display:block;
 }
+.datapinned .livesensor .sensorout {
+	width: 90%;
+	margin-left: 3%;
+}
 .livesensor .sensormeters {
 	white-space: nowrap;
 	overflow: auto;
@@ -502,10 +506,10 @@ input.error {
 .timestamp {
 	position: absolute;
 	font-size: 10px;
-	margin-left: 5px;
+	margin-left: 3%;
 }
 .livesensor .sensorout {
-	margin-left: 2px;
+	margin: 4px 0 0 0;
 	background: #fff;
 	height: 20px;
 }
@@ -598,6 +602,7 @@ input.error {
 	background: #ccc;
 	border: 1px solid #4b4b4b;
 	overflow: hidden;
+	margin-bottom: 15px;
 }
 .livesensor h3 {
 	font-size: 12px;
@@ -631,6 +636,10 @@ input.error {
 }
 .livesensor iframe {
 	margin-top: 10px;
+}
+.archiveurl {
+	display: block;
+	margin: 0 0 4px;
 }
 .meterroot {
 	display: inline-block;
@@ -670,7 +679,7 @@ input.error {
 	position: absolute;
 	background: #0b0;
 	display: block;
-	right: 5px;
+	right: 10px;
 	padding: 1px 6px;
 	border-radius: 10px;
 	font-size: 12px;
@@ -680,7 +689,7 @@ input.error {
 	color: #fff;
 	text-shadow: 1px 1px 2px #000;
 	box-shadow: 0 0 4px #000;
-	top: 2px;
+	top: 8px;
 	cursor: pointer;
 }
 /* info layer */

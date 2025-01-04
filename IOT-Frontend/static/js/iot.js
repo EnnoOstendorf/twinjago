@@ -29,6 +29,8 @@ const HEADER_HIDE_AFTER = 20000; // time until header is hidden
 
 const url = 'wss://iot.fh-muenster.de/mqtt'
 
+const WILCOURL = 'https://freetwin.de:3211/';
+
 const broker = {
     'connected' : false,
     'paused' : false,
@@ -1295,6 +1297,7 @@ window.onload = ( loadev ) => {
 	    //	    let ncp = 
 	});
 	controls.target.set( 0, 0, 0 );
+//	controls.adjustNearFar = true;
 	controls.setGizmosVisible( false );
 	//    controls.enableGrid = true;
 	controls.rotateSpeed = 1.0;
@@ -1304,6 +1307,7 @@ window.onload = ( loadev ) => {
 	controls.noZoom = false;
 	controls.noPan = false;
 	
+	controls.cursorZoom = true;
 	controls.staticMoving = false;
 	controls.dynamicDampingFactor = 0.15;
     
@@ -1559,6 +1563,7 @@ window.onload = ( loadev ) => {
 	const p=parts[aktdevicei];
 	const lvdom=renderLivedata( aktdevice, p, palette[pinned.length] );
 	renderGrafana( aktdevice, p.tooltip, palette[pinned.length], lvdom );
+	lvdom.insertAdjacentHTML( 'beforeend', '<a href="'+WILCOURL+'?filter='+aktdevice+'" class="archiveurl" target="_blank">Sensordatenarchiv</a>' );
 	const mark3d = processCur3D( markergeom, palette[pinned.length] );
 	mark3d.position.set(p.mesh.position.x,p.mesh.position.y,p.mesh.position.z);
 	mark3d.visible = true;
@@ -2063,7 +2068,7 @@ window.onload = ( loadev ) => {
 	    return rp;
 	}
 	const addRTCylinder = ( p1, p2, h, d, rot, col ) => {
-	    const cylg = new THREE.CylinderGeometry( 0.2*d, 0.2*d, h + 0.1, 8 );
+	    const cylg = new THREE.CylinderGeometry( 0.1*d, 0.1*d, h + 0.1, 8 );
 	    //		const cylm = new THREE.MeshBasicMaterial( { color: 0xffffff } );
 	    const cylm = new THREE.MeshBasicMaterial( { color: col } );
 	    const cyl = new THREE.Mesh( cylg, cylm );
@@ -2089,12 +2094,14 @@ window.onload = ( loadev ) => {
 	    cont.classList.remove('target');
 	    aktroute.pin2 = o; aktroute.state = 2;
 	    const routeo = cont.querySelector('.route.active');
-	    routeo.insertAdjacentHTML( 'beforeend', '<div class="rpin secondpin"><i>'+shortenPartName(o.part)+'</i><b>'+o.name+'</b></div>' );
+	    let name = o.name;
+	    if ( o.trans && o.trans !== '' ) name = o.trans;
+	    
+	    routeo.insertAdjacentHTML( 'beforeend', '<div class="rpin secondpin"><i>'+shortenPartName(o.part)+'</i><b>'+name+'</b></div>' );
 	    routeo.classList.remove('active');
 	    routeo.id=idify(aktroute.pin1.name+'-'+o.name);
 	    aktroute.id=routeo.id;
 	    add3DRoute(aktroute);
-//	    console.log('route second pin');
 	    // set second pin
 	}
 	else {
@@ -2107,10 +2114,12 @@ window.onload = ( loadev ) => {
 	    aktroute = route;
 	    routes.push( route );
 	    cont.classList.add('target');
-	    cont.insertAdjacentHTML( 'beforeend', '<div class="route active"><div class="rpin firstpin"><i>'+shortenPartName(o.part)+'</i><b>'+o.name+'</b> </div> <b style="color:'+o.col+'"></b> </div>' );
+	    let name = o.name;
+	    if ( o.trans && o.trans !== '' ) name = o.trans;
+	    cont.insertAdjacentHTML( 'beforeend', '<div class="route active"><div class="rpin firstpin"><i>'+shortenPartName(o.part)+'</i><b>'+name+'</b> </div> <b style="color:'+o.col+'"></b> </div>' );
 	    // set first pin
 	}
-//	console.log('adding RPin',o);
+	console.log('adding RPin',o);
     }
 
     HTMLready = true;
