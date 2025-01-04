@@ -3,9 +3,10 @@
 a demon that cleans up sensor data and packetize it into timeseries per device for a specific timespan.
 This is for people who want to download sensordata and play around with it, the format is CSV.
 
-It repeatingly sucks sensor data for all sensors from the influx DB for a timespan, default is 4 hours, then generates CSV Files per sensor and saves them to disk.
-Furthermore it exports the diskspace with the CSV Files to web and makes them downloadable.
-It creates a directory for each device and saves the data in 4h (or another given timespan) packets.
+- repeatingly sucks sensor data for all sensors from the influx DB for a timespan of one hours, then generates CSV Files per sensor and saves them to disk.
+- builds daily-files at midnight
+- exports the diskspace with the CSV Files to web and makes them downloadable.
+- exports a web interface to present the downloadable files
 
 
 ## Requirements
@@ -15,8 +16,8 @@ It creates a directory for each device and saves the data in 4h (or another give
 ## Webinterface
 
 - it is reachable on port 3210 for http, 3211 for https
-- no parameter exports the top directory with all sensors
-- **/?ID** exports the directory for the given deviceid
+- no parameter gives a web interface to filter for id and hourly / daily files
+- the files can directly be accessed and therefore linked with path /archive for hourly, /archive/daily for daily files
 
 ## Trivia
 
