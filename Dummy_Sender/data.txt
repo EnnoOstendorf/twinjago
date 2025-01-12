@@ -1,0 +1,242 @@
+{
+    "panel1": {
+        "id_object": {
+            "id": "18:00:01:02:03:77"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "Alle Fische",
+            "desc": "20",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "2",
+                    "unit": "22"
+                },
+                {
+                    "name": "2111111Maus",
+                    "unit": "22"
+                },
+                {
+                    "name": "2",
+                    "unit": "Schwertfische"
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "Schwertfische"
+        },
+        "payload": {
+            "values": [
+                "222",
+                "222",
+                "222",
+                "5.1.2025, 00:25:06"
+            ]
+        }
+    },
+    "panel2": {
+        "id_object": {
+            "id": "18:00:01:02:03:44"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "Hirsch",
+            "desc": "auto",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "20",
+                    "unit": "Schwertfische"
+                },
+                {
+                    "name": "Maus1200",
+                    "unit": "Schwertfische"
+                },
+                {
+                    "name": "hase",
+                    "unit": "Schwertfische"
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "Schwertfische"
+        },
+        "payload": {
+            "values": [
+                "7",
+                "48000",
+                "7",
+                "5.1.2025, 00:28:25"
+            ]
+        }
+    },
+    "panel3": {
+        "id_object": {
+            "id": "18:00:01:02:03"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "Apfel",
+            "desc": "Schwertfische",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "Schwertfische",
+                    "unit": "Schwertfische"
+                },
+                {
+                    "name": "Murmel",
+                    "unit": "Schwertfische"
+                },
+                {
+                    "name": "Kugelfische",
+                    "unit": "Murmel"
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "10"
+        },
+        "payload": {
+            "values": [
+                "Schwertfische",
+                "500000000",
+                "Murmel",
+                "4.1.2025, 21:36:28"
+            ]
+        }
+    },
+    "panel4": {
+        "id_object": {
+            "id": "18:00:01:02:03:88"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "8000",
+            "desc": "6",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "5000",
+                    "unit": "55"
+                },
+                {
+                    "name": "5Maus Haus vvvvvvvv",
+                    "unit": "55"
+                },
+                {
+                    "name": "5",
+                    "unit": "5000"
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "20"
+        },
+        "payload": {
+            "values": [
+                "555",
+                "5000",
+                "555",
+                "4.1.2025, 23:08:54"
+            ]
+        }
+    },
+    "panel5": {
+        "id_object": {
+            "id": "ypsilon44"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "ypsilon",
+            "desc": "x",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "4",
+                    "unit": "44"
+                },
+                {
+                    "name": "4Maus",
+                    "unit": "ypsilon"
+                },
+                {
+                    "name": "777",
+                    "unit": "44"
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "Schwertfische"
+        },
+        "payload": {
+            "values": [
+                "Tintenfisch",
+                "444",
+                "444Maus",
+                "5.1.2025, 00:28:23"
+            ]
+        }
+    },
+    "panel6": {
+        "id_object": {
+            "id": "18:00:01:02:03:48"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "Hirsch",
+            "desc": "20jjjMausMaus",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "Schwertfische",
+                    "unit": "Schwertfische"
+                },
+                {
+                    "name": "Schwertfische",
+                    "unit": "8Maus"
+                },
+                {
+                    "name": "Schwertfische",
+                    "unit": "Schwertfische"
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "Schwertfische"
+        },
+        "payload": {
+            "values": [
+                "Schwertfische",
+                "Schwertfische",
+                "Schwertfische",
+                "4.1.2025, 23:13:23"
+            ]
+        }
+    }
+}

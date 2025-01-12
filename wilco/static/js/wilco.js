@@ -4,25 +4,54 @@ let status;
 let filter =0;
 let cat = 0;
 
-const renderDaily = () => {
+const renderFiles = ( files, filter ) => {
     const plg = document.getElementById('playground');
     plg.replaceChildren();
-    status.daily.forEach( ( o, i ) => {
+    var t = '<div class="col">';
+    const sumstatus = [];
+    files.forEach( ( o, i ) => {
 	if ( filter === 0 || o.includes( filter ) )
-	    plg.insertAdjacentHTML( 'beforeend', '<a href="/archive/daily/'+o+'">'+o+'</a>' );
+	    sumstatus.push(o);
     });
+    const brk = Math.ceil(sumstatus.length / 3); 
+    sumstatus.forEach( ( o, i ) => {
+	t += '<a href="/archive/'+o+'">'+o+'</a>';
+	
+	if ( i % brk === brk - 1 )
+	    t += '</div><div class="col">'
+    });
+    t += '</div>';
+    plg.insertAdjacentHTML( 'beforeend', t );
+}
+
+const renderDaily = () => {
+    renderFiles( status.daily, filter );
     document.getElementById('hourlybtn').removeAttribute('disabled');
     document.getElementById('dailybtn').setAttribute('disabled','disabled');
-    console.log('renderDaily');
+    console.log('renderHourly');
 }
 
 const renderHourly = () => {
-    const plg = document.getElementById('playground');
+    renderFiles( status.files, filter );
+/*    const plg = document.getElementById('playground');
     plg.replaceChildren();
+    var t = '<div class="col">';
+    const sumstatus = [];
     status.files.forEach( ( o, i ) => {
 	if ( filter === 0 || o.includes( filter ) )
-	    plg.insertAdjacentHTML( 'beforeend', '<a href="/archive/'+o+'">'+o+'</a>' );
+	    sumstatus.push(o);
+//	    t += '<a href="/archive/'+o+'">'+o+'</a>';
     });
+    const brk = Math.ceil(sumstatus.length / 3); 
+    sumstatus.forEach( ( o, i ) => {
+	t += '<a href="/archive/'+o+'">'+o+'</a>';
+	
+	if ( i % brk === brk - 1 )
+	    t += '</div><div class="col">'
+    });
+    t += '</div>';
+    plg.insertAdjacentHTML( 'beforeend', t );
+*/
     document.getElementById('dailybtn').removeAttribute('disabled');
     document.getElementById('hourlybtn').setAttribute('disabled','disabled');
     console.log('renderHourly');

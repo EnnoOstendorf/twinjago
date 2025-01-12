@@ -10,6 +10,10 @@ let aktdevice = null;
 let aktsensorout = null;
 let HTMLready = false;
 let controls;
+const Displays = [];
+const DISPWIDTH = 120;
+
+const DUMMYSENDERURL = 'http://freetwin.de:3456/Dummy_Sender.html';
 
 const url = 'wss://iot.fh-muenster.de/mqtt'
 
@@ -67,6 +71,25 @@ const writePoint = ( field, id, value ) => {
 }
 
 
+const aktDisplay = ( display, msg ) => {
+    const struct = broker.devices[display.id].meta.payloadStructure;
+    display.dispdom.replaceChildren();
+//    console.log('akt Display',display,msg,struct);
+    for ( let i=0; i<struct.length; i++ ) {
+	if ( display.measures )
+	    for ( let j=0; j<display.measures.length; j++ ) {
+		if ( struct[i].name === display.measures[j].name && typeof msg[i] !== 'undefined' && msg[i] !== null ) {
+//		    console.log('akt Display',typeof msg[i]);
+		    //	Displays.push( { 'id' : id, 'mesh' : mesh, 'measures' : measures, 'dispdom' : sensdiv } );
+		    const tmsg = typeof msg[i] === 'number' ? msg[i].toFixed(4) : msg[i];
+		    display.dispdom.insertAdjacentHTML( 'beforeend', '<b>'+ struct[i].name + ':</b> ' + tmsg + ' ' + (struct[i].unit || '') + '<br />' );
+		}
+	    }
+    };
+}
+
+
+
 const parseMessage = ( idp, msg ) => {
 
     const [ type, id ] = idp.split( /\// );
@@ -100,7 +123,14 @@ const parseMessage = ( idp, msg ) => {
 	if ( aktdevice && aktdevice === id && aktsensorout ) {
 	    aktsensorout.innerHTML = broker.devices[id].lastdata.join('<br />');
 	}
-
+	if ( Displays.length > 0 ) {
+	    for ( let i=0; i<Displays.length; i++ ) {
+		if ( Displays[i].id === id ) {
+		    aktDisplay( Displays[i], msg, broker.devices[id] );
+		    break;
+		}
+	    }
+	}
     }
     else if ( type === 'beacon' ) {
 	broker.devices[id].beaconcount++;
@@ -220,7 +250,6 @@ window.onload = ( loadev ) => {
     renderer.setSize( width, height );
     renderer.setAnimationLoop( animation );
     playground.appendChild( renderer.domElement );
-    genControls( camera, renderer );
     
     
     const camstart = {
@@ -359,6 +388,24 @@ window.onload = ( loadev ) => {
 	document.body.classList.remove('modalmode');	
 	globDlg.classList.remove('show');
 //	console.log( 'clicked dokumente button' );
+    }
+    const showDummySenderDlg = () => {
+	const dumDlg = document.getElementById('dummySenderCont');
+	document.body.classList.add('modalmode');	
+	dumDlg.classList.add('show');
+	const dumBox = document.getElementById('dummySenderBox');
+	if ( dumBox.children.length === 0 )
+	    dumBox.insertAdjacentHTML( 'beforeend', '<iframe src="'+DUMMYSENDERURL+'" />' );
+	
+//	console.log( 'clicked dokumente button' );
+    }
+    const hideDummySenderDlg = () => {
+	const dumDlg = document.getElementById('dummySenderCont');
+	document.body.classList.remove('modalmode');	
+	dumDlg.classList.remove('show');
+	// const dumBox = document.getElementById('dummySenderBox');
+	// dumBox.replaceChildren();
+	//	console.log( 'clicked dokumente button' );
     }
     const showPinDlg = ( partindex ) => {
 //	console.log('showpin',aktpin.objDOM);
@@ -902,7 +949,7 @@ window.onload = ( loadev ) => {
     }
     const addPin = ( index, cont3d, pinscont, pinname, pincol, pinmods, pinlabelmods, isbasicp, ppinindex ) => {
 //	console.log('addPin',index,cont3d);
-	const col = pincol || 0xffff00;
+	const col = pincol || '#ffff00';
 	let pname = pinname || 'Pin';
 	let pinindex = parts[index]?parts[index].pins.length:0;
 	const partname = parts[index]?parts[index].name:'unknown';
@@ -1031,6 +1078,7 @@ window.onload = ( loadev ) => {
 	document.getElementById('partsinner').insertAdjacentHTML(
 	    'beforeend',
 	    '<div id="part'+index+'" class="part" data-index="'+index+'"><strong>'+namep+'</strong><em>('+(fnamep||'-')+')</em><input class="partcolor" style="background:'+colcode+';" type="text" value="'+colcode+'" data-coloris /><div class="tooltip"><b>Tooltip</b> <textarea id="tooltip'+index+'" placeholder="mouseover Ballontext">'+(tooltipp||'')+'</textarea></div><div class="pins"><b>0 Pins</b><button id="addPintoPart'+index+'" data-index="'+index+'" class="addPinBtn">+</button><br /></div><i></i><s></s></div>' );
+
 	console.log('adding part DOM', index, document.getElementById( 'part'+index ).innerHTML);
 	return index;
     }
@@ -1076,12 +1124,21 @@ window.onload = ( loadev ) => {
 	}
 	return sbtn;
     }
+    const addDisplaySensor = ( id, mesh, measures ) => {
+	const ovl = document.getElementById( 'plgOvl' );
+	const sensdiv = document.createElement( 'div' );
+	sensdiv.id = 'display'+id; sensdiv.classList.add('sensordisplay');
+	ovl.appendChild(sensdiv);
+	Displays.push( { 'id' : id, 'mesh' : mesh, 'measures' : measures, 'dispdom' : sensdiv } );
+	console.log('add Display',id,Displays);
+    }
     const addBasicPart = ( basic, meshp, rebuild ) => {
 	// save pins
 
 	let index=0;
 	let pinarr;
 	let pincount =0;
+	let partobj;
 	if ( ! rebuild ) {
 	    pinarr = [];
 	    for ( let i=0; i<basic.parts.length; i++ ) {
@@ -1100,8 +1157,9 @@ window.onload = ( loadev ) => {
 		    pincount++;
 		}
 	    }
-	    parts.push({ 'name' : basic.name, 'type' : 'basic', 'id' : basic.id, 'deviceid': basic.deviceid, 'tooltip' : basic.tooltip, 'mesh': meshp, 'pins' : pinarr });
-	
+
+	    partobj = { 'name' : basic.name, 'type' : 'basic', 'id' : basic.id, 'deviceid': basic.deviceid, 'brokerupmsg': basic.brokerupmsg, 'tooltip' : basic.tooltip, 'mesh': meshp, 'pins' : pinarr, 'display' : basic.display, 'displaymeasures' : basic.displaymeasures };
+	    parts.push( partobj );	
 	    index = parts.length-1;
 	}
 	else {
@@ -1113,16 +1171,20 @@ window.onload = ( loadev ) => {
 	const brokerupmsg = basic.brokerupmsg || '';
 //	console.log('Dound deviceid',deviceidp);
 	const pi = document.getElementById('partsinner');
+	const dispsens = basic.display;
 	pi.insertAdjacentHTML(
 	    'beforeend',
-	    '<div id="part'+index+'" class="part"><strong>'+basic.name+'</strong><c data-id="'+basic.id+'" title="zum Basic">BASIC</c><div class="deviceidbox"><b>Device ID</b> <input name="deviceID" class="deviceID" placeholder="ID im Broker" autocomplete="off" value="'+deviceidp+'" /><div class="brokeridselect"></div><div class="sensorout"></div><br /><b>Broker Up</b> <input class="brokerUpMsg" autocomplete="off" value="'+brokerupmsg+'" /></div><div class="tooltip"><b>Tooltip</b> <textarea id="tooltip'+index+'" placeholder="mouseover Ballontext">'+(basic.tooltip||'')+'</textarea></div><div class="pins"><b>'+pinarr.length+' Pins</b> <button id="basicpinmap'+index+'" data-index="'+index+'" class="basicPinBtn">Anpassen</button><div class="pinmap"></div></div><i></i><s></s></div>' );
+	    '<div id="part'+index+'" class="part"><strong>'+basic.name+'</strong><c data-id="'+basic.id+'" title="zum Basic">BASIC</c><div class="deviceidbox"><b>Device ID</b> <input name="deviceID" class="deviceID" placeholder="ID im Broker" autocomplete="off" value="'+deviceidp+'" /><div class="brokeridselect"></div><div class="sensorout"></div><br /><b>Broker Up</b> <input class="brokerUpMsg" autocomplete="off" value="'+brokerupmsg+'" /><div class="display"><input type="checkbox" class="displaysensorcheck" id="displaySensorChk'+index+'" '+(dispsens?' checked="checked"':'')+'/><b>Display</b> <span id="dispSensorMsr'+index+'" class="dispsensmsr"></span></div></div><div class="tooltip"><b>Tooltip</b> <textarea id="tooltip'+index+'" placeholder="mouseover Ballontext">'+(basic.tooltip||'')+'</textarea></div><div class="pins"><b>'+pinarr.length+' Pins</b> <button id="basicpinmap'+index+'" data-index="'+index+'" class="basicPinBtn">Anpassen</button><div class="pinmap"></div></div><i></i><s></s></div>' );
 	pi.scrollTo({
 	    top: pi.scrollHeight,
 	    left: 0,
 	    behavior: 'smooth'
 	})
 	const DOMObj = document.getElementById('part'+index);
-
+	fillDisplayMeasures( DOMObj, partobj, basic.displaymeasures );
+	if ( dispsens ) {
+	    addDisplaySensor( deviceidp, meshp, basic.displaymeasures );
+	};
 	/*	DOMObj.onmouseover = ( ev ) => {
 //	    console.log('hilite',meshp.userData.index);
 	    hilightPart( meshp );
@@ -1159,6 +1221,20 @@ window.onload = ( loadev ) => {
 	    window.setTimeout( () => {
 		selBox.classList.remove('show');
 	    }, 200 );
+	};
+	DOMObj.querySelector( '.displaysensorcheck' ).onchange = ( ev ) => {
+	    if ( ev.target.checked ) {
+		partobj.display = true;		
+		partobj.displaymeasures = [];
+		addDisplaySensor( DOMObj.querySelector( '.deviceID' ).value, meshp, partobj.displaymeasures );
+		fillDisplayMeasures( DOMObj, partobj );
+	    }
+	    else {
+		partobj.display = false;
+		deleteDisplay( basic.deviceid );
+		deleteDisplayMeasures( DOMObj, partobj );
+	    }
+	    console.log('displaysensorcheck change', ev.target.checked);
 	};
 	DOMObj.querySelector('.basicPinBtn').onclick = ( ev ) => {	    
 	    const outputBox = ev.target.nextSibling;
@@ -1386,11 +1462,58 @@ window.onload = ( loadev ) => {
     scene.add(signmesh);
 // animation
 
+    const checkFrustum = (obj) => {
+	var frustum = new THREE.Frustum();
+	var projScreenMatrix = new THREE.Matrix4();
+
+	camera.updateMatrix();
+	camera.updateMatrixWorld();
+
+	projScreenMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse );
+
+	frustum.setFromProjectionMatrix(
+	    new THREE.Matrix4().multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse ) );
+	return frustum.containsPoint ( obj.position );
+    }
+    const DISPWIDTHHALF = DISPWIDTH / 2;
+    const DISPBOTTOMOFFSET = 5;
+    const checkDisplays = (delta) => {
+	for ( let i=0; i<Displays.length; i++ ) {
+	    const v = new THREE.Vector3();
+	    const obj=Displays[i].mesh;
+	    v.copy( obj.position );
+	    v.project( camera );
+	    let left = Math.round((v.x+1)*width/2)-DISPWIDTHHALF;
+	    let top = Math.round((-v.y+1)*height/2);
+	    let bottom = height - top + DISPBOTTOMOFFSET;
+	    let hinview=false;
+	    let vinview=false;
+	    if ( left < -30 ) left = -30;
+	    else if ( left > width -100) left = width -70;
+	    else hinview = true;
+	    if ( top < 0 ) top = 0;
+	    else if ( top > height -20) top = height-20;
+	    else vinview = true;
+	    if ( hinview && vinview && !checkFrustum(obj) ) {
+		left=width/2 -DISPWIDTHHALF;
+		bottom=DISPBOTTOMOFFSET;
+		//	    console.log('falsely visible marker');
+	    }
+	    Displays[i].dispdom.style.left = left + 'px';
+//	    Displays[i].dispdom.style.top = top + 'px';
+	    Displays[i].dispdom.style.bottom = bottom + 'px';
+	    //	console.log('Marker',i,markers[i].object);
+	}
+    }
+
+
     function animation( time ) {
 
 	if ( mainmesh ) {
-//	    mainmesh.rotation.x = time / 2000;
+	    checkDisplays( time );
+	    //	    mainmesh.rotation.x = time / 2000;
 //	    mainmesh.rotation.y = time / 1000;
+	    
 	}
 	renderer.render( scene, camera );
 
@@ -1659,6 +1782,8 @@ window.onload = ( loadev ) => {
 	signs.splice( 0 );
 	files.splice( 0 );
 	links.splice( 0 );
+	Displays.splice(0);
+	document.getElementById('plgOvl').replaceChildren();
 	document.getElementById('partsinner').replaceChildren();
 	document.getElementById('signsinner').replaceChildren();
 	document.getElementById('deviceName').value = '';
@@ -1791,7 +1916,7 @@ window.onload = ( loadev ) => {
 	    else {
 		let o3;
 		if ( !isbasicp ) addPartDOM( o.name, o.fname, o.deviceid, o.brokerupmsg, o.tooltip, o.origdata );
-		console.log('render part',o.origdata,isbasicp);
+//		console.log('render part',o.origdata,isbasicp);
 		if ( o.origdata && o.origdata.type && o.origdata.type === 'stl' ) {
 		    const stlloader = new STLLoader();
 		    loadopencount++;
@@ -1873,7 +1998,50 @@ window.onload = ( loadev ) => {
 	camera.rotation.x = akt.rotation.x;
 	camera.rotation.y = akt.rotation.y;
 	camera.rotation.z = akt.rotation.z;
+	camera.updateProjectionMatrix();
     };
+    const setControls = () => {
+	const ocampo = {
+	    'position' : {
+		'x' : camera.position.x,
+		'y' : camera.position.y,
+		'z' : camera.position.z
+	    },
+	    'rotation' : {
+		'x' : camera.rotation.x,
+		'y' : camera.rotation.y,
+		'z' : camera.rotation.z
+	    }
+	}
+	controls = new ArcballControls( camera, renderer.domElement, scene );
+	controls.addEventListener( 'change', (ev) => {
+	    // sync the small camera for the axis triade on change of the main camera
+	    //	    let ncp = 
+	});
+	controls.target.set( 0, 0, 0 );
+//	controls.adjustNearFar = true;
+	controls.setGizmosVisible( false );
+	//    controls.enableGrid = true;
+	controls.rotateSpeed = 1.0;
+	controls.zoomSpeed = 1.2;
+	controls.panSpeed = 0.8;
+	
+	controls.noZoom = false;
+	controls.noPan = false;
+	
+	controls.cursorZoom = true;
+	controls.staticMoving = false;
+	controls.dynamicDampingFactor = 0.15;
+    
+//	controls.saveState();
+	controls.keys = [ 65, 83, 68 ];
+	RestoreCamPos(ocampo);
+//	controls.update();
+    }
+    setControls( );
+    const unsetControls = () => {
+	if ( controls ) controls.dispose();
+    }
 
     const showThrobber = () => {
 	const to = document.getElementById('throbbermodal');
@@ -1887,6 +2055,7 @@ window.onload = ( loadev ) => {
     }
     const loadDevicePure = ( id ) => {
 	const url = '/api/getOne/'+id;
+	unsetControls();
 	aktdeviceuid = id;
 	const xhr = new XMLHttpRequest();
 	xhr.open('GET',url,true);
@@ -1911,7 +2080,6 @@ window.onload = ( loadev ) => {
 		    if ( json.camstart ) {
 			setCamStart( json.camstart );
 			RestoreCamPos( json.camstart );
-//			controls.update();
 			console.log('CAMSTART');
 		    }
 		    document.getElementById('liveBtn').classList.remove('hidden');
@@ -1928,6 +2096,7 @@ window.onload = ( loadev ) => {
 			document.getElementById('munit').value = json.munit;
 		    }
 		}
+		setControls();
 		console.log('loaded device',json);
 		hideThrobber();
 	    }
@@ -2104,6 +2273,8 @@ window.onload = ( loadev ) => {
 		    'id' : apa.id,
 		    'type' : apa.type,
 		    'pins' : apa.pins,
+		    'display' : apa.display,
+		    'displaymeasures' : apa.displaymeasures,
 		    'modifications' : {
 			'position' : { 'x' : apa.mesh.position.x, 'y' : apa.mesh.position.y, 'z' : apa.mesh.position.z },
 			'rotation' : { 'x' : apa.mesh.rotation.x, 'y' : apa.mesh.rotation.y, 'z' : apa.mesh.rotation.z },
@@ -2122,6 +2293,8 @@ window.onload = ( loadev ) => {
 		    'fname' : apa.fname,
 		    'origdata' : apa.origdata,
 		    'pins' : [],
+		    'display' : apa.display,
+		    'displaymeasures' : apa.displaymeasures,
 		    'modifications' : {
 			'position' : { 'x' : apa.mesh.position.x, 'y' : apa.mesh.position.y, 'z' : apa.mesh.position.z },
 			'rotation' : { 'x' : apa.mesh.rotation.x, 'y' : apa.mesh.rotation.y, 'z' : apa.mesh.rotation.z },
@@ -2448,6 +2621,11 @@ window.onload = ( loadev ) => {
 //	composer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
 
     }
+    const showAddDisplay = () => {
+	const dlg = document.getElementById('editDisplayDlg');
+	dlg.insertAdjacentHTML( 'beforeend', '<h3>Display</h3>' );
+	dlg.classList.add('vis');
+    }
     const initButtonEvents = () => {
 	document.getElementById( 'createDeviceBtn').onclick = ( ev ) => {
 	    modalDlg( 'Dies wird ihre aktuellen Bearbeitungen löschen! Wollen Sie wirklich ein neuen Twin anlegen?',
@@ -2484,10 +2662,21 @@ window.onload = ( loadev ) => {
 	    saveGlobals();
 	    hideGlobalDlg();
 	};
+	document.getElementById( 'dummySender').onclick = ( ev ) => {
+	    showDummySenderDlg();
+	};
+	document.getElementById( 'dummySenderClose').onclick = ( ev ) => {
+	    hideDummySenderDlg();
+	};
 	document.getElementById( 'newgroup').onclick = ( ev ) => {
 	    if ( ev.target.classList.contains('disabled') ) return;
 	    const basics = getBasics();
 	};
+	document.getElementById( 'display' ).onclick = ( ev ) => {
+	    if ( ev.target.classList.contains('disabled') ) return;
+	    showAddDisplay();
+	};
+
 	window.addEventListener( 'resize', onWindowResize );
     }
     initButtonEvents();
@@ -2521,21 +2710,99 @@ window.onload = ( loadev ) => {
 	outbox.innerHTML='';
 	    */
     };
+    
+    const fillDisplayMeasures = ( dspBox, part, prefill ) => {
+	const dispmsrdiv = dspBox.querySelector('.dispsensmsr');
+	const id = dspBox.querySelector('.deviceID').value;
+	if ( !broker.devices[id] ) return;
+	dispmsrdiv.replaceChildren();
+	const msrs = broker.devices[id].meta.payloadStructure;
+	for ( let i=0; i<msrs.length; i++ ) {
+//	    console.log('fillDisplayMeasures',part,prefill,msrs[i]);
+	    const nc = document.createElement('input');
+	    nc.type = 'checkbox';
+	    nc.classList.add('dispmsrinp');
+	    if ( prefill ) for ( let j=0; j<prefill.length; j++ ) {
+		if ( prefill[j].name === msrs[i].name ) {
+//		    console.log('found measure',prefill[j].name, msrs[i].name);
+		    nc.checked = 'checked';
+		}
+	    };
+	    nc.onchange = ( ev ) => {
+		console.log('dispmeasure change',Displays,part);
+		if ( ev.target.checked ) {
+		    if ( ! part.displaymeasures ) part.displaymeasures = [];
+		    part.displaymeasures.push( msrs[i] );
+		    console.log('add measure',msrs[i],part.displaymeasures);
+		}
+		else {
+		    const ii = part.displaymeasures.indexOf(msrs[i])
+		    part.displaymeasures.splice(ii,1);
+		    console.log('remove measure',msrs[i],part.displaymeasures);
+		}
+	    }
+	    dispmsrdiv.appendChild( nc );
+	    dispmsrdiv.insertAdjacentHTML( 'beforeend',msrs[i].name );
+	}
+//	console.log('fill Display',id,dispmsrdiv,msrs,part.display);
+	//	selbox.replaceChildren();
+    }
+    const deleteDisplayMeasures = ( dspBox ) => {
+	const dispmsrdiv = dspBox.querySelector('.dispsensmsr');
+	dispmsrdiv.replaceChildren();
+	const dispchkdiv = dspBox.querySelector('.displaysensorcheck');
+	dispchkdiv.checked=false;
+	
+	console.log('delete Display',dspBox);
+//	selbox.replaceChildren();
+    }
+    const deleteDisplay = ( id ) => {
+	for ( let i=0; i<Displays.length; i++ ) {
+	    console.log('delete Display',id,Displays[i].id);
+	    if ( Displays[i].id === id ) {
+		Displays.splice(i,1);
+		break;
+	    }
+	}
+	const disp = document.getElementById( 'display'+id );
+	if ( disp ) disp.parentNode.removeChild(disp);
+    }
+    const devInUse = ( id ) => {
+	const devsInUse = document.querySelectorAll('.part .deviceID');
+	console.log('devsInUse',devsInUse);
+	for ( let i=0; i<devsInUse.length; i++ ) {
+	    console.log('found devinuse?',id,devsInUse[i].value);
+	    if ( devsInUse[i].value === id ) {
+		console.log('found ');
+		return true;
+	    }
+	};
+	return false;
+    }
     const fillBrokerSelect = ( selbox ) => {
 //	const selbox = document.getElementById( 'brokeridselect' );
-	selbox.innerHTML = '';
+	selbox.replaceChildren();
 //	console.log('broker devices',broker.devices);
-	const keysarr = Object.keys(broker.devices);
+	const keysarr = Object.keys(broker.devices);	
+	const partnode = selbox.parentNode.parentNode;
 	for ( let i=0; i<keysarr.length; i++ ) {
 	    const k = keysarr[i];
 	    const o = broker.devices[k];
 //	    console.log('device',i,k,o);
 	    const devlabel = document.createElement( 'div' );
 	    devlabel.innerHTML = k;
-	    devlabel.onclick = ( ev ) => {
-		setDeviceId(k, selbox );
-		selbox.classList.remove('show');
-//		console.log(k);
+	    if ( devInUse( k ) ) {
+		devlabel.classList.add('inactive');
+	    }
+	    else {
+		devlabel.onclick = ( ev ) => {
+		    const oldid = partnode.querySelector('.deviceID').value;
+		    setDeviceId(k, selbox );
+		    selbox.classList.remove('show');
+		    deleteDisplay( oldid );
+		    deleteDisplayMeasures( partnode );
+		    console.log(k);
+		}
 	    }
 	    selbox.appendChild(devlabel);
 //	    selbox.insertAdjacentHTML( 'beforeend',
@@ -2679,7 +2946,7 @@ window.onload = ( loadev ) => {
 	    routes.push( route );
 	    cont.classList.add('target');
 	    rpd.classList.add('pin2');
-	    cont.insertAdjacentHTML( 'beforeend', '<div class="route active"><div class="rpin firstpin"><i>'+shortenPartName(o.part)+'</i><b>'+o.name+'</b> </div> <div class="rmid"><b style="color:'+o.col+'"></b><br />H <input class="rhmod" id="rhmod'+routes.length+'" value="'+(h?h:0)+'" /> D <input class="rhmod" id="rdmod'+routes.length+'" value="'+(d?d:0)+'" /></div> </div>' );
+	    cont.insertAdjacentHTML( 'beforeend', '<div class="route active"><div class="rpin firstpin"><i>'+shortenPartName(o.part)+'</i><b>'+o.name+'</b> </div> <div class="rmid"><b style="color:'+(o.col||'#ffff00')+'"></b><br />H <input class="rhmod" id="rhmod'+routes.length+'" value="'+(h?h:0)+'" /> D <input class="rhmod" id="rdmod'+routes.length+'" value="'+(d?d:0)+'" /></div> </div>' );
 	    const hinp = document.getElementById('rhmod'+routes.length);
 	    hinp.onblur = ( ev ) => {
 		route.hmod = parseInt(hinp.value);
@@ -2956,27 +3223,6 @@ window.onload = ( loadev ) => {
 	    console.log('doubleside click',ev.target.checked,aktmesh.material);
 	    aktmesh.material.side = THREE.DoubleSide;
 	}
-	document.getElementById('rotToPlane').onclick = ( ev ) => {
-	    aktmesh.rotation.x=-Math.PI/2;
-	    aktmesh.rotation.y=0;
-	    aktmesh.rotation.z=0;
-	    ev.preventDefault();
-	    aktEditCoords();
-	};
-	document.getElementById('rotToWallNS').onclick = ( ev ) => {
-	    aktmesh.rotation.x=0;
-	    aktmesh.rotation.y=Math.PI/2;
-	    aktmesh.rotation.z=0;
-	    ev.preventDefault();
-	    aktEditCoords();
-	};
-	document.getElementById('rotToWallEW').onclick = ( ev ) => {
-	    aktmesh.rotation.x=0;
-	    aktmesh.rotation.y=0;
-	    aktmesh.rotation.z=Math.PI/2;
-	    ev.preventDefault();
-	    aktEditCoords();
-	};
 	document.getElementById('labelrotxhs').onclick = ( ev ) => {
 	    aktpin.label.rotation.x+=Math.PI/2;
 	    if ( aktpin.label.rotation.x > Math.PI ) aktpin.label.rotation.x=-Math.PI/2;

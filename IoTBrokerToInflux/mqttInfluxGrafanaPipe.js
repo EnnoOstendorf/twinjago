@@ -136,7 +136,7 @@ const createGrafanaDash = ( id, msg ) => {
     dashjson.title = id;
     for ( let i=0; i<msg.payloadStructure.length; i++ ) {
 	const o = msg.payloadStructure[i];
-	if ( o.name && o.name !== 'uptime' ) {
+	if ( o.name && o.name.toLowerCase() !== 'uptime' && o.name.toLowerCase() !== 'timestamp' ) {
 	    let paneljson = JSON.parse(JSON.stringify(PANELJSON));
 	    paneljson.title = o.name;
 	    paneljson.targets[0].query = paneljson.targets[0].query.replace( '%%SENSORID%%', id );
@@ -176,6 +176,7 @@ const publishDashboard = ( id, uid ) => {
 
 const parseMessage = ( id, msg ) => {
     [ type, id ] = id.split( /\// );
+//    console.log('got message',type,id);
     if ( ! devices[id] ) {
 	devices[id] = { 'meta' : '', 'datacount' : 0, 'beaconcount' : 0, 'lastdata' : [] };
 	deviceids.push( id );	

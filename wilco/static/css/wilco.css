@@ -47,13 +47,16 @@ h2 {
 	height: 90%;
 	overflow: auto;
 }
+#playground .col {
+    float: left;
+    width: 30%;
+}
 #playground a {
     margin: 2px;
     padding: 3px;
-	width: 30%;
-	display: inline-block;
-	cursor: pointer;
-	transition: all 0.5s ease-out;
+    display: block;
+    cursor: pointer;
+    transition: all 0.5s ease-out;
 }
 #playground a:hover {
     background: #000;

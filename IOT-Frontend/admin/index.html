@@ -69,6 +69,7 @@
 	    <div class="modalovl"></div>
 	  </div>
 	  <div class="globalCtrl">
+	    <button id="dummySender">dummy Sender</button>
 	    <button id="globalSettings">globale Einstellungen</button>
 	  </div>
 	</div>
@@ -82,13 +83,23 @@
 	<div id="signs"><h2>Beschilderung</h2>
 	  <div id="signsinner"></div>	    
 	  <div class="newsign" id="newsign"><label for="newsignfile">+ Schildbild <input type="file" id="newsignfile" autocomplete="off"></label></div>
+	  <div class="newsign" id="display">+ Display</div>
 	  <div class="modalovl"></div>
+	</div>
+	<div id="editDisplayDlg">
+	  <h2>Display</h2>
+	  <div class="inprow"> <b>Position:</b>
+	    x: <input class="coord" name="posx" id="dposx" autocomplete="off" /> <i id="dposxhs" class="hotspot"></i>
+	    y: <input class="coord" name="posy" id="dposy" autocomplete="off" /> <i id="dposyhs" class="hotspot"></i>
+	    z: <input class="coord" name="posz" id="dposz" autocomplete="off" /> <i id="dposzhs" class="hotspot"></i>
+	  </div><br />
+	  <b>Device</b>
+	  <select id="dispdevsel"></select>
+	  <div id="dispdevout">
+	  </div>
 	</div>
 	<div id="editDlg">
 	  <form id="editForm" action="">
-	    <button id="rotToPlane">_</button>
-	    <button id="rotToWallNS">|</button>
-	    <button id="rotToWallEW">/</button><br />
 	    <div class="inprow"> <b>Position:</b>
 	      x: <input class="coord" name="posx" id="posx" autocomplete="off" /> <i id="posxhs" class="hotspot"></i>
 	      y: <input class="coord" name="posy" id="posy" autocomplete="off" /> <i id="posyhs" class="hotspot"></i>
@@ -247,6 +258,11 @@
 	</div>
 	<button id="globalCancel">Abbrechen</button>
 	<button id="globalConfirm">Setzen</button>
+      </div>
+      <div id="dummySenderCont">
+	<div id="dummySenderBox">
+	</div>
+	<button id="dummySenderClose">X</button>
       </div>
       
       <div id="serverstats">

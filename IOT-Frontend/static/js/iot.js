@@ -17,6 +17,8 @@ let cur3d1,cur3d2 = null;
 const pinned = [];
 let markergeom = null;
 let doubleselect = false;
+const Displays = [];
+const DISPWIDTH = 120;
 
 /* Measurement vars */
 let measuremode = false;
@@ -73,7 +75,18 @@ const loadAllPipedDevices = () => {
 	    var json = JSON.parse(xhr.responseText);
 	    pipedevs=json;
 	    document.getElementById( 'influximport' ).classList.add('ready');
-	    
+	    for ( let i=0; i<json.length; i++ ) {
+		const o = json[i];
+		const tid = o.id;
+		const ld = o.data.lastdata;
+		console.log('piped device',tid,ld);
+		if ( ! broker.devices[tid] ) broker.devices[tid] = { 'lastdata' : [] };
+		if ( ld ) {
+		    for ( let j=0; j<ld.length; j++ ) {
+			broker.devices[tid].lastdata.push( ld[j] );
+		    }
+		}
+	    }
 	    console.log('loaded all piped devices', broker, json );
 	}
     };
@@ -106,8 +119,23 @@ client.on('error', function (err) {
 const writePoint = ( field, id, value ) => {
 }
 
+const attention = ( msg, time, status ) => {
+    const ovl = document.getElementById('plgOvl');
+    const node = document.createElement('div');
+    node.innerHTML = msg;
+    node.classList.add('attention');
+    node.id = Date.now()+ '_' + Math.round(Math.random()*1000);
+    if ( status ) node.classList.add(status);
+    ovl.appendChild( node );
+    time = time || 2000;
+    window.setTimeout( () => {
+	ovl.removeChild( node );
+    }, time );
+}
+
 const pubMessage = ( id, msg ) => {
     client.publish( 'sensor/'+id, msg );
+    attention( 'Nachricht ' + msg + ' an ' + id + ' publiziert', 1800, 'ok' );
 }
 
 const aktMeter = ( id, msg, ind ) => {
@@ -120,6 +148,7 @@ const aktMeter = ( id, msg, ind ) => {
     let label = '';
     for( let i=0; i<broker.devices[id].meta.payloadStructure.length; i++ ) {
 	const o = broker.devices[id].meta.payloadStructure[i];
+//	console.log('broker payload',broker.devices[id].meta.payloadStructure[i]);
 	if ( o.name.toLowerCase() === 'timestamp' ) {
 	    label = 'eingegangen';
 	    timestamp = msg[i];
@@ -131,13 +160,14 @@ const aktMeter = ( id, msg, ind ) => {
 	}
 	else {
 	    let value = msg[i] || '0';
-	    if ( typeof value === 'float' ) value = value.toFixed(2);
-	    meters.push( { 'measure' : o.name, 'value' : value } );
+	    if ( typeof value === 'float' || typeof value === 'number' ) value = value.toFixed(2);
+//	    else console.log('typeof value',typeof value);
+	    meters.push( { 'measure' : o.name, 'value' : value, 'unit' : o.unit } );
 	}
     }
     let htmlbuf = '';
     for ( let i=0; i<meters.length; i++ ) {
-	htmlbuf += '<div class="meterroot"><span>'+meters[i].value+'</span><h4>'+meters[i].measure+'</h4></div>';
+	htmlbuf += '<div class="meterroot"><span>'+meters[i].value+(meters[i].unit?' '+meters[i].unit:'')+'</span><h4>'+meters[i].measure+'</h4></div>';
     }
     if ( timestamp !== 0 ) {
 	htmlbuf += '<div class="timestamp">'+label+': '+timestamp+'</div>';
@@ -146,7 +176,6 @@ const aktMeter = ( id, msg, ind ) => {
 //    console.log( 'aktMeter', vals, meterdom );
 }
 
-
 const aktSensorout = ( id, msg, ind ) => {
     if ( !broker.devices[id].meta.payloadStructure ) return;
     const nname = 'sensorout' + (ind>0?ind-1:'');
@@ -154,11 +183,11 @@ const aktSensorout = ( id, msg, ind ) => {
     let message = '';
     for( let i=0; i<broker.devices[id].meta.payloadStructure.length; i++ ) {
 	const o = broker.devices[id].meta.payloadStructure[i];
-	message += o.name + ': ' + msg[i] + '  ';
+	message += o.name + ': ' + msg[i] + ', ';
     };
-    broker.devices[id].lastdata.push( message );
-//    console.log('aktSensorout',id,out,broker.devices[id].lastdata);
-    out.innerHTML = broker.devices[id].lastdata.join('<br />');//message;    
+    broker.devices[id].lastdata.push( msg );
+    console.log('aktSensorout',id,out,broker.devices[id].lastdata);
+    out.innerHTML = message + '<br />' + out.innerHTML;//message;    
 }
 
     const getGrafanaData = ( id ) => {
@@ -170,6 +199,39 @@ const aktSensorout = ( id, msg, ind ) => {
 	}
     }
 
+
+
+const aktDisplay = ( display, msg ) => {
+    // when broker data has not yet arrived, stash the akt request for a second
+    if ( ! broker.devices[display.id].meta || ! broker.devices[display.id].meta.payloadStructure ) {
+	window.setTimeout( () => { aktDisplay( display, msg ); }, 1000 );
+	return;
+    }
+    const struct = broker.devices[display.id].meta.payloadStructure;
+    display.dispdom.replaceChildren();
+//    console.log('akt Display',display,msg,struct);
+    for ( let i=0; i<struct.length; i++ ) {
+	if ( display.measures )
+	    for ( let j=0; j<display.measures.length; j++ ) {
+		if ( struct[i].name === display.measures[j].name && typeof msg[i] !== 'undefined' && msg[i] !== null ) {
+//		    console.log('akt Display',typeof msg[i]);
+		    //	Displays.push( { 'id' : id, 'mesh' : mesh, 'measures' : measures, 'dispdom' : sensdiv } );
+		    const tmsg = typeof msg[i] === 'number' ? msg[i].toFixed(2) : msg[i];
+		    display.dispdom.insertAdjacentHTML( 'beforeend', '<b>'+ struct[i].name + ':</b> ' + tmsg + ' ' + (struct[i].unit || '') + '<br />' );
+		}
+	    }
+    };
+}
+
+const aktDisplayById = ( id, msg ) => {
+    for ( let i=0; i<Displays.length; i++ ) {
+	if ( Displays[i].id === id ) {
+	    aktDisplay( Displays[i], msg );
+	    break;
+	}
+    }
+}
+
 const parseMessage = ( idp, msg ) => {
 
     const [ type, id ] = idp.split( /\// );
@@ -179,7 +241,7 @@ const parseMessage = ( idp, msg ) => {
 	const grdata = getGrafanaData(id);
 	if ( grdata && grdata.lastdata ){
 	    const msg2 = grdata.lastdata[grdata.lastdata.length-1];
-	    broker.devices[id].lastmsg = msg2;
+	    broker.devices[id].lastmsg = msg2;	    
 	    aktSensorout( id, msg2 );
 	    aktMeter( id, msg2 );
 	}
@@ -229,13 +291,21 @@ const parseMessage = ( idp, msg ) => {
 //	broker.devices[id].lastdata.push( message );
 	if ( pinned.length > 0 ) {
 	    for ( let i=0; i<pinned.length; i++ ) {
-		if ( pinned[i].id === id ) {
+		if ( !pinned[i].deleted && pinned[i].id === id ) {
 //		    console.log('pinned',id,broker.devices[id].lastdata,pinned[i],msg);
 		    aktSensorout( id, msg, i+1 );
 		    aktMeter( id, msg, i+1 );
 		    //		    document.getElementById( 'sensorout'+i ).innerHTML = broker.devices[id].lastdata.join('<br />');
 		}
 	    };
+	}
+	if ( Displays.length > 0 ) {
+	    for ( let i=0; i<Displays.length; i++ ) {
+		if ( Displays[i].id === id ) {
+		    aktDisplay( Displays[i], msg );
+		    break;
+		}
+	    }
 	}
 	while ( broker.devices[id].lastdata.length > MSGBUFFERLINES ) {
 	    broker.devices[id].lastdata.shift();
@@ -711,12 +781,22 @@ window.onload = ( loadev ) => {
 	}
 	return shortname;
     };
+    const addDisplaySensor = ( id, mesh, measures ) => {
+	const ovl = document.getElementById( 'plgOvl' );
+	const sensdiv = document.createElement( 'div' );
+	sensdiv.id = 'display'+id; sensdiv.classList.add('sensordisplay');
+	ovl.appendChild(sensdiv);
+	Displays.push( { 'id' : id, 'mesh' : mesh, 'measures' : measures, 'dispdom' : sensdiv } );
+	console.log('addDisplaySensor',broker.devices[id].lastdata[0]);
+	if ( broker.devices[id].lastdata[0] ) aktDisplayById( id, broker.devices[id].lastdata[0] );
+    }
     const addBasicPart = ( basic, meshp, rebuild ) => {
 	// save pins
 
 	let index=0;
 	let pinarr;
 	let pincount =0;
+	let partobj;
 	if ( ! rebuild ) {
 	    pinarr = [];
 	    for ( let i=0; i<basic.parts.length; i++ ) {
@@ -736,7 +816,8 @@ window.onload = ( loadev ) => {
 //		    console.log('pinarr',o);
 		}
 	    }
-	    parts.push({ 'name' : basic.name, 'type' : 'basic', 'id' : basic.id, 'deviceid': basic.deviceid, 'brokerupmsg': basic.brokerupmsg, 'tooltip' : basic.tooltip, 'mesh': meshp, 'pins' : pinarr });
+	    partobj = { 'name' : basic.name, 'type' : 'basic', 'id' : basic.id, 'deviceid': basic.deviceid, 'brokerupmsg': basic.brokerupmsg, 'tooltip' : basic.tooltip, 'mesh': meshp, 'pins' : pinarr, 'display' : basic.display, 'displaymeasures' : basic.displaymeasures };
+	    parts.push(partobj);
 	
 	    const pl = document.getElementById('partlist');
 	    pl.insertAdjacentHTML( 'beforeend',
@@ -750,6 +831,10 @@ window.onload = ( loadev ) => {
 	    index = rebuild - 1;
 	    pinarr = basic.pins;
 	}
+//	console.log( 'addBasicPart', basic );
+	if ( basic.display ) {
+	    addDisplaySensor( basic.deviceid, meshp, basic.displaymeasures );
+	};
 	meshp.userData.index = index;
     }
 
@@ -814,6 +899,50 @@ window.onload = ( loadev ) => {
     scene.add(signmesh);
 // animation
 
+    const checkFrustum = (obj) => {
+	var frustum = new THREE.Frustum();
+	var projScreenMatrix = new THREE.Matrix4();
+
+	camera.updateMatrix();
+	camera.updateMatrixWorld();
+
+	projScreenMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse );
+
+	frustum.setFromProjectionMatrix(
+	    new THREE.Matrix4().multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse ) );
+	return frustum.containsPoint ( obj.position );
+    }
+    const DISPWIDTHHALF = DISPWIDTH / 2;
+    const DISPBOTTOMOFFSET = 30;
+    const checkDisplays = (delta) => {
+	for ( let i=0; i<Displays.length; i++ ) {
+	    const v = new THREE.Vector3();
+	    const obj=Displays[i].mesh;
+	    v.copy( obj.position );
+	    v.project( camera );
+	    let left = Math.round((v.x+1)*width/2)-DISPWIDTHHALF;
+	    let top = Math.round((-v.y+1)*height/2);
+	    let bottom = height - top + DISPBOTTOMOFFSET;
+	    let hinview=false;
+	    let vinview=false;
+	    if ( left < -30 ) left = -30;
+	    else if ( left > width -100) left = width -70;
+	    else hinview = true;
+	    if ( bottom < 0 ) bottom = 0;
+	    else if ( bottom > height -20) bottom = height-20;
+	    else vinview = true;
+	    if ( hinview && vinview && !checkFrustum(obj) ) {
+		left=width/2 -DISPWIDTHHALF;
+		bottom=DISPBOTTOMOFFSET;
+		//	    console.log('falsely visible marker');
+	    }
+	    Displays[i].dispdom.style.left = left + 'px';
+//	    Displays[i].dispdom.style.top = top + 'px';
+	    Displays[i].dispdom.style.bottom = bottom + 'px';
+	    //	console.log('Marker',i,markers[i].object);
+	}
+    }
+
     function animation( time ) {
 
 	if ( mainmesh ) {
@@ -828,11 +957,15 @@ window.onload = ( loadev ) => {
 	}
 	if ( datapinned ) {
 	    pinned.forEach( ( o, i ) => {
-		let aktpin = o.marker;
-		aktpin.rotation.x += 0.05;
-		aktpin.rotation.y += 0.05;
+		if ( !o.deleted ) {
+		    let aktpin = o.marker;
+		    aktpin.rotation.x += 0.05;
+		    aktpin.rotation.y += 0.05;
+		}
 	    });
 	}
+	if ( Displays.length > 0 )
+	    checkDisplays( time );
 	renderer.render( scene, camera );
 
     }
@@ -1080,6 +1213,8 @@ window.onload = ( loadev ) => {
 	signs.splice( 0 );
 	files.splice( 0 );
 	links.splice( 0 );
+	Displays.splice(0);
+	document.getElementById('plgOvl').replaceChildren();
 	removeMeshes( mainmesh );
 	removeMeshes( signmesh );
 	removeMeshes( routemesh );
@@ -1275,6 +1410,10 @@ window.onload = ( loadev ) => {
 	cur3d1.scale.set(zscale,zscale,zscale);
 //	console.log('calc3DCursorSize',zdist,zscale);
 	cur3d2.scale.set(zscale,zscale,zscale);
+	if ( pinned.length > 0 )
+	    for ( let i=0; i<pinned.length; i++ ) {
+		if ( !pinned[i].deleted && pinned[i].marker ) pinned[i].marker.scale.set(zscale,zscale,zscale);
+	    }
     }
     const setControls = () => {
 	const ocampo = {
@@ -1350,6 +1489,17 @@ window.onload = ( loadev ) => {
 //	constrols.saveState();
 	console.log('restorecampos',akt);
     };
+    const deleteDisplay = ( id ) => {
+	for ( let i=0; i<Displays.length; i++ ) {
+	    console.log('delete Display',id,Displays[i].id);
+	    if ( Displays[i].id === id ) {
+		Displays.splice(i,1);
+		break;
+	    }
+	}
+	const disp = document.getElementById( 'display'+id );
+	disp.parentNode.removeChild(disp);
+    }
     const fillDokLayer = () => {
 	const id = document.querySelector('#dbID span').innerHTML;
 	const doklyr = document.getElementById( 'dokLyr' );
@@ -1533,6 +1683,27 @@ window.onload = ( loadev ) => {
 	document.getElementById('histCont').replaceChildren();
 	document.getElementById('liveCont').replaceChildren();
     }
+    const refreshPinned = () => {
+	const pinnedanz = countPinned();
+	document.getElementById('pinnedanz').innerHTML = pinnedanz;
+	if ( pinnedanz === 0 ) {
+	    unpinAll();
+	    return;
+	}
+
+	const ld = document.getElementById('liveData');
+	if ( pinnedanz === 1 ) {
+	    ld.classList.remove('double');
+	    ld.classList.remove('multi');
+	}
+	else if ( pinnedanz === 2 ) {
+	    ld.classList.add('double');
+	    ld.classList.remove('multi');
+	}
+	else if ( pinnedanz > 2 ) ld.classList.add('multi');
+
+	
+    }
     const unpinData = ( aktdevice ) => {
 	datapinned = false;
 	doubleselect = false;
@@ -1544,12 +1715,19 @@ window.onload = ( loadev ) => {
 	for ( let i=0; i<pinned.length; i++ ) {
 	    const o=pinned[i];
 	    console.log( 'isPinned?', o.id, ad, o.id === ad );
-	    if ( o.id === ad ) {
+	    if ( !o.deleted && o.id === ad ) {
 		return true;
 		break;
 	    };
 	};
 	return false;
+    }
+    const countPinned = ( ) => {
+	let count = 0;
+	for ( let i=0; i<pinned.length; i++ ) {
+	    if ( !pinned[i].deleted ) count++;
+	};
+	return count;
     }
     const pinData = () => {
 	console.log('pindevice',aktdevice,isPinned( aktdevice ));
@@ -1574,13 +1752,14 @@ window.onload = ( loadev ) => {
 	    marker: mark3d,
 	    livedom: lvdom
 	});
-	if ( pinned.length > 2 ) ldcont.classList.add( 'multi' );
-	else if ( pinned.length > 1 ) ldcont.classList.add( 'double' );
+	const pinnedanz = countPinned();
+	if ( pinnedanz > 2 ) ldcont.classList.add( 'multi' );
+	else if ( pinnedanz > 1 ) ldcont.classList.add( 'double' );
 	else ldcont.classList.remove( 'multi' );
-	document.getElementById('pinnedanz').innerHTML = pinned.length;
-	document.getElementById('pinnedanz').title = pinned.length + ' gepinnte Teile';
+	document.getElementById('pinnedanz').innerHTML = pinnedanz;
+	document.getElementById('pinnedanz').title = pinnedanz + ' gepinnte Teile';
 //	grdom.scrollIntoView({ behaviour: 'smooth', inline: 'end' });
-	console.log('pin data',aktdevice,aktdevicei,p.mesh);
+	console.log('pin data',aktdevice,broker.devices[aktdevice].lastdata[0]);
     }
     const initMouseEvents = () => {
 	playground.onmousemove = ( ev ) => {
@@ -1763,7 +1942,8 @@ window.onload = ( loadev ) => {
 	if ( !aktdevice ) return;
 	const tooltip = part.tooltip;
 	const lvdom = document.createElement('div');
-	lvdom.id='livesensor'+pinned.length;
+	const index = pinned.length;
+	lvdom.id='livesensor'+index;
 	lvdom.classList.add('livesensor');
 	lvdom.innerHTML='<h3 title="Sensor: '+aktdevice+'">'+tooltip+'</h3>';
 	if ( part.brokerupmsg ) {
@@ -1771,14 +1951,22 @@ window.onload = ( loadev ) => {
 	    x.classList.add('sendbrokerbtn');
 	    x.innerHTML = 'Action';
 	    x.onclick = ( ev ) => {
-		pubMessage( aktdevice, p.brokerupmsg );
+		pubMessage( aktdevice, part.brokerupmsg );
 	    };
 	    lvdom.appendChild(x);
 	}
 	const markicn = document.createElement('span');
 	markicn.classList.add('markicn');
-	markicn.innerHTML = pinned.length+1;
+	markicn.innerHTML = (pinned.length+1)+'<s>X</s>';
 	markicn.style.background = col;
+	markicn.onclick=( ev ) => {
+	    lvdom.classList.add('deleted');
+	    pinned[index].deleted = true;
+	    pinned[index].marker.visible = false;
+	    window.setTimeout( () => { lvdom.style.display = 'none'; }, 500 )
+	    refreshPinned();
+	    console.log('remove sensor',pinned[index]);
+	}
 	lvdom.appendChild(markicn);
 	const smdom = document.createElement('div');
 	smdom.id='sensormeters'+pinned.length;
@@ -1789,9 +1977,9 @@ window.onload = ( loadev ) => {
 	sodom.classList.add('sensorout');
 	lvdom.appendChild(sodom);
 	document.getElementById('liveCont').appendChild(lvdom);
-	if ( broker.devices[aktdevice].lastmsg ) {
-	    aktMeter( aktdevice, broker.devices[aktdevice].lastmsg, pinned.length+1 );
-	    aktSensorout( aktdevice, broker.devices[aktdevice].lastmsg, pinned.length+1 );
+	if ( broker.devices[aktdevice].lastdata[0] ) {
+	    aktMeter( aktdevice, broker.devices[aktdevice].lastdata[0], pinned.length+1 );
+	    aktSensorout( aktdevice, broker.devices[aktdevice].lastdata[0], pinned.length+1 );
 	}
 	console.log('renderLivedata',aktdevice,broker.devices[aktdevice].lastmsg);
 	return lvdom;
@@ -1973,6 +2161,23 @@ window.onload = ( loadev ) => {
 	    else {
 		domo.classList.add('off');		
 		routemesh.visible = false;
+	    }
+	};
+	document.getElementById( 'dsplBtn' ).onclick = ( ev ) => {
+	    const domo = ev.target;
+	    if ( domo.classList.contains( 'off' ) ) {
+		domo.classList.remove('off');
+		document.getElementById('plgOvl').classList.remove('hidden');
+	    }
+	    else if ( domo.classList.contains( 'dim' ) ) {
+		domo.classList.remove('dim');
+		domo.classList.add('off');
+		document.getElementById('plgOvl').classList.remove('dimmed');
+		document.getElementById('plgOvl').classList.add('hidden');
+	    }
+	    else {
+		domo.classList.add('dim');		
+		document.getElementById('plgOvl').classList.add('dimmed');
 	    }
 	};
 	document.getElementById( 'histCmpLeft' ).onclick = ( ev ) => {

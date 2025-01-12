@@ -147,16 +147,21 @@ const clearDeviceList = () => {
 }
 
 const writeSensorArc = ( l, id, m ) => {
+    if ( m.toLowerCase() === 'uptime' || m.toLowerCase() === 'timestamp' ) return;
     const pre = 'static/archive/';
     const now = new Date();
     console.log('writeSensorArc',id,m);
 //    console.log('writeSensorArc',id,m,now);
     //    console.log('writeSensorArc',pre+id+'-'+now.getDate()+'-'+(now.getMonth()+1)+'-'+(now.getYear()+1900)+'-'+now.getHours()+'-'+m+'.csv');
     let hrs = now.getHours();
+    let mon = now.getMonth()+1;
+    let day = now.getDate();
     hrs = hrs < 10 ? '0'+hrs : hrs;
-    const fname = pre + id + '-' + m + '-' + now.getDate() + '-' + (now.getMonth()+1) + '-'
+    mon = mon < 10 ? '0'+mon : mon;
+    day = day < 10 ? '0'+day : day;
+    const fname = id + '-' + m + '-' + day + '-' + mon + '-'
 	  + (now.getYear()+1900) + '-' + hrs + '.csv';
-    fs.writeFileSync( fname , l.join( '\n') );
+    fs.writeFileSync( pre+fname , l.join( '\n') );
     writtenfiles.push( fname );
 }
 
