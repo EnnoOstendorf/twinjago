@@ -1025,7 +1025,11 @@ window.onload = ( loadev ) => {
 	ttpdom.classList.add('show');
 	const ttcontainer = document.getElementById( 'sensortooltip' );
 	ttcontainer.innerHTML = text;
-	document.getElementById('liveData').classList.add('show');
+	ttcontainer.classList.add('show');
+	if ( aktdevice != '' && aktdevice != 'no data' ) {
+	    document.getElementById('liveData').classList.add('show');
+	    initSensorOut( aktdevice );
+	}
 //	document.getElementById('liveCont').classList.add('act');
 //	console.log('show tooltip');
     }
@@ -1033,17 +1037,12 @@ window.onload = ( loadev ) => {
 //	if (  ) return;
 	const ttpdom = document.getElementById( 'tooltip' );
 	ttpdom.classList.remove('show');
-	document.getElementById( 'sensortooltip' ).replaceChildren();
-	//document.getElementById( 'sensormeters' ).style.display='block';
-	//document.getElementById( 'sensorout' ).style.display='block';
+	const ttcontainer = document.getElementById( 'sensortooltip' );
+	ttcontainer.replaceChildren();
+	ttcontainer.classList.remove('show');
 	if ( !datapinned ) {
 	    document.getElementById('liveData').classList.remove('show');
-//	    document.getElementById('liveCont').classList.remove('act');
 	}
-//	document.getElementById( 'grafana' ).replaceChildren();
-//	document.getElementById( 'livetab' ).classList.add('act');
-	if ( !datapinned )
-	    document.getElementById('liveData').classList.remove('show');
     }
     const mouseOver3D = ( xp, yp ) => {
 	const raycaster = new THREE.Raycaster();
@@ -1078,10 +1077,6 @@ window.onload = ( loadev ) => {
 			hilightPart( o3 );
 			const ind = o3.userData.index;
 			if ( parts[ind] ) {
-			    if ( parts[ind].tooltip && parts[ind].tooltip != '' ) {
-//				showTooltip( xp, yp, parts[ind].tooltip );
-				showTooltip( xp, yp, o3.userData.tooltip );
-			    }
 			    if ( parts[ind].deviceid && parts[ind].deviceid != '' ) {
 				aktdevice = parts[ind].deviceid;
 				aktdevicei = ind;
@@ -1089,6 +1084,10 @@ window.onload = ( loadev ) => {
 			    else {
 				aktdevice = '';
 				aktdevicei = -1;
+			    }
+			    if ( parts[ind].tooltip && parts[ind].tooltip != '' ) {
+//				showTooltip( xp, yp, parts[ind].tooltip );
+				showTooltip( xp, yp, o3.userData.tooltip );
 			    }
 			    
 			}
@@ -1116,13 +1115,6 @@ window.onload = ( loadev ) => {
 			const ind = o3.parent.userData.index;
 //			console.log('highlight basicpart', o3)
 			if ( o3.userData.type === 'basicpart' ) hilightPart( o3 );
-			if ( parts[ind] && parts[ind].tooltip && parts[ind].tooltip != '' ) {
-			    let label = '<b>'+parts[ind].tooltip+'</b>';
-			    if ( o3.userData.tooltip && o3.userData.tooltip != '' ) {
-				label += '<br/>'+o3.userData.tooltip;
-			    }
-			    showTooltip( xp, yp, label );
-			}
 
 			if ( parts[ind] && parts[ind].deviceid && parts[ind].deviceid != '' ) {
 			    aktdevice = parts[ind].deviceid;
@@ -1131,6 +1123,13 @@ window.onload = ( loadev ) => {
 			else {
 			    aktdevice = '';
 			    aktdevicei = -1;
+			}
+			if ( parts[ind] && parts[ind].tooltip && parts[ind].tooltip != '' ) {
+			    let label = '<b>'+parts[ind].tooltip+'</b>';
+			    if ( o3.userData.tooltip && o3.userData.tooltip != '' ) {
+				label += '<br/>'+o3.userData.tooltip;
+			    }
+			    showTooltip( xp, yp, label );
 			}
 
 		    }
@@ -1938,6 +1937,12 @@ window.onload = ( loadev ) => {
 //	return grdom;
 //	console.log('renderGrafana',aktdevice,grdata);
     }
+    const initSensorOut = ( devid, pinned ) => {
+	if ( broker.devices[devid].lastdata[0] ) {
+	    aktMeter( devid, broker.devices[aktdevice].lastdata[0], pinned );
+	    aktSensorout( devid, broker.devices[aktdevice].lastdata[0], pinned );
+	}
+    }
     const renderLivedata = ( aktdevice, part, col ) => {
 	if ( !aktdevice ) return;
 	const tooltip = part.tooltip;
@@ -1977,10 +1982,12 @@ window.onload = ( loadev ) => {
 	sodom.classList.add('sensorout');
 	lvdom.appendChild(sodom);
 	document.getElementById('liveCont').appendChild(lvdom);
-	if ( broker.devices[aktdevice].lastdata[0] ) {
+	initSensorOut( aktdevice, pinned.length+1 );
+/*	if ( broker.devices[aktdevice].lastdata[0] ) {
 	    aktMeter( aktdevice, broker.devices[aktdevice].lastdata[0], pinned.length+1 );
 	    aktSensorout( aktdevice, broker.devices[aktdevice].lastdata[0], pinned.length+1 );
-	}
+	    }
+	    */
 	console.log('renderLivedata',aktdevice,broker.devices[aktdevice].lastmsg);
 	return lvdom;
     }

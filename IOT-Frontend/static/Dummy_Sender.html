@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dummy Devices</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin: 0;
+            padding: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            background-color: #f4f4f9;
+            min-height: 50vh;
+            padding-bottom: 350px;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none; /* Initially hidden */
+        }
+
+        .loading-spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 10px;
+            margin-left: 10px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .panel-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 1300px;
+            margin: auto;
+        }
+
+        .device-panel {
+            background-color: #ced9a7;
+            padding: 14px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 700px;
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            box-sizing: border-box;
+            position: relative; /* Allow positioning of internal elements */
+        }
+
+        .panel-number {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: lightcoral;
+            color: white;
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+        }
+
+        form {
+            width: 35%;
+            box-sizing: border-box;
+            margin-right: 20px;
+            margin-top: 0px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            font-size: 10px;
+            padding: 3px;
+        }
+
+        input {
+            padding: 4px 8px;
+            margin-top: 2px;
+            font-size: 12px;
+            width: calc(100% - 20px);
+        }
+
+
+        .input-table-wrapper {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .input-table-header {
+            text-align: left;
+            margin-bottom: 3px;
+            font-size: 14px;
+        }
+
+        .input-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+
+        .input-table th, .input-table td {
+            padding: 4px;
+            text-align: left;
+            border: none;
+        }
+        
+        .button-group {
+            display: flex;
+            width: 200%;
+            gap: 10px; /* Abstand zwischen den Buttons */
+            margin-top: 10px; /* Abstand oberhalb der Buttons, wenn nötig */
+        }
+        
+        button {
+            margin-top: 2px;
+            padding: 4px 8px;
+            
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        /* Styles für die dupli-Panels */
+        .dupli-panel-container {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 18px;
+            width: 100%;
+            max-width: 1240px;
+            margin-top: 10px;
+        }
+
+        .dupli-panel {
+            background-color: #e0e0e0;
+            padding: 10px;
+            border-radius: 8px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            position: relative;
+        }
+        
+        .dupli-input {
+            padding: 4px 8px;
+            margin-top: 5px;
+            margin-bottom: 30px;
+            font-size: 12px;
+            width: calc(100% - 20px);
+            background-color: #f0f0f0; /* Example background color */
+            border: 1px solid #ccc; /* Example border */
+            border-radius: 4px; /* Example rounded corners */
+            box-sizing: border-box;
+        }        
+        
+        .dupli-label {
+
+            color: #333; /* Beispielhafte Textfarbe */
+            font-size: 12px; /* Beispielhafte Schriftgröße */
+            margin-bottom: 0px; /* Beispielhafter Abstand nach unten */
+            margin-top: 6px;
+            display: block; /* Block-Element, um den gesamten Platz in der Breite zu nutzen */
+        }
+        
+        .dupli-panel-number {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: darkgray;
+            color: white;
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+        }
+        
+        /* CSS für die Überschrift "dupli devices" */
+        h2 {
+            text-align: center;
+            font-style: italic;
+            width: 100%;
+            margin-top: 40px; /* Fügen Sie hier mehr Abstand hinzu */
+        }       
+        
+    </style>
+</head>
+<body>
+    <div id="loader" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div id="loadingText" class="loading-text"> Scanning Devices...</div>
+    </div>
+    <h1 style="text-align: center; font-style: italic; width: 100%;">dummy devices</h1>
+    <div id="panel-container" class="panel-container"></div>
+    <h2 style="text-align: center; font-style: italic; width: 100%;">dupli devices</h2>
+    <div id="dupli-panel-container" class="dupli-panel-container"></div> 
+    
+    <script>
+        function updateTime(panelId) {
+            const currentDateTime = new Date().toLocaleString();
+            document.getElementById(`value4-panel${panelId}`).value = currentDateTime;
+        }
+
+        function checkDuplicateId(panelId) {
+            const currentIdValue = document.getElementById(`id-panel${panelId}`).value;
+            let isDuplicate = false;
+        // Check other ID fields for duplicates
+            for (let i = 1; i <= 6; i++) {
+                if (i === panelId) continue;
+                const otherIdValue = document.getElementById(`id-panel${i}`).value;
+                if (currentIdValue && currentIdValue === otherIdValue) {
+                    isDuplicate = true;
+                    break;
+                }
+            }
+            if (isDuplicate) {
+                alert("Dieser ID-Wert existiert bereits in einem anderen Panel. Bitte verwenden Sie einen anderen Wert.");
+                document.getElementById(`id-panel${panelId}`).value = '';
+            }
+        }
+
+        function checkDuplicatedupliId(dupliPanelId) {
+            //const currentIdValue = document.getElementById(`id-panel${panelId}`).value;
+            const currentnewIdValue = document.getElementById(`new-id-${dupliPanelId}`).value;
+            let isDuplicate = false;
+        // Check other ID fields for duplicates
+            for (let i = 1; i <= 6; i++) {
+                if (i === dupliPanelId) continue;
+                const othernewIdValue = document.getElementById(`new-id-${i}`).value;
+                if (currentnewIdValue && currentnewIdValue === othernewIdValue) {
+                    isDuplicate = true;
+                    break;
+                }
+            }
+            if (isDuplicate) {
+                alert("Diese New-ID existiert bereits in einem anderen Panel.");
+                document.getElementById(`new-id-${dupliPanelId}`).value = '';
+            }
+        }
+
+
+        function senden(panelId) {
+            const name = document.getElementById(`name-panel${panelId}`).value;
+            const id = document.getElementById(`id-panel${panelId}`).value;
+            const sleep = document.getElementById(`sleep-panel${panelId}`).value;
+            const comment = document.getElementById(`comment-panel${panelId}`).value;
+
+            const inputTable = [];
+            for (let i = 1; i <= 4; i++) {
+                const itemName = document.getElementById(`item${i}-panel${panelId}`).value;
+                const value = document.getElementById(`value${i}-panel${panelId}`).value;
+                const unit = document.getElementById(`unit${i}-panel${panelId}`).value;
+                inputTable.push({ itemName, value, unit });
+            }
+
+            const daten = {
+                panelId,
+                name,
+                id,
+                sleep,
+                comment,
+                inputTable
+            };
+
+            fetch('https://freetwin.de:3555/senden', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(daten)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(`Device Panel ${panelId}: ` + JSON.stringify(data));
+                // Update the MQTT status on success
+              // Update button label based on MQTT status
+                const erzeugenButton = document.querySelector(`#panel${panelId} .button-group button[type="submit"]`);
+                if (data.mqtt_status === "TRUE") {
+                    erzeugenButton.textContent = "... running";
+                    lockPanelInputs(panelId);
+                } else {
+                    erzeugenButton.textContent = "Erzeuge Device";
+                    unlockPanelInputs(panelId);
+                }
+            })
+            .catch((error) => {
+                console.error(`Fehler Panel ${panelId}:`, error);
+            });
+        }
+
+        function lockPanelInputs(panelId) {
+            const panel = document.querySelector(`#panel${panelId}`);
+            const inputs = panel.querySelectorAll('input');
+            const erzeugenButton = panel.querySelector('button[type="submit"]');
+
+            inputs.forEach(input => input.disabled = true);
+            erzeugenButton.disabled = true;
+        }
+
+        function unlockPanelInputs(panelId) {
+            const panel = document.querySelector(`#panel${panelId}`);
+            const inputs = panel.querySelectorAll('input');
+            const erzeugenButton = panel.querySelector('button[type="submit"]');
+
+            inputs.forEach(input => input.disabled = false);
+            erzeugenButton.disabled = false;
+        }
+
+        function lockDupliPanelInputs(dupliPanelId) {
+            const dupliPanel = document.querySelector(`#duplipanel${dupliPanelId}`);
+            const inputs = dupliPanel.querySelectorAll('input');
+            const duplizierenButton = dupliPanel.querySelector('button:first-child');
+
+            inputs.forEach(input => input.disabled = true);
+            duplizierenButton.disabled = true;
+        }
+
+        function unlockDupliPanelInputs(dupliPanelId) {
+            const dupliPanel = document.querySelector(`#duplipanel${dupliPanelId}`);
+            const inputs = dupliPanel.querySelectorAll('input');
+            const duplizierenButton = dupliPanel.querySelector('button:first-child');
+
+            inputs.forEach(input => input.disabled = false);
+            duplizierenButton.disabled = false;
+        }
+
+
+        function stopDevice(panelId) {
+            console.log("stopping");
+            const id = document.getElementById(`id-panel${panelId}`).value;
+            const daten = {
+                panelId,
+                name,
+                id,
+            };            
+            
+            fetch('https://freetwin.de:3555/stop', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(daten)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Update button label based on the new MQTT status after stopping
+                const erzeugenButton = document.querySelector(`#panel${panelId} .button-group button[type="submit"]`);
+                if (data.mqtt_status === "TRUE") {
+                    erzeugenButton.textContent = "... running";
+                    lockPanelInputs(panelId);
+                } else {
+                    erzeugenButton.textContent = "Erzeuge Device";
+                    unlockPanelInputs(panelId);
+                }
+            })
+            .catch((error) => {
+                console.error(`Fehler bei Stop Device für Panel ${panelId}:`, error);
+            });
+        }
+        
+        let panelsLoaded = 0; // Counter to track loaded panels
+        let dupliPanelsLoaded = 0;
+        
+        async function prefillFormData(panelId) {
+            try {
+                let response = await fetch('https://freetwin.de:3555');
+                if (response.ok) {
+                    let existingData = await response.json();
+                    const panelData = existingData[`panel${panelId}`];
+                    document.getElementById('loadingText').textContent = `Scanning Devices ${panelId}`;
+
+                    if (panelData) {
+                        document.getElementById(`name-panel${panelId}`).value = panelData.mqtt_meta.name || '';
+                        document.getElementById(`id-panel${panelId}`).value = panelData.id_object.id || '';
+                        document.getElementById(`sleep-panel${panelId}`).value = panelData.sleep_object.sleep || '';
+                        document.getElementById(`comment-panel${panelId}`).value = panelData.mqtt_meta.desc || '';
+                        document.getElementById('loadingText').textContent = ` Panel ${panelId}...Device ID: ${panelData.id_object.id}`;
+
+                        panelData.mqtt_meta.payloadStructure.forEach((item, index) => {
+                            document.getElementById(`item${index+1}-panel${panelId}`).value = item.name || '';
+                            document.getElementById(`unit${index+1}-panel${panelId}`).value = item.unit || '';
+                        });
+
+                        panelData.payload.values.forEach((value, index) => {
+                            document.getElementById(`value${index+1}-panel${panelId}`).value = value || '';
+                        });
+                                        // Displaying the MQTT Status
+                        const statusElement = document.getElementById(`status-panel${panelId}`);
+                        if (statusElement) {
+                            statusElement.textContent = `MQTT Status: ${panelData.mqtt_status}`;
+                        }
+                                                // Update button label based on MQTT status during prefill
+                        const erzeugenButton = document.querySelector(`#panel${panelId} .button-group button[type="submit"]`);
+                        if (panelData.mqtt_status === "TRUE") {
+                            erzeugenButton.textContent = "... running";
+                            lockPanelInputs(panelId);
+                        } else {
+                            erzeugenButton.textContent = "Erzeuge Device";
+                            unlockPanelInputs(panelId);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error(`Error loading initial data for Panel ${panelId}:`, error);
+            } finally {
+                panelsLoaded++;
+                if (panelsLoaded === 6) { // All panels loaded
+                    setTimeout(() => {
+                        document.getElementById('loader').style.display = 'none';
+                    }, 500);
+                    checkAllPanelsLoaded();// Delay of 1 second
+
+                }
+            }
+        }
+
+        //let dupliPanelsLoaded = 0;
+
+        async function dupli_prefill(dupliPanelId) {
+            try {
+                const response = await fetch('https://freetwin.de:3555/dupli_prefill');
+                if (response.ok) {
+                    const responseText = await response.text();
+                    console.log(`Received JSON response (${dupliPanelId}):`, responseText); // Log the raw JSON string
+                    const dupliData = JSON.parse(responseText);
+                    const dupliPanelData = dupliData[`duplipanel${dupliPanelId}`];
+
+                    if (dupliPanelData) {
+                        document.getElementById(`original-id-${dupliPanelId}`).value = dupliPanelData.original_id || '';
+                        document.getElementById(`new-id-${dupliPanelId}`).value = dupliPanelData.new_id || '';
+
+                        const duplizierenButton = document.querySelector(`#duplipanel${dupliPanelId} .button-group button:first-child`);
+                        if (dupliPanelData.mqtt_status === "TRUE") {
+                            duplizierenButton.textContent = "... running";
+                            lockDupliPanelInputs(dupliPanelId);
+                        } else {
+                            duplizierenButton.textContent = "Dublizieren";
+                            unlockDupliPanelInputs(dupliPanelId);
+                        }
+                    }
+                } else {
+                    console.error(`HTTP error for Dupli Panel ${dupliPanelId}:`, response.status);
+                }
+            } catch (error) {
+                console.error(`Error loading initial data for Dupli Panel ${dupliPanelId}:`, error);
+            } finally {
+                dupliPanelsLoaded++;
+                if (dupliPanelsLoaded === 6) {
+                checkAllPanelsLoaded();
+                }
+            }
+        }
+
+        function checkAllPanelsLoaded() {
+            if (panelsLoaded === 6 ) {
+                document.getElementById('loader').style.display = 'none';
+            }
+        }
+
+        function createDevicePanels() {
+            const panelContainer = document.getElementById('panel-container');
+            for (let panelId = 1; panelId <= 6; panelId++) {
+                const panelMarkup = `
+                  <div class="device-panel" id="panel${panelId}">
+                        <div class="panel-number">${panelId}</div>
+                        <form onsubmit="event.preventDefault(); senden(${panelId});">
+                            <label for="name">Name:</label>
+                            <input type="text" id="name-panel${panelId}" required>
+                            <label for="id">ID:</label>
+                            <input type="text" id="id-panel${panelId}" required oninput="checkDuplicateId(${panelId})">
+                            <label for="sleep">Sleep:</label>
+                            <input type="text" id="sleep-panel${panelId}" required>
+                            <label for="comment">Comment:</label>
+                            <input type="text" id="comment-panel${panelId}" required>
+
+                            <div class="button-group">
+                                <button type="submit">Erzeuge Device</button>
+                                <button type="button" onclick="stopDevice(${panelId});">Stop Device</button>
+                            </div>
+   
+                        </form>
+
+                        <div class="input-table-wrapper">
+                            <div class="input-table-header">Payload</div>
+                            <table class="input-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Unit</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="no-label"><input type="text" id="item1-panel${panelId}"></td>
+                                        <td class="no-label"><input type="text" id="unit1-panel${panelId}"></td>
+                                        <td class="no-label"><input type="text" id="value1-panel${panelId}" class="last-column-input"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="no-label"><input type="text" id="item2-panel${panelId}"></td>
+                                        <td class="no-label"><input type="text" id="unit2-panel${panelId}"></td>
+                                        <td class="no-label"><input type="text" id="value2-panel${panelId}" class="last-column-input"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="no-label"><input type="text" id="item3-panel${panelId}"></td>
+                                        <td class="no-label"><input type="text" id="unit3-panel${panelId}"></td>
+                                        <td class="no-label"><input type="text" id="value3-panel${panelId}" class="last-column-input"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="no-label"><input type="text" id="item4-panel${panelId}"></td>
+                                        <td class="no-label"><input type="text" id="unit4-panel${panelId}"></td>
+                                        <td class="no-label"><input type="text" id="value4-panel${panelId}" class="last-column-input"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+
+                panelContainer.insertAdjacentHTML('beforeend', panelMarkup);
+                document.getElementById(`item4-panel${panelId}`).value = "Timestamp";
+                document.getElementById(`unit4-panel${panelId}`).value = "datetime";
+                updateTime(panelId);
+                setInterval(() => updateTime(panelId), 1000);
+                prefillFormData(panelId);
+            }
+            //document.getElementById('loader').style.display = 'none';
+        }
+
+        function createDupliPanels() {
+            const dupliPanelContainer = document.getElementById('dupli-panel-container');
+            for (let dupliPanelId = 1; dupliPanelId <= 6; dupliPanelId++) {
+                const dupliPanelMarkup = `
+                    <div class="dupli-panel" id="duplipanel${dupliPanelId}">
+                        <div class="dupli-panel-number">${dupliPanelId}</div>
+                        <label for="original-id" class="dupli-label">Original ID:</label>
+                        <input type="text" id="original-id-${dupliPanelId}" class="dupli-input" required>
+                        <label for="new-id" class="dupli-label" >New ID:</label>
+                        <input type="text" id="new-id-${dupliPanelId}" class="dupli-input" required oninput="checkDuplicatedupliId(${dupliPanelId})">
+                        <div class="button-group">
+                            <button onclick="duplicateDevice(${dupliPanelId});">Dublizieren</button>
+                            <button onclick="stopDupli(${dupliPanelId});">Stop-Dupli</button>
+                        </div>
+                    </div>`;
+                dupliPanelContainer.insertAdjacentHTML('beforeend', dupliPanelMarkup);
+                document.getElementById(`new-id-${dupliPanelId}`).value = "scanning ID...";    
+                dupli_prefill(dupliPanelId);
+            }
+        }
+
+        function duplicateDevice(dupliPanelId) {
+            const originalId = document.getElementById(`original-id-${dupliPanelId}`).value;
+            const newId = document.getElementById(`new-id-${dupliPanelId}`).value;
+            lockDupliPanelInputs(dupliPanelId);
+            fetch(`https://freetwin.de:3555/duplicate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ dupliPanelId, originalId, newId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(`Dupli Panel ${dupliPanelId}: ` + JSON.stringify(data));
+                
+                // Update the button label based on MQTT status
+                const duplizierenButton = document.querySelector(`#duplipanel${dupliPanelId} .button-group button:nth-child(1)`);
+                if (data.mqtt_status === "TRUE") {
+                    duplizierenButton.textContent = "... running";
+                    lockDupliPanelInputs(dupliPanelId);
+                } else {
+                    duplizierenButton.textContent = "Dublizieren";
+                    unlockDupliPanelInputs(dupliPanelId);
+                }                
+            })
+            .catch(error => {
+                console.error(`Error for Dupli Panel ${dupliPanelId}:`, error);
+            });
+        }
+
+        function stopDupli(dupliPanelId) {
+            const originalId = document.getElementById(`original-id-${dupliPanelId}`).value;
+            const newId = document.getElementById(`new-id-${dupliPanelId}`).value;
+            
+            fetch(`https://freetwin.de:3555/stopdupli`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ dupliPanelId, originalId,  newId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(`Stop Dupli Panel ${dupliPanelId}: ` + JSON.stringify(data));
+        
+                const duplizierenButton = document.querySelector(`#duplipanel${dupliPanelId} .button-group button:nth-child(1)`);
+                if (data.mqtt_status === "TRUE") {
+                    duplizierenButton.textContent = "... running";
+                    lockDupliPanelInputs(dupliPanelId);
+                } else {
+                    duplizierenButton.textContent = "Dublizieren";
+                    unlockDupliPanelInputs(dupliPanelId);
+                }  
+                
+            })
+            .catch(error => {
+                console.error(`Error stopping Dupli Panel ${dupliPanelId}:`, error);
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('loader').style.display = 'flex'; // Show loader initially
+            createDevicePanels();
+            createDupliPanels();
+            for (let dupliPanelId = 1; dupliPanelId <= 6; dupliPanelId++) {
+                lockDupliPanelInputs(dupliPanelId);
+            }
+        });
+    </script>
+</body>
+</html>

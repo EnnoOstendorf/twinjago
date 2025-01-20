@@ -51,6 +51,14 @@ CAFILEPATH=/etc/letsencrypt/live/freetwin.de/chain.pem
 - **/dokdelete/\[id\]** - deletes the downloadable document with specified id from the list  (DELETE)
 - \[TODO: add futher endpoints\]
 
+## HOWTO Maintain
+- Remove/-init a sensor-device in IOT-Frontend (incl. grafana)
+  - **stop the sensor**
+  - **remove the sensor from pipeguy** by calling the delete endpoint, eg for device id XYZ call endpoint '''/delete/XYZ'''
+  - **check wether the device has been removed** by calling the '''/list''' endpoint
+  - **delete the dashboard in grafana**
+  - when you now **start your sensor again**, the pipeguy receives messages from an unknown new device, creates a fresh grafana dashboard and saves the link for use in the IOT-Frontend. This can take a few minutes.
+
 ## Trivia
 
 - The Frontend uses most of the endpoints itself, so there should be no need to directly access them, but you can.

@@ -4,7 +4,7 @@ let status;
 let filter =0;
 let cat = 0;
 
-const renderFiles = ( files, filter ) => {
+const renderFiles = ( files, filter, mode ) => {
     const plg = document.getElementById('playground');
     plg.replaceChildren();
     var t = '<div class="col">';
@@ -13,9 +13,11 @@ const renderFiles = ( files, filter ) => {
 	if ( filter === 0 || o.includes( filter ) )
 	    sumstatus.push(o);
     });
+    sumstatus.sort();
     const brk = Math.ceil(sumstatus.length / 3); 
     sumstatus.forEach( ( o, i ) => {
-	t += '<a href="/archive/'+o+'">'+o+'</a>';
+	const p = mode?'daily/'+o:o;
+	t += '<a href="/archive/'+p+'">'+o+'</a>';
 	
 	if ( i % brk === brk - 1 )
 	    t += '</div><div class="col">'
@@ -25,7 +27,7 @@ const renderFiles = ( files, filter ) => {
 }
 
 const renderDaily = () => {
-    renderFiles( status.daily, filter );
+    renderFiles( status.daily, filter, true );
     document.getElementById('hourlybtn').removeAttribute('disabled');
     document.getElementById('dailybtn').setAttribute('disabled','disabled');
     console.log('renderHourly');

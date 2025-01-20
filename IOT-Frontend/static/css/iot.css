@@ -142,12 +142,12 @@ body {
 	left: 0;
 	z-index: 1;
 	width: 90%;
-	text-align: center;
+	text-align: left;
 	margin: 5px;
 	background: rgba(200,200,200,0.2);
 	top: 10px;
 	border-radius: 10px;
-	padding: 7px 10px;
+	padding: 7px 10px 7px 30px;
 	color: #eee;
 	text-shadow: 1px 1px 3px #000;
 	font-weight: bold;
@@ -525,7 +525,6 @@ input.error {
 	width: 25%;
 }
 .ispinnedmin #liveData, .ispinnedmin #liveData.multi, .ispinnedmin #liveData.multi.double {
-	height: 80px;
 	width: 20%;
 }
 .ispinnedmin #histHead {
@@ -574,26 +573,45 @@ input.error {
 	height: 20px;
 }
 .sensortooltip {
-	margin: 20px 10px 40px;
 	font-size: 18px;
 	height: 40px;
+	position: absolute;
+	margin: 0;
+	right: 10%;
+	top: 11px;
+	z-index: 1;
+	color: #eee;
+	opacity: 0;
+	text-shadow: 1px 1px 2px #000;
+	transition: opacity 0.2s ease-in-out;
+	border-left: 1px solid rgba(0,0,0,0.7);
+	padding: 10px 0 10px 20px;
+	width: 18%;
+}
+.sensortooltip.show {
+    opacity: 1;
 }
 .sensorid {
-	height: 20px;
-	margin: 0px 10px 5px;
+	height: 18px;
+	margin: 0;
 	display: inline-block;
-	font-size: 16px;
+	font-size: 14px;
 	padding: 5px 8px 3px;
 	background: #eee;
 	border-radius: 10px;
-	/* vertical-align: top; */
 	width: auto;
 	position: absolute;
-	top: 50px;
-	right: 0;
+	top: 60px;
+	right: 4%;
 	text-align: center;
 	white-space: nowrap;
 	text-overflow: ellipsis;
+	z-index: 2;
+	opacity: 1;
+	transition: opacity 0.2s ease-in-out;
+}
+.sensorid:empty {
+	opacity: 0;
 }
 .sensorout {
 	/* position: absolute; */
@@ -667,7 +685,8 @@ input.error {
 	background: #ccc;
 	border: 1px solid #4b4b4b;
 	overflow: hidden;
-	margin-bottom: 15px;
+	margin-bottom: 10px;
+	margin-top: 10px;
 	max-width: 400px;
 	transition: all 0.3s ease-in-out;
 }
@@ -724,7 +743,8 @@ input.error {
 	width: 31%;
 }
 .livesensor iframe {
-	margin-top: 10px;
+    margin-top: 10px;
+    height: 450px;
 }
 .archiveurl {
 	display: block;
@@ -1041,14 +1061,24 @@ button, #burger {
 	/* overflow: hidden; */
 	width: 240px;
 }
+#measurelayersuper {
+	right: 200px;
+	top: auto;
+	bottom: -210px;
+	width: auto;
+	height: auto;
+	background: transparent;
+}
 #measurelayersuper.open {
-	right: 240px;
+	bottom: 0px;
 }
 #measureBtn {
 	bottom: auto;
-	top: 50px;
-	border-radius: 10px 0 0 10px;
+	top: 10px;
+	border-radius: 10px 10px 0 0;
 	background-image: url(../imgs/measure.png);
+	left: auto;
+	right: 0px;
 }
 #measureBtnCls {
 	position: absolute;
@@ -1067,12 +1097,12 @@ button, #burger {
 	padding: 10px 10px 60px 10px;
 	position: absolute;
 	top: 50px;
-	border-radius: 0 0 0 20px;
+	border-radius: 20px 0 0 0;
 	z-index: 2;
-	transition: width 0.2s ease-out;
+	width: 220px;
 }
 .open #measuretext {
-	width: 240px;
+	width: 220px;
 }
 #measuretext h3 {
 	margin-bottom: 5px;

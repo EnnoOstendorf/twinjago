@@ -13,7 +13,7 @@ let controls;
 const Displays = [];
 const DISPWIDTH = 120;
 
-const DUMMYSENDERURL = 'http://freetwin.de:3456/Dummy_Sender.html';
+const DUMMYSENDERURL = 'https://freetwin.de:3457/Dummy_Sender.html';
 
 const url = 'wss://iot.fh-muenster.de/mqtt'
 

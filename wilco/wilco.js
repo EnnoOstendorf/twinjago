@@ -181,15 +181,24 @@ const backupDevices = () => {
 }
 
 const removeOldFiles = (  ) => {
-    const now = Date.now();
-    const nowdaystart = tagify( now );    
-    const nd=new Date((nowdaystart-2)*86400000);
-    const datestr = nd.getDate() + '-' + (nd.getMonth()+1) + '-' + (nd.getYear()+1900);
+//     const now = Date.now();
+//     const nowdaystart = tagify( now );    
+//     const nd=new Date((nowdaystart-2)*86400000);
+//     const datestr = nd.getDate() + '-' + (nd.getMonth()+1) + '-' + (nd.getYear()+1900);
+//     let stdout;
+//     try {
+// 	stdout = execSync('rm static/archive/*-'+datestr+'*');
+// //	writtenfiles = fs.readdirSync('static/archive');
+// //	writtendaily = fs.readdirSync('static/archive/daily');
+// 	console.log('removing old files','rm static/archive/*-'+datestr+'*');
+//     }
+//     catch {
+// 	console.log('no old files to remove');
+//     }
     try {
-	let stdout = execSync('rm static/archive/*-'+datestr+'*');
+	stdout = execSync('find static/archive -name "*.csv" -type f -mtime +2 -delete');    
 	writtenfiles = fs.readdirSync('static/archive');
-//	writtendaily = fs.readdirSync('static/archive/daily');
-	console.log('removing old files','rm static/archive/*-'+datestr+'*');
+	console.log('removed by shell',stdout )
     }
     catch {
 	console.log('no old files to remove');
