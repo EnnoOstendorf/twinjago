@@ -3,6 +3,34 @@ console.log('welcome to wilco');
 let status;
 let filter =0;
 let cat = 0;
+const sniffsoundfiles = [ 'sniff-01.mp3','sniff-02.mp3','sniff-03.mp3','sniff-04.mp3','sniff-05.mp3','sniff-06.mp3','sniff-07.mp3','sniff-08.mp3','sniff-09.mp3','sniff-10.mp3'];
+const barkfile = 'bark.mp3';
+const houlfile = 'houl.mp3';
+const sniffsounds = [];
+let barksound, houlsound;
+
+const playSniff = ( count ) => {
+    if ( !count ) count = 0;
+    if ( count > sniffsounds.length ) return;
+    const i = Math.round( Math.random() * sniffsounds.length );   
+    if ( sniffsounds[i] ) {
+/*	if ( ! sniffsounds[i].paused ) {
+	    playSniff( count + 1 );
+	    return;
+	    }
+	    */
+	sniffsounds[i].volume = Math.random()/4;
+	sniffsounds[i].play();	
+    }
+}
+
+const playBark = () => {
+    barksound.play();
+}
+
+const playHoul = () => {
+    houlsound.play();
+}
 
 const renderFiles = ( files, filter, mode ) => {
     const plg = document.getElementById('playground');
@@ -24,6 +52,15 @@ const renderFiles = ( files, filter, mode ) => {
     });
     t += '</div>';
     plg.insertAdjacentHTML( 'beforeend', t );
+    alllinks = document.querySelectorAll( '#playground .col a');
+    alllinks.forEach( ( o, i ) => {
+	o.onmouseenter = ( ev ) => {
+	    playSniff();
+	};
+	o.onclick = ( ev ) => {
+	    playBark();
+	};
+    });
 }
 
 const renderDaily = () => {
@@ -72,7 +109,10 @@ const fillDeviceSelect = () => {
 const initEventHandlers = () => {
     document.getElementById('deviceselect').onchange = ( ev ) => {
 	if ( ev.target.value === '*' ) filter = 0;
-	else filter = ev.target.value;
+	else {
+	    filter = ev.target.value;
+//	    activatePlots( ev.target.value )
+	}
 	if ( cat === 0 ) renderDaily();
 	else renderHourly();
 	console.log('change deviceselect', ev.target.value );
@@ -86,6 +126,19 @@ const initEventHandlers = () => {
 	cat=1;
 	renderHourly();
 	console.log('select hourly', ev.target.value );
+    };
+    document.getElementById('plotbtn').onclick = ( ev ) => {
+	const pll = document.getElementById('plotslayer');
+	const pli = pll.querySelector('iframe');
+	pli.src = '/temporary_plots/'+filter+'.html';
+	pll.classList.add('show');
+	playHoul();
+    };
+    document.getElementById('plotslyrcls').onclick = ( ev ) => {
+	const pll = document.getElementById('plotslayer');
+	const pli = pll.querySelector('iframe');
+	pli.src = '';
+	pll.classList.remove('show');
     };
 }
 
@@ -129,3 +182,17 @@ const loadStatus = () => {
 
 
 loadStatus();
+
+const loadSounds = () => {
+    sniffsoundfiles.forEach( (o,i) => {
+	const snd = document.createElement( 'audio' );
+	snd.src = 'sounds/'+o;
+	sniffsounds.push(snd);
+    });
+    barksound = document.createElement( 'audio' );
+    barksound.src = 'sounds/'+barkfile;
+    houlsound = document.createElement( 'audio' );;
+    houlsound.src = 'sounds/'+houlfile;
+}
+
+loadSounds();

@@ -133,7 +133,7 @@ const credentials = {
 
 const devices = [];
 const deviceids = [];
-const writtenfiles = fs.readdirSync('static/archive');
+let writtenfiles = fs.readdirSync('static/archive');
 const writtendaily = fs.readdirSync('static/archive/daily');
 
 console.log('loaded saved files',writtenfiles.length);
@@ -146,6 +146,10 @@ const clearDeviceList = () => {
     deviceids.splice(0);
 }
 
+const twoDigits = ( num ) => {
+    return num < 10 ? '0' + num : num;
+}
+
 const writeSensorArc = ( l, id, m ) => {
     if ( m.toLowerCase() === 'uptime' || m.toLowerCase() === 'timestamp' ) return;
     const pre = 'static/archive/';
@@ -153,12 +157,9 @@ const writeSensorArc = ( l, id, m ) => {
     console.log('writeSensorArc',id,m);
 //    console.log('writeSensorArc',id,m,now);
     //    console.log('writeSensorArc',pre+id+'-'+now.getDate()+'-'+(now.getMonth()+1)+'-'+(now.getYear()+1900)+'-'+now.getHours()+'-'+m+'.csv');
-    let hrs = now.getHours();
-    let mon = now.getMonth()+1;
-    let day = now.getDate();
-    hrs = hrs < 10 ? '0'+hrs : hrs;
-    mon = mon < 10 ? '0'+mon : mon;
-    day = day < 10 ? '0'+day : day;
+    let hrs = twoDigits( now.getHours() );
+    let mon = twoDigits( now.getMonth()+1 );
+    let day = twoDigits( now.getDate() );
     const fname = id + '-' + m + '-' + day + '-' + mon + '-'
 	  + (now.getYear()+1900) + '-' + hrs + '.csv';
     fs.writeFileSync( pre+fname , l.join( '\n') );
@@ -195,14 +196,21 @@ const removeOldFiles = (  ) => {
 //     catch {
 // 	console.log('no old files to remove');
 //     }
+    let stdo;
     try {
-	stdout = execSync('find static/archive -name "*.csv" -type f -mtime +2 -delete');    
-	writtenfiles = fs.readdirSync('static/archive');
-	console.log('removed by shell',stdout )
+	console.log('find static/archive -name "*.csv" -type f -mtime +2 -delete');
+	stdo = execSync('find static/archive -name "*.csv" -type f -mtime +2 -delete');
+	writtenfiles.splice(0);
+	writtenfiles= fs.readdirSync('static/archive');
+	console.log('removed by shell',stdo )
     }
-    catch {
-	console.log('no old files to remove');
+    catch (e) {
+	console.log('no old files to remove',e);
     }
+}
+
+const fileify = ( tname ) => {
+    return tname.replace( ' ', '\\ ' );
 }
 
 const backupDaily = () => {
@@ -211,33 +219,37 @@ const backupDaily = () => {
     const now = Date.now();
     const nowdaystart = tagify( now );    
     const nd=new Date((nowdaystart-1)*86400000);
-    const datestr = nd.getDate() + '-' + (nd.getMonth()+1) + '-' + (nd.getYear()+1900);
+    const datestr = twoDigits( nd.getDate() ) + '-' + twoDigits(nd.getMonth()+1) + '-' + (nd.getYear()+1900);
     console.log('backup daily TODO',nd,datestr);
+    writtenfiles.sort();
     for ( let i=0; i<deviceids.length; i++ ) {
 	const devid = deviceids[i];
 	if ( devices[deviceids[i]].meta.payloadStructure )
 	for ( let j=0; j<devices[deviceids[i]].meta.payloadStructure.length; j++ ) {
-	    const m=devices[deviceids[i]].meta.payloadStructure[j].name;
+	    const m=fileify(devices[deviceids[i]].meta.payloadStructure[j].name);
 	    const fnamepre = devid+'-'+m+'-'+datestr;
 	    let cmd = '';
 	    let found =0;
 	    for ( let k=0; k<writtenfiles.length; k++ ) {
-		if ( writtenfiles[k].includes( fnamepre ) ) {
+		const t = fileify( writtenfiles[k] );
+		if ( t.includes( fnamepre ) ) {
 		    //		    console.log(writtenfiles[k]);
 		    found++;
-		    cmd += 'static/archive/'+writtenfiles[k]+' ';
+		    cmd += 'static/archive/'+t+' ';
 		}
 	    }
 	    if ( found > 0 ) {
-		cmd = 'cat ' + cmd + '> static/archive/daily/' + fnamepre + '.csv;';
-		cmd += 'zip static/archive/daily/'+fnamepre+'.csv.zip static/archive/daily/'+fnamepre+'.csv;';
-		cmd += 'rm static/archive/daily/'+fnamepre+'.csv';
+		const tfnamepre = fnamepre.replace('\\ ','_');		    
+		cmd = 'cat ' + cmd + '> static/archive/daily/' + tfnamepre + '.csv;';
+		cmd += 'zip static/archive/daily/'+tfnamepre+'.csv.zip static/archive/daily/'+tfnamepre+'.csv;';
+		cmd += 'rm static/archive/daily/'+tfnamepre+'.csv';
 		let stdout = execSync(cmd);
-		writtendaily.push( fnamepre+'.csv.zip' );
+		writtendaily.push( tfnamepre+'.csv.zip' );
 	    }
 	    console.log('backing up daily',fnamepre);
 	}
     };
+
     removeOldFiles();
 }
 
@@ -258,7 +270,7 @@ const queryDeviceList = () => {
 	    });
 	    scheduler.addContAction( backupDevices, 0, 1, 0 );
 	    scheduler.addContAction( backupDaily, 1, 0, 0 );
-	    //	    backupDevices();
+//	    backupDaily();
 	};
 //	console.log('devicelist', resp.data);
     }).catch( ( err ) => {

@@ -738,7 +738,7 @@ input.error {
 	border-radius: 10px;
 	box-shadow: 2px 2px 5px #888;
 	right: 0;
-	top: 0;
+	top: calc(50% - 130px);
 }
 #editDisplayDlg {
 	top: auto;

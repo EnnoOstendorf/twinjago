@@ -11,7 +11,7 @@ body {
 	height: 100%;
 	overflow: hidden;
 }
-h1, #filter, #cat {
+h1, #filter, #cat, #plots {
 	width: 150px;
 	display: inline-block;
 	height: 28px;
@@ -35,10 +35,41 @@ h2 {
 	display: inline-block;
 	margin: 0;
 }
-#cat {
+#cat, #plots {
 	text-align: center;
 }
-
+#plotslayer {
+	position: absolute;
+	top: 20px;
+	opacity: 0;
+	width: 0;
+	height: 0;
+	transition: all 0.3s ease-in-out;
+	background: rgba(255,255,255,0.8);
+}
+#plotslayer.show {
+    opacity:1;
+    width: 100%;
+    height: calc(90% - 10px);
+}
+#plotslyrcls {
+	font-size: 18px;
+	padding: 7px 7px 2px 7px;
+	border-radius: 20px;
+	position: absolute;
+	top: 0;
+	left: 0;
+	cursor: pointer;
+	background: #fff;
+	color: #000;
+	transition: all 0.2s ease-in-out;
+}
+#plotslayer iframe {
+	width: 100%;
+	height: 100%;
+	border: none;
+	box-shadow: 0 0 5px #000;
+}
 #filter {
 	width: 300px;
 	text-align: center;

@@ -33,6 +33,12 @@ const url = 'wss://iot.fh-muenster.de/mqtt'
 
 const WILCOURL = 'https://freetwin.de:3211/';
 
+const isTouchDevice = () => {
+  return (('ontouchstart' in window) ||
+     (navigator.maxTouchPoints > 0) ||
+     (navigator.msMaxTouchPoints > 0));
+}
+
 const broker = {
     'connected' : false,
     'paused' : false,
@@ -1445,8 +1451,10 @@ window.onload = ( loadev ) => {
 	controls.noZoom = false;
 	controls.noPan = false;
 	
-	controls.cursorZoom = true;
-	controls.staticMoving = false;
+	if ( ! isTouchDevice() ) {
+	    controls.cursorZoom = true;
+	    controls.staticMoving = false;
+	}
 	controls.dynamicDampingFactor = 0.15;
     
 //	controls.saveState();
@@ -1761,24 +1769,48 @@ window.onload = ( loadev ) => {
 	console.log('pin data',aktdevice,broker.devices[aktdevice].lastdata[0]);
     }
     const initMouseEvents = () => {
-	playground.onmousemove = ( ev ) => {
-//	    if ( datapinned && !doubleselect ) return;
-	    const rect = ev.target.getBoundingClientRect();
-	    const x = ev.clientX - rect.left; //x position within the element.
-	    const y = ev.clientY - rect.top;  //y position within the element.
-//	    console.log('mousemove',x,y);
-	    mouseOver3D( x, y );
-	};
-	playground.onmouseup = ( ev ) => {
-	    if ( measuremode ) {
-		setMeasurePoint();
-		ev.stopPropagation();
-		ev.preventDefault();
-		ev.stopImmediatePropagation();
-	    }
-	    else pinData();
-	};
-
+	if (  isTouchDevice() ) {
+	    playground.ontouchstart = ( ev ) => {
+		document.body.classList.add('dragging');
+		console.log('touchstart');
+	    };
+	    playground.ontouchend = ( ev ) => {
+		document.body.classList.remove('dragging');
+		const rect = ev.target.getBoundingClientRect();
+		const x = ev.changedTouches[0].clientX - rect.left; //x position within the element.
+		const y = ev.changedTouches[0].clientY - rect.top;  //y position within the element.
+		console.log('mousemove',ev,x,y);
+		mouseOver3D( x, y );
+		if ( measuremode ) {
+		    setMeasurePoint();
+		    ev.stopPropagation();
+		    ev.preventDefault();
+		    ev.stopImmediatePropagation();
+		}
+		else pinData();
+		console.log('touchend');
+	    };
+	}
+	else {
+	    playground.onmousemove = ( ev ) => {
+		//	    if ( datapinned && !doubleselect ) return;
+		const rect = ev.target.getBoundingClientRect();
+		const x = ev.clientX - rect.left; //x position within the element.
+		const y = ev.clientY - rect.top;  //y position within the element.
+		//	    console.log('mousemove',x,y);
+		mouseOver3D( x, y );
+	    };
+	    playground.onmouseup = ( ev ) => {
+		if ( measuremode ) {
+		    setMeasurePoint();
+		    ev.stopPropagation();
+		    ev.preventDefault();
+		    ev.stopImmediatePropagation();
+		}
+		else pinData();
+	    };
+	}
+	    
 	/*	playground.onmousedown = ( ev ) => {
 	    console.log('mousebutton',ev.button);
 	    mouseDown( ev.clientX-offset.x, ev.clientY-offset.y,ev.button );
