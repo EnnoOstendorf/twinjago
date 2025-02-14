@@ -85,7 +85,7 @@ const loadAllPipedDevices = () => {
 		const o = json[i];
 		const tid = o.id;
 		const ld = o.data.lastdata;
-		console.log('piped device',tid,ld);
+//		console.log('piped device',tid,ld);
 		if ( ! broker.devices[tid] ) broker.devices[tid] = { 'lastdata' : [] };
 		if ( ld ) {
 		    for ( let j=0; j<ld.length; j++ ) {
@@ -192,7 +192,7 @@ const aktSensorout = ( id, msg, ind ) => {
 	message += o.name + ': ' + msg[i] + ', ';
     };
     broker.devices[id].lastdata.push( msg );
-    console.log('aktSensorout',id,out,broker.devices[id].lastdata);
+//    console.log('aktSensorout',id,out,broker.devices[id].lastdata);
     out.innerHTML = message + '<br />' + out.innerHTML;//message;    
 }
 
@@ -391,7 +391,7 @@ window.onload = ( loadev ) => {
     camera.position.y = 100;
     camera.rotation.z = Math.PI/4;
 
-    const renderer = new THREE.WebGLRenderer( { antialias: true } );
+    const renderer = new THREE.WebGLRenderer( { antialias: true, precision: 'mediump' } );
     renderer.setSize( width, height );
     const smrenderer = new THREE.WebGLRenderer( { antialias: true, alpha: true } );
     smrenderer.setSize( 300, 200 );
@@ -561,7 +561,7 @@ window.onload = ( loadev ) => {
 	treeel.id = 'tree-'+o;
 	tree[o]?.forEach( ( oo, ii ) => {
 	    renderCatDev( treeel, oo );
-	    console.log('cattree',oo);
+//	    console.log('cattree',oo);
 	});
 	domel.onclick = ( ev ) => {
 	    if ( domel.classList.contains('open') ) {
@@ -592,7 +592,7 @@ window.onload = ( loadev ) => {
 	devs.forEach( ( o, i ) => {
 	    if ( o.type ===  'basic' ) return;
 	    if ( o.cat && o.cat.toLowerCase() !== 'test' ) {
-		console.log( 'category found', o.cat );
+//		console.log( 'category found', o.cat );
 		addCatDev( devcats, devcattree, o );
 	    }
 	});
@@ -627,7 +627,7 @@ window.onload = ( loadev ) => {
 		config.push(json);
 		document.getElementById('infotext').innerHTML = json.info;
 		if ( json.deftwin && location.search.indexOf('id=') === -1 ) loadDevicePure( json.deftwin );
-		console.log('loaded config',json);
+//		console.log('loaded config',json);
 	    }
 	};
 	xhr.send();
@@ -793,7 +793,7 @@ window.onload = ( loadev ) => {
 	sensdiv.id = 'display'+id; sensdiv.classList.add('sensordisplay');
 	ovl.appendChild(sensdiv);
 	Displays.push( { 'id' : id, 'mesh' : mesh, 'measures' : measures, 'dispdom' : sensdiv } );
-	console.log('addDisplaySensor',broker.devices[id].lastdata[0]);
+//	console.log('addDisplaySensor',broker.devices[id].lastdata[0]);
 	if ( broker.devices[id].lastdata[0] ) aktDisplayById( id, broker.devices[id].lastdata[0] );
     }
     const addBasicPart = ( basic, meshp, rebuild ) => {
@@ -854,7 +854,7 @@ window.onload = ( loadev ) => {
 	if ( !isbasicp ) {
 	    addPart(oname, mesh, fname, deviceid, brokerupmsg, tooltip, data);
 	    mainmesh.add( mesh );
-	    console.log('adding glb',mainmesh);
+//	    console.log('adding glb',mainmesh);
 	}
 	return mesh;
     };
@@ -864,7 +864,7 @@ window.onload = ( loadev ) => {
 	const col = data.color || '#ffffff';
 	const oname = data.name || fname;
 	if ( mods && mods.ghost ) {
-	    console.log('ghost part', mods);
+//	    console.log('ghost part', mods);
 	    material = new THREE.MeshStandardMaterial({
 		transparent: true,
 		opacity: ghosttransp, flatShading: true
@@ -1154,7 +1154,7 @@ window.onload = ( loadev ) => {
 		else {
 		    while ( o3.parent && ! o3.userData.type ) o3 = o3.parent;
 		    o3 = o3.parent;
-		    console.log('no userdata type, bubble up',o3);
+//		    console.log('no userdata type, bubble up',o3);
 		}
 	    // 	     intersects[0].object.userData.type !== 'pin' &&
 	    // 	     intersects[0].object.userData.type !== 'pinlabel' ) {
@@ -1195,7 +1195,7 @@ window.onload = ( loadev ) => {
 		am.parent.remove(am);
 	    }
 	    else if ( am.type === "Group" && am.userData.id !== 'routes' ) {
-		console.log('remove group',am);
+//		console.log('remove group',am);
 		removeMeshes( am );
 		am.parent.remove(am);
 	    };
@@ -1234,7 +1234,7 @@ window.onload = ( loadev ) => {
 	document.getElementById('dokDatLyr').classList.remove('show');
 	document.getElementById('deviceTabs').querySelector('.akt')?.classList.remove('akt');
 //	document.getElementById('linklist').replaceChildren();
-	console.log('reset device', mainmesh, signmesh);
+//	console.log('reset device', mainmesh, signmesh);
     }
     const findDevice = ( id ) => {
 	for ( let i=0; i<devices.length; i++ ) {
@@ -1280,7 +1280,7 @@ window.onload = ( loadev ) => {
 		addRPin( po2,o.hmod,o.dmod );
 	    }
 	});
-	console.log( 'render routes', dra );
+//	console.log( 'render routes', dra );
     }
     const renderDevice = ( devdata, isbasic ) => {
 	let target;
@@ -1313,7 +1313,7 @@ window.onload = ( loadev ) => {
 		    stlloader.load( o.origdata.file, ( geometry ) => {
 			o3 = create3DFromGeom( geometry, o.fname, o.origdata, o.deviceid, o.brokerupmsg, o.tooltip, o.modifications, isbasic );
 			if ( o.modifications ) applyModifications( o3, o.modifications );
-			console.log('loaded stl',geometry,o3);
+//			console.log('loaded stl',geometry,o3);
 			o.pins.forEach( ( p, j ) => {
 			    //		    console.log('add pin',p);
 			    addPin( i, o3, p.name, p.color, p.modifications, p.labelmodifications, isbasic, j );
@@ -1329,7 +1329,7 @@ window.onload = ( loadev ) => {
 	    	    gltfloader.load( o.origdata.file, ( glb ) => {
 			o3=create3DFromGlb( glb, o.fname, o.origdata, o.deviceid, o.brokerupmsg, o.tooltip, o.modifications, isbasic );
 			applyModifications( o3, o.modifications );
-			console.log('loaded glb',glb,o3);
+//			console.log('loaded glb',glb,o3);
 			o.pins.forEach( ( p, j ) => {
 			    //		    console.log('add pin',p);
 			    addPin( i, o3, p.name, p.color, p.modifications, p.labelmodifications, isbasic, j );
@@ -1337,7 +1337,7 @@ window.onload = ( loadev ) => {
 			if ( isbasic && target ) target.add(o3);
 			loadopencount--;
 			CheckOpenCount();			
-			console.log('loaded glb',glb,o3);
+//			console.log('loaded glb',glb,o3);
 		    });
 		}
 		else {
@@ -1466,7 +1466,7 @@ window.onload = ( loadev ) => {
 	if ( controls ) controls.dispose();
     }
     const initCamPos = () => {
-	console.log('initCamPos');
+//	console.log('initCamPos');
 	RestoreCamPos({
 	    position: {
 		x : 212,
@@ -1494,11 +1494,11 @@ window.onload = ( loadev ) => {
 	calcSMCamPos();
 	//controls.update();
 //	constrols.saveState();
-	console.log('restorecampos',akt);
+//	console.log('restorecampos',akt);
     };
     const deleteDisplay = ( id ) => {
 	for ( let i=0; i<Displays.length; i++ ) {
-	    console.log('delete Display',id,Displays[i].id);
+//	    console.log('delete Display',id,Displays[i].id);
 	    if ( Displays[i].id === id ) {
 		Displays.splice(i,1);
 		break;
@@ -1534,7 +1534,7 @@ window.onload = ( loadev ) => {
 	}
     }
     const raiseDok = () => {
-	console.log('raise Dok Layer');
+//	console.log('raise Dok Layer');
 	const doklyr = document.getElementById( 'dokLyr' );
 	const dokdatlyr = document.getElementById( 'dokDatLyr' );
 	if ( doklyr ) {
@@ -1547,7 +1547,7 @@ window.onload = ( loadev ) => {
 	document.getElementById( 'dokBtn' ).classList.add( 'akt');
     }
     const hideDok = () => {
-	console.log('hide Dok Layer');
+//	console.log('hide Dok Layer');
 	const doklyr = document.getElementById( 'dokLyr' );
 	const dokdatlyr = document.getElementById( 'dokDatLyr' );
 	if ( doklyr ) {
@@ -1575,7 +1575,7 @@ window.onload = ( loadev ) => {
 //		controls.reset();
 		if ( json.camstart ) {
 		    RestoreCamPos( json.camstart );
-		    console.log( 'delay camstart', json.camstart );
+//		    console.log( 'delay camstart', json.camstart );
 		    //		    controls.update();
 		}
 		else {
@@ -1615,7 +1615,7 @@ window.onload = ( loadev ) => {
 	else document.getElementById( 'infolayersuper' ).classList.add( 'open' );
     }
     else {
-	console.log('no twin',config[0]);	
+//	console.log('no twin',config[0]);	
 	document.getElementById( 'infolayersuper' ).classList.add( 'open' );
     }
     const loadDevice = ( ev ) => {
@@ -1721,7 +1721,7 @@ window.onload = ( loadev ) => {
     const isPinned = ( ad ) => {
 	for ( let i=0; i<pinned.length; i++ ) {
 	    const o=pinned[i];
-	    console.log( 'isPinned?', o.id, ad, o.id === ad );
+//	    console.log( 'isPinned?', o.id, ad, o.id === ad );
 	    if ( !o.deleted && o.id === ad ) {
 		return true;
 		break;
@@ -1737,7 +1737,7 @@ window.onload = ( loadev ) => {
 	return count;
     }
     const pinData = () => {
-	console.log('pindevice',aktdevice,isPinned( aktdevice ));
+//	console.log('pindevice',aktdevice,isPinned( aktdevice ));
 	if ( !aktdevice || aktdevice === '' || aktdevice === 'no data' || isPinned( aktdevice ) ) return;
 	const ldcont = document.getElementById('liveData');
 	const lvcont = document.getElementById('liveCont');
@@ -1766,20 +1766,20 @@ window.onload = ( loadev ) => {
 	document.getElementById('pinnedanz').innerHTML = pinnedanz;
 	document.getElementById('pinnedanz').title = pinnedanz + ' gepinnte Teile';
 //	grdom.scrollIntoView({ behaviour: 'smooth', inline: 'end' });
-	console.log('pin data',aktdevice,broker.devices[aktdevice].lastdata[0]);
+//	console.log('pin data',aktdevice,broker.devices[aktdevice].lastdata[0]);
     }
     const initMouseEvents = () => {
 	if (  isTouchDevice() ) {
 	    playground.ontouchstart = ( ev ) => {
 		document.body.classList.add('dragging');
-		console.log('touchstart');
+//		console.log('touchstart');
 	    };
 	    playground.ontouchend = ( ev ) => {
 		document.body.classList.remove('dragging');
 		const rect = ev.target.getBoundingClientRect();
 		const x = ev.changedTouches[0].clientX - rect.left; //x position within the element.
 		const y = ev.changedTouches[0].clientY - rect.top;  //y position within the element.
-		console.log('mousemove',ev,x,y);
+//		console.log('mousemove',ev,x,y);
 		mouseOver3D( x, y );
 		if ( measuremode ) {
 		    setMeasurePoint();
@@ -1788,7 +1788,7 @@ window.onload = ( loadev ) => {
 		    ev.stopImmediatePropagation();
 		}
 		else pinData();
-		console.log('touchend');
+//		console.log('touchend');
 	    };
 	}
 	else {
@@ -1893,7 +1893,7 @@ window.onload = ( loadev ) => {
 //	console.log('translate labels',basic.parts,basic);
     }
     const CheckOpenCount = () => {
-	console.log('CheckOpenCount',loadopencount,loadclosefuncs);
+//	console.log('CheckOpenCount',loadopencount,loadclosefuncs);
 	if ( loadopencount < 1 && loadclosefuncs.length > 0 ) {
 	    loadclosefuncs.forEach( ( o,i ) => {
 		o();
@@ -1921,7 +1921,7 @@ window.onload = ( loadev ) => {
 //		console.log('loaded Basic',basic);
 		if ( basic.modifications ) applyModifications( o3, basic.modifications );
 		mainmesh.add(o3);
-		console.log('pushing loadclosefunc loadBasic');
+//		console.log('pushing loadclosefunc loadBasic');
 		loadclosefuncs.push( () => {
 		    translateLabels(basic);
 		    addBasicPart( basic, o3 );
@@ -2002,7 +2002,7 @@ window.onload = ( loadev ) => {
 	    pinned[index].marker.visible = false;
 	    window.setTimeout( () => { lvdom.style.display = 'none'; }, 500 )
 	    refreshPinned();
-	    console.log('remove sensor',pinned[index]);
+//	    console.log('remove sensor',pinned[index]);
 	}
 	lvdom.appendChild(markicn);
 	const smdom = document.createElement('div');
@@ -2020,7 +2020,7 @@ window.onload = ( loadev ) => {
 	    aktSensorout( aktdevice, broker.devices[aktdevice].lastdata[0], pinned.length+1 );
 	    }
 	    */
-	console.log('renderLivedata',aktdevice,broker.devices[aktdevice].lastmsg);
+//	console.log('renderLivedata',aktdevice,broker.devices[aktdevice].lastmsg);
 	return lvdom;
     }
 
@@ -2041,7 +2041,7 @@ window.onload = ( loadev ) => {
     const finishMeasure = () => {
 	if ( meascurs.length < 2 ) return;
 	let tscale = mscale ? mscale.replace( /\,/g, '.' ) : '1.0';
-	console.log('tscale',tscale);
+//	console.log('tscale',tscale);
 	tscale = parseFloat( tscale );
 	if ( isNaN( tscale ) ) tscale = 1;
 	const pos0 = meascurs[0].position;
@@ -2055,7 +2055,7 @@ window.onload = ( loadev ) => {
 	document.getElementById('msrInpDZ').value=distz.toFixed(2);
 	document.getElementById('msrInpDD').value=ddist.toFixed(2);
 	aktmeasure = 0;
-	console.log('finish Measurement',mscale,tscale,munit,distx,disty,distz,ddist);
+//	console.log('finish Measurement',mscale,tscale,munit,distx,disty,distz,ddist);
     }
     const setMeasurePoint = () => {
 	measuremode = false;
@@ -2363,7 +2363,7 @@ window.onload = ( loadev ) => {
 	    cont.insertAdjacentHTML( 'beforeend', '<div class="route active"><div class="rpin firstpin"><i>'+shortenPartName(o.part)+'</i><b>'+name+'</b> </div> <b style="color:'+o.col+'"></b> </div>' );
 	    // set first pin
 	}
-	console.log('adding RPin',o);
+//	console.log('adding RPin',o);
     }
 
     HTMLready = true;
