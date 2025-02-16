@@ -1,5 +1,7 @@
 # Twinjago
 
+![Picture of a game called twinjago](/twinjago_Spiel_05.jpg)
+
 a **_Digital Twin_** Editor and Presenter.
 This tool enables you to create a digital Twin of your _Thing_, 
 so that others can inspect it and have everything they need to reproduce your _Thing_!
