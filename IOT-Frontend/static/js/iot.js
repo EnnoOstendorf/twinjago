@@ -17,8 +17,12 @@ let cur3d1,cur3d2 = null;
 const pinned = [];
 let markergeom = null;
 let doubleselect = false;
+let lastdown = Date.now();
 const Displays = [];
 const DISPWIDTH = 120;
+// CLICKDELAY means: the time in ms between mousedown and mouseup below which is a click,
+// a higher delay indicates a drag process
+const CLICKDELAY = 300;
 
 /* Measurement vars */
 let measuremode = false;
@@ -1800,14 +1804,23 @@ window.onload = ( loadev ) => {
 		//	    console.log('mousemove',x,y);
 		mouseOver3D( x, y );
 	    };
+	    playground.onmousedown = ( ev ) => {
+		lastdown = Date.now();
+		console.log('mousedown',lastdown);
+	    }
 	    playground.onmouseup = ( ev ) => {
+		const now = Date.now();
 		if ( measuremode ) {
 		    setMeasurePoint();
 		    ev.stopPropagation();
 		    ev.preventDefault();
 		    ev.stopImmediatePropagation();
 		}
-		else pinData();
+		else {
+		    const tdelta = now - lastdown;
+		    if ( tdelta < CLICKDELAY ) pinData();
+		    console.log('mouseup',lastdown,now,tdelta);
+		}
 	    };
 	}
 	    
