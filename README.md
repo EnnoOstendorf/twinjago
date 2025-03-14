@@ -76,10 +76,31 @@ influx setup \
   --bucket BUCKET_NAME \
   --force
 influx auth create \
-  --org my-org \
+  --org ORG_NAME \
   --all-access
 ```
 exchange the USERNAME, PASSWORD, ORG_NAME and BUCKET_Name Vars and
 **note the token in the output (!important!)**
 this is the all-access token used by twinjago
+
+- https
+for https you need a certificate.
+here we describe getting a certificate from letsencrypt using certbot and a standard apache setting.
+you can also use your own certificate, you can set the path to the ca file etc. in the env config.
+
+We don't need it directly for twinjago, but for delivering a standard web page around twinjago and for easier handling the certbot (see below) we install and configure standard Apache
+```
+sudo apt install apache2
+```
+edit the apache default config file /etc/apache2/sites-enabled/000-default.conf and change ServerName to your domain, e.g. twinjago.de
+
+now install and run certbot:
+```
+sudo snap install --classic certbot
+sudo certbot --apache
+```
+the apache config is now automatically updated by certbot and https redirection and negotiation has been added.
+
+The webroot of the apache standard normally can be found in /var/www/html.
+
 
