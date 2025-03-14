@@ -24,12 +24,12 @@ A doc describing installation of each part and a dockerfile for running all on o
 
 ## howto install
 
-- system - fresh ubuntu system, first actions
+### system - fresh ubuntu system, first actions
   ```
   apt-get update
   apt-get upgrade
   ```
-- mongodb :
+### mongodb :
   https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/#std-label-install-mdb-community-ubuntu
 ```
 apt-get install gnupg curl
@@ -43,8 +43,8 @@ sudo systemctl start mongod
 sudo systemctl status mongod
 ```
 
-- influxdb :
-  - db install
+### influxdb
+- install
 https://docs.influxdata.com/influxdb/v2/install/
 ```
 curl --silent --location -O \
@@ -83,10 +83,10 @@ exchange the USERNAME, PASSWORD, ORG_NAME and BUCKET_Name Vars and
 **note the token in the output (!important!)**
 this is the all-access token used by twinjago
 
-- https
+### https
 for https you need a certificate.
 here we describe getting a certificate from letsencrypt using certbot and a standard apache setting.
-you can also use your own certificate, you can set the path to the ca file etc. in the env config.
+you can also use your own certificate, you can set the path to the ca file etc. in the env config and grafana setting.
 
 We don't need it directly for twinjago, but for delivering a standard web page around twinjago and for easier handling the certbot (see below) we install and configure standard Apache
 ```
