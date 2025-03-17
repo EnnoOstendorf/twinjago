@@ -125,8 +125,9 @@ chgrp -R grafana /etc/grafana/grafana.crt /etc/grafana/grafana.key
 chmod 400 /etc/grafana/grafana.crt /etc/grafana/grafana.key
 chmod g+r /etc/letsencrypt/archive/YOUR_DOMAIN/*
 ```
-replace YOUR_DOMAIN with your domain, e.g. twinjago.de
-the last command should not be necessary, since in the 4th command that should be included, but it wasn't.
+  replace YOUR_DOMAIN with your domain, e.g. twinjago.de
+
+  the last command should not be necessary, since in the 4th command that should be included, but it wasn't.
 
 - configure grafana
 edit file /etc/grafana/grafana.ini and change these values
