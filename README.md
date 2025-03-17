@@ -106,6 +106,9 @@ The webroot of the apache standard normally can be found in /var/www/html.
 
 
 ### grafana
+
+https://grafana.com/docs/grafana/latest/setup-grafana/set-up-https/
+
 **install grafana**
 ```
 wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add - echo "deb https://packages.grafana.com/oss/deb stable main " | sudo tee -a /etc/apt/sources.list.d/grafana.list
@@ -113,6 +116,7 @@ sudo apt-get update
 sudo apt-get install grafana
 sudo /bin/systemctl daemon-reload
 sudo /bin/systemctl start grafana-server
+sudo systemctl enable grafana-server.service
 ```
 
 **https for grafana** (with letsencrypt/certbot)
@@ -143,6 +147,5 @@ cert_file = /etc/grafana/grafana.crt
 **restart grafana**
 
 ```
-sudo systemctl daemon-reload
-sudo systemctl start grafana-server
+sudo systemctl restart grafana-server
 ```
