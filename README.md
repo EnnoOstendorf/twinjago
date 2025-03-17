@@ -99,8 +99,50 @@ now install and run certbot:
 sudo snap install --classic certbot
 sudo certbot --apache
 ```
-the apache config is now automatically updated by certbot and https redirection and negotiation has been added.
+it should list your domain, confirm it.
+The apache config is now automatically updated by certbot and https redirection and negotiation has been added.
 
 The webroot of the apache standard normally can be found in /var/www/html.
 
 
+### grafana
+- install grafana
+```
+wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add - echo "deb https://packages.grafana.com/oss/deb stable main " | sudo tee -a /etc/apt/sources.list.d/grafana.list
+sudo apt-get update
+sudo apt-get install grafana
+sudo /bin/systemctl daemon-reload
+sudo /bin/systemctl start grafana-server
+```
+
+- https for grafana (with letsencrypt/certbot)
+```
+ln -s /etc/letsencrypt/live/YOUR_DOMAIN/privkey.pem /etc/grafana/grafana.key
+ln -s /etc/letsencrypt/live/YOUR_DOMAIN/fullchain.pem /etc/grafana/grafana.crt
+chgrp -R grafana /etc/letsencrypt/*
+chmod -R g+rx /etc/letsencrypt/*
+chgrp -R grafana /etc/grafana/grafana.crt /etc/grafana/grafana.key
+chmod 400 /etc/grafana/grafana.crt /etc/grafana/grafana.key
+chmod g+r /etc/letsencrypt/archive/YOUR_DOMAIN/*
+```
+replace YOUR_DOMAIN with your domain, e.g. twinjago.de
+the last command should not be necessary, since in the 4th command that should be included, but it wasn't.
+
+- configure grafana
+edit file /etc/grafana/grafana.ini and change these values
+```
+protocol = https
+http_üprt = 3000
+domain = YOUR_DOMAIN
+enforce_domain = false
+root_url = https://YOUR_DOMAIN:3000
+cert_key = /etc/grafana/grafana.key
+cert_file = /etc/grafana/grafana.crt
+```
+
+- restart grafana
+
+```
+sudo systemctl daemon-reload
+sudo systemctl start grafana-server
+```
