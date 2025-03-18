@@ -152,3 +152,43 @@ cert_file = /etc/grafana/grafana.crt
 ```
 sudo systemctl restart grafana-server
 ```
+
+### initialize grafana web-frontend
+- in your browser navigate to YOUR_DOMAIN:3000, eg: https://twinjago.de:3000
+- login with default username admin, password admin and change password, note the password
+
+### generate grafana user and token
+- navigate to /org/serviceaccount e.g. https://twinjago.de:3000/org/serviceaccount
+- click Add Service Account  
+- give a name and click on generate Token  
+- copy the token for later use in config
+![screenshot of grafana token dialogue](/grafana-token-scr.png)
+
+
+## Prerequesites for the twinjago app
+
+if you transfer the twinjago repo via zip archive, first install unzip
+```
+sudo apt-get install unzip
+```
+
+### install nodejs
+https://nodejs.org/en/download
+```
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash
+\. "$HOME/.nvm/nvm.sh"
+nvm install 23
+node -v # Should print "v23.10.0".
+nvm current # Should print "v23.10.0".
+npm -v # Should print "10.9.2".
+```
+
+## pipeguy
+### install
+```
+cd IoTBrokerToInflux
+npm install
+```
+### configure
+
+
