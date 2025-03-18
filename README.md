@@ -184,6 +184,8 @@ npm -v # Should print "10.9.2".
 ```
 
 ## pipeguy
+assuming you have copied the repo and changed to the root dir of it
+
 ### install
 ```
 cd IoTBrokerToInflux
@@ -208,6 +210,6 @@ PRIVKEYPATH=/etc/letsencrypt/live/<YOUR_DOMAIN>/privkey.pem
 CERTFILEPATH=/etc/letsencrypt/live/<YOUR_DOMAIN>/cert.pem
 CAFILEPATH=/etc/letsencrypt/live/<YOUR_DOMAIN>/chain.pem
 ```
-exchange the values in <> by that data you gathered through the above process
+exchange the values in <> by that data you gathered through the above process  
 MQTT Server must exist externally
 
