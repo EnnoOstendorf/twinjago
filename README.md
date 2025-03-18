@@ -189,6 +189,25 @@ npm -v # Should print "10.9.2".
 cd IoTBrokerToInflux
 npm install
 ```
-### configure
 
+### configure
+add a text file named ``.env`` and edit using the following variables
+```
+PORT=3458
+HTTPSPORT=3459
+INFLUX_URL=http://localhost:8086
+INFLUX_TOKEN=<ADD YOUR INFLUX TOKEN FROM ABOVE>
+INFLUX_ORG=<YOUR_ORG>
+INFLUX_BUCKET=<YOUR_BUCKET>
+GRAFANA_URL=https://<YOUR_DOMAIN>:3000
+GRAFANA_TOKEN=<ADD YOUR GRAFANA TOKEN FROM ABOVE>
+MQTTURL=<MQTT SERVER URL>
+MQTTUSER=<MQTT SERVER USER>
+MQTTPASS=<MQTT SERVER PASSWORD>
+PRIVKEYPATH=/etc/letsencrypt/live/<YOUR_DOMAIN>/privkey.pem
+CERTFILEPATH=/etc/letsencrypt/live/<YOUR_DOMAIN>/cert.pem
+CAFILEPATH=/etc/letsencrypt/live/<YOUR_DOMAIN>/chain.pem
+```
+exchange the values in <> by that data you gathered through the above process
+MQTT Server must exist externally
 
