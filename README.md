@@ -153,11 +153,11 @@ cert_file = /etc/grafana/grafana.crt
 sudo systemctl restart grafana-server
 ```
 
-### initialize grafana web-frontend
+**initialize grafana web-frontend**  
 - in your browser navigate to YOUR_DOMAIN:3000, eg: https://twinjago.de:3000
 - login with default username admin, password admin and change password, note the password
 
-### generate grafana user and token
+**generate grafana user and token**  
 - navigate to /org/serviceaccount e.g. https://twinjago.de:3000/org/serviceaccount
 - click Add Service Account  
 - give a name and click on generate Token  
@@ -165,7 +165,7 @@ sudo systemctl restart grafana-server
 ![screenshot of grafana token dialogue](/grafana-token-scr.png)
 
 
-## Prerequesites for the twinjago app
+## Prerequesites for the twinjago app  
 
 if you transfer the twinjago repo via zip archive, first install unzip
 ```
