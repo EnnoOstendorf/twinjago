@@ -29,6 +29,7 @@ const playBark = () => {
 }
 
 const playHoul = () => {
+    houlsound.volume =  Math.random()/4;
     houlsound.play();
 }
 

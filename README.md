@@ -167,12 +167,14 @@ sudo systemctl restart grafana-server
 
 ## Prerequesites for the twinjago app  
 
+### install unzip
 if you transfer the twinjago repo via zip archive, first install unzip
 ```
 sudo apt-get install unzip
 ```
 
 ### install nodejs
+nodejs executes the app  
 https://nodejs.org/en/download
 ```
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash
@@ -181,6 +183,13 @@ nvm install 23
 node -v # Should print "v23.10.0".
 nvm current # Should print "v23.10.0".
 npm -v # Should print "10.9.2".
+```
+
+### install pm2
+processmanager for node  
+https://pm2.keymetrics.io/docs/usage/quick-start/
+```
+npm install pm2@latest -g
 ```
 
 ## pipeguy
@@ -212,4 +221,53 @@ CAFILEPATH=/etc/letsencrypt/live/<YOUR_DOMAIN>/chain.pem
 ```
 exchange the values in <> by that data you gathered through the above process  
 MQTT Server must exist externally
+
+### run
+after first install, start pipeguy manually to see the status and error messages in the console
+```
+node mqttInfluxGrafanaPipe.js
+```
+it should connect to InfluxDB, connect to the MQTT server and new devices should be detected.
+Upon detection the grafana dashboards should be created.
+
+### run in background
+if no errors are shown, stop the demon and restart it in background using pm2
+```
+pm2 start mqttInfluxGrafanaPipe.js
+```
+now the pipeguy runs in background and can be accessed via the endpoints.
+
+## wilco
+
+### install
+assuming you are in a shell in the repo root dir, go to directory wilco and run the installer
+```
+cd wilco
+npm install
+```
+
+### configure
+
+add a text file named ``.env`` and edit using the following variables
+```
+PORT=3210
+HTTPSPORT=3211
+INFLUX_URL=http://localhost:8086
+INFLUX_TOKEN=<YOUR_INFLUX_TOKEN>
+INFLUX_ORG=<YOUR_INFLUX_ORG>
+INFLUX_BUCKET=<YOUR_INFLUX_BUCKET>
+DEVICELISTURL=http://localhost:3458/getAll
+PRIVKEYPATH=/etc/letsencrypt/live/<YOUR_DOMAIN>/privkey.pem
+CERTFILEPATH=/etc/letsencrypt/live/<YOUR_DOMAIN>/cert.pem
+CAFILEPATH=/etc/letsencrypt/live/<YOUR_DOMAIN>/chain.pem
+```
+exchange the values in <> by that data you gathered through the above process  
+
+### run
+after first install, start wilco manually to see the status and error messages in the console
+```
+node wilco.js
+```
+it should connect to InfluxDB, connect to the MQTT server and new devices should be detected.
+Upon detection the grafana dashboards should be created.
 

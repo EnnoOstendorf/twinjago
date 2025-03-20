@@ -341,6 +341,9 @@ input.error {
 #dokSuper.show {
 	right: 0;
 }
+#dokLyr * {
+    user-select: text;
+}
 #dokLyr, #dokDatLyr {
 	position: absolute;
 	z-index: 1;
