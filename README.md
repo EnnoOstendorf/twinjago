@@ -231,7 +231,7 @@ it should connect to InfluxDB, connect to the MQTT server and new devices should
 Upon detection the grafana dashboards should be created.
 
 ### run in background
-if no errors are shown, stop the demon and restart it in background using pm2
+if no errors are shown, stop the demon (<STRG-C>) and restart it in background using pm2
 ```
 pm2 start mqttInfluxGrafanaPipe.js
 ```
@@ -268,6 +268,10 @@ after first install, start wilco manually to see the status and error messages i
 ```
 node wilco.js
 ```
-it should connect to InfluxDB, connect to the MQTT server and new devices should be detected.
-Upon detection the grafana dashboards should be created.
+it should connect to InfluxDB and return it's ports.
 
+### run in background
+if no errors are shown, stop the demon (<STRG-C>) and restart it in background using pm2
+```
+pm2 start wilco.js
+```
