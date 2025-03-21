@@ -29,19 +29,6 @@ A doc describing installation of each part and a dockerfile for running all on o
   apt-get update
   apt-get upgrade
   ```
-### mongodb :
-  https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/#std-label-install-mdb-community-ubuntu
-```
-apt-get install gnupg curl
-curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | \
-   sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg \
-   --dearmor
-echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
-sudo apt-get update
-sudo apt-get install -y mongodb-org
-sudo systemctl start mongod
-sudo systemctl status mongod
-```
 
 ### influxdb
 - install
@@ -281,3 +268,95 @@ if no errors are shown, stop the demon (``STRG-C``) and restart it in background
 ```
 pm2 start wilco.js
 ```
+
+
+## IoT-Frontend
+
+we assume in here a DB-name ``IoT-Devices``
+we assume in here domain is twinjago.de
+
+### install mongodb :
+  https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/#std-label-install-mdb-community-ubuntu
+```
+apt-get install gnupg curl
+curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | \
+   sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg \
+   --dearmor
+echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
+sudo apt-get update
+sudo apt-get install -y mongodb-org
+sudo systemctl start mongod
+sudo systemctl status mongod
+```
+
+### create mongodb user
+
+** start mongosh shell **
+
+```
+mongosh
+```
+
+** in mongosh do **
+
+```
+test> use IoT-Devices
+switched to db IoT-Devices
+IoT-Devices> db.createUser( { user: "<YOUR_MONGO_USER>", pwd: "<YOUR_MONGO_PASSWORD>", roles: [ "readWrite" ] })
+{ ok: 1 }
+IoT-Devices> quit
+```
+
+
+### import data
+
+you may wish to import from another instance, you can create a dump of the mongodb  
+https://www.mongodb.com/docs/database-tools/mongodump/
+
+```
+mongodump --archive="IoT-Devices-mongo-dump-21-03-25.gz" --gzip --db="IoT-Devices"
+```
+
+copy it to the new instance and restore it
+```
+mongorestore --archive="IoT-Devices-mongo-dump-21-03-25.gz" --gzip
+```
+
+### install
+assuming you are in a shell in the repo root dir, go to directory ``IoT-Frontend`` and run the installer
+
+```
+cd IOT-Frontend
+npm install
+```
+
+### configure
+
+add a text file named ``.env`` and edit using the following variables
+```
+DOMAIN=twinjago.de
+PORT=3456
+HTTPSPORT=3457
+DATABASE_URL=mongodb://localhost:27017/IoT-Devices
+MONGODB_URL=mongodb://<YOUR_MONGO_USER>:<YOUR_MONGO_PASSWORD>@127.0.0.1:27017/IoT-Devices
+PRIVKEYPATH=/etc/letsencrypt/live/twinjago.de/privkey.pem
+CERTFILEPATH=/etc/letsencrypt/live/twinjago.de/cert.pem
+CAFILEPATH=/etc/letsencrypt/live/twinjago.de/chain.pem
+```
+exchange the values in <> by that data you gathered through the above process  
+
+### run
+after first install, start IOT-Frontend manually to see the status and error messages in the console
+```
+node index.js
+```
+it should connect to MongoDB, show the number of doks and devices and return it's ports.
+
+### check frontend in browser on <YOURDOMAIN>:3457, eg. https://twinjago.de:3457/
+
+### run in background
+if no errors are shown, stop the demon (``STRG-C``) and restart it in background using pm2
+```
+pm2 start index.js
+```
+
