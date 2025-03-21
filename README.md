@@ -239,6 +239,12 @@ now the pipeguy runs in background and can be accessed via the endpoints.
 
 ## wilco
 
+### install zip
+wilco needs zip to compress the archives
+```
+sudo apt-get install zip
+```
+
 ### install
 assuming you are in a shell in the repo root dir, go to directory wilco and run the installer
 ```

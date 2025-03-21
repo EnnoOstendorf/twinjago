@@ -165,7 +165,7 @@ const initStatus = () => {
 }
 
 const loadStatus = () => {
-    const url = 'https://freetwin.de:3211/status';
+    const url = 'https://'+location.host+'/status';
     const xhr = new XMLHttpRequest();
     xhr.open('get',url,true);
     xhr.setRequestHeader("Content-Type", "application/json");
@@ -187,13 +187,13 @@ loadStatus();
 const loadSounds = () => {
     sniffsoundfiles.forEach( (o,i) => {
 	const snd = document.createElement( 'audio' );
-	snd.src = 'sounds/'+o;
+	snd.src = 'sound/'+o;
 	sniffsounds.push(snd);
     });
     barksound = document.createElement( 'audio' );
-    barksound.src = 'sounds/'+barkfile;
+    barksound.src = 'sound/'+barkfile;
     houlsound = document.createElement( 'audio' );;
-    houlsound.src = 'sounds/'+houlfile;
+    houlsound.src = 'sound/'+houlfile;
 }
 
 loadSounds();
