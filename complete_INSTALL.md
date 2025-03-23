@@ -91,7 +91,7 @@ We don't need it directly for twinjago, but for delivering a standard web page a
 ```
 sudo apt install apache2
 ```
-edit the apache default config file /etc/apache2/sites-enabled/000-default.conf and change ServerName to your domain, e.g. twinjago.de
+edit the apache default config file ``/etc/apache2/sites-enabled/000-default.conf`` and change ServerName to your domain, e.g. twinjago.de
 
 now install and run certbot:
 ```
@@ -101,7 +101,9 @@ sudo certbot --apache
 it should list your domain, confirm it.
 The apache config is now automatically updated by certbot and https redirection and negotiation has been added.
 
-The webroot of the apache standard normally can be found in /var/www/html.
+The webroot of the apache standard normally can be found in ``/var/www/html.``
+
+If you navigate your browser to your host name you should see the apache default page.
 
 
 ## grafana
@@ -254,7 +256,7 @@ pm2 start wilco.js
 we assume in here a DB-name ``IoT-Devices``
 we assume in here domain is twinjago.de
 
-### install mongodb :
+### install mongodb
   https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/#std-label-install-mdb-community-ubuntu
 ```
 apt-get install gnupg curl
