@@ -3,15 +3,13 @@
 This is a complete Step-By-Step install.
 You only need the credentials to an MQTT-Broker, which is not part of twinjago. (atm)
 
-## howto install
-
-### system - fresh ubuntu system, first actions
+## system - fresh ubuntu system, first actions
   ```
   apt-get update
   apt-get upgrade
   ```
 
-### influxdb
+## influxdb
 - install
 https://docs.influxdata.com/influxdb/v2/install/
 ```
@@ -51,7 +49,7 @@ exchange the USERNAME, PASSWORD, ORG_NAME and BUCKET_Name Vars and
 **note the token in the output (!important!)**
 this is the all-access token used by twinjago
 
-### https
+## https
 for https you need a certificate.
 here we describe getting a certificate from letsencrypt using certbot and a standard apache setting.
 you can also use your own certificate, you can set the path to the ca file etc. in the env config and grafana setting.
@@ -73,7 +71,7 @@ The apache config is now automatically updated by certbot and https redirection 
 The webroot of the apache standard normally can be found in /var/www/html.
 
 
-### grafana
+## grafana
 
 https://grafana.com/docs/grafana/latest/setup-grafana/
 
@@ -135,13 +133,13 @@ sudo systemctl restart grafana-server
 
 ## Prerequesites for the twinjago app  
 
-### install unzip
+## install unzip
 if you transfer the twinjago repo via zip archive, first install unzip
 ```
 sudo apt-get install unzip
 ```
 
-### install nodejs
+## install nodejs
 nodejs executes the app  
 https://nodejs.org/en/download
 ```
@@ -153,7 +151,7 @@ nvm current # Should print "v23.10.0".
 npm -v # Should print "10.9.2".
 ```
 
-### install pm2
+## install pm2
 processmanager for node  
 https://pm2.keymetrics.io/docs/usage/quick-start/
 ```
@@ -163,13 +161,13 @@ npm install pm2@latest -g
 ## pipeguy
 assuming you have copied the repo and changed to the root dir of it
 
-### install
+## install
 ```
 cd IoTBrokerToInflux
 npm install
 ```
 
-### configure
+## configure
 add a text file named ``.env`` and edit using the following variables
 ```
 PORT=3458
@@ -190,7 +188,7 @@ CAFILEPATH=/etc/letsencrypt/live/<YOUR_DOMAIN>/chain.pem
 exchange the values in <> by that data you gathered through the above process  
 MQTT Server must exist externally
 
-### run
+## run
 after first install, start pipeguy manually to see the status and error messages in the console
 ```
 node mqttInfluxGrafanaPipe.js
@@ -198,7 +196,7 @@ node mqttInfluxGrafanaPipe.js
 it should connect to InfluxDB, connect to the MQTT server and new devices should be detected.
 Upon detection the grafana dashboards should be created.
 
-### run in background
+## run in background
 if no errors are shown, stop the demon (``STRG-C``) and restart it in background using pm2
 ```
 pm2 start mqttInfluxGrafanaPipe.js
@@ -207,20 +205,20 @@ now the pipeguy runs in background and can be accessed via the endpoints.
 
 ## wilco
 
-### install zip
+## install zip
 wilco needs zip to compress the archives
 ```
 sudo apt-get install zip
 ```
 
-### install
+## install
 assuming you are in a shell in the repo root dir, go to directory wilco and run the installer
 ```
 cd wilco
 npm install
 ```
 
-### configure
+## configure
 
 add a text file named ``.env`` and edit using the following variables
 ```
@@ -237,14 +235,14 @@ CAFILEPATH=/etc/letsencrypt/live/<YOUR_DOMAIN>/chain.pem
 ```
 exchange the values in <> by that data you gathered through the above process  
 
-### run
+## run
 after first install, start wilco manually to see the status and error messages in the console
 ```
 node wilco.js
 ```
 it should connect to InfluxDB and return it's ports.
 
-### run in background
+## run in background
 if no errors are shown, stop the demon (``STRG-C``) and restart it in background using pm2
 ```
 pm2 start wilco.js
@@ -256,7 +254,7 @@ pm2 start wilco.js
 we assume in here a DB-name ``IoT-Devices``
 we assume in here domain is twinjago.de
 
-### install mongodb :
+## install mongodb :
   https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/#std-label-install-mdb-community-ubuntu
 ```
 apt-get install gnupg curl
@@ -270,7 +268,7 @@ sudo systemctl start mongod
 sudo systemctl status mongod
 ```
 
-### create mongodb user
+## create mongodb user
 
 ** start mongosh shell **
 
@@ -289,7 +287,7 @@ IoT-Devices> quit
 ```
 
 
-### import data
+## import data
 
 you may wish to import from another instance, you can create a dump of the mongodb  
 https://www.mongodb.com/docs/database-tools/mongodump/
@@ -303,7 +301,7 @@ copy it to the new instance and restore it
 mongorestore --archive="IoT-Devices-mongo-dump-21-03-25.gz" --gzip
 ```
 
-### install
+## install
 assuming you are in a shell in the repo root dir, go to directory ``IoT-Frontend`` and run the installer
 
 ```
@@ -311,7 +309,7 @@ cd IOT-Frontend
 npm install
 ```
 
-### configure
+## configure
 
 add a text file named ``.env`` and edit using the following variables
 ```
@@ -326,16 +324,16 @@ CAFILEPATH=/etc/letsencrypt/live/twinjago.de/chain.pem
 ```
 exchange the values in <> by that data you gathered through the above process  
 
-### run
+## run
 after first install, start IOT-Frontend manually to see the status and error messages in the console
 ```
 node index.js
 ```
 it should connect to MongoDB, show the number of doks and devices and return it's ports.
 
-### check frontend in browser on <YOURDOMAIN>:3457, eg. https://twinjago.de:3457/
+## check frontend in browser on <YOURDOMAIN>:3457, eg. https://twinjago.de:3457/
 
-### run in background
+## run in background
 if no errors are shown, stop the demon (``STRG-C``) and restart it in background using pm2
 ```
 pm2 start index.js
