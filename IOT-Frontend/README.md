@@ -24,7 +24,7 @@ cd IOT-Frontend
 npm install
 ```
 
-For more details look into the [complete Install Howto](../completeINSTALL.md).
+For more details look into the [complete Install Howto](../complete_INSTALL.md).
 
 ## Configuration
 configuration is done in the .env file, should be created in this directory, listed are the parameters
