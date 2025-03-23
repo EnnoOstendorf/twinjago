@@ -15,7 +15,14 @@ It also keeps statistics about the devices and incoming messages and exports the
 - **grafana** to display the sensordata
 - **nodejs** to run the demon
 
-A doc describing installation of each part and a dockerfile for running all (except MQTT Broker) on one host will be part of this repo soon.
+## install
+assuming you have copied the repo and changed to the root dir of it
+```
+cd IoTBrokerToInflux
+npm install
+```
+
+For more details look into the [complete Install Howto](../completeINSTALL.md) 
 
 ## Configuration
 

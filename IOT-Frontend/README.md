@@ -16,7 +16,15 @@ Additionally it has some maintenance endpoints that understand and speak JSON.
 - **grafana** to display the sensordata
 - **nodejs** to run the demon
 
-A doc describing installation of each part and a dockerfile for running all (except MQTT Broker) on one host will be part of this repo soon.
+### install
+assuming you are in a shell in the repo root dir, go to directory ``IoT-Frontend`` and run the installer
+
+```
+cd IOT-Frontend
+npm install
+```
+
+For more details look into the [complete Install Howto](../completeINSTALL.md).
 
 ## Configuration
 configuration is done in the .env file, should be created in this directory, listed are the parameters

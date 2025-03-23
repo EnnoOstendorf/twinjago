@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { ArcballControls } from 'three/addons/controls/ArcballControls.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { cur3db64 } from '/3d/cursor.js';
+import { axis3db64 } from '/3d/3d-achsen.js';
 
 console.log('Welcome to the IOT-System-Frontend of FH Münster',axis3db64);
 const scene = new THREE.Scene();

@@ -13,6 +13,23 @@ This is for people who want to download sensordata and play around with it, the 
 - **influxdb** that hold the sensordata in time series
 - **nodejs** to run the demon
 
+## install
+
+### install zip
+wilco needs zip to compress the archives
+```
+sudo apt-get install zip
+```
+
+### install wilco
+assuming you are in a shell in the repo root dir, go to directory wilco and run the installer
+```
+cd wilco
+npm install
+```
+
+For more details look into the [complete Install Howto](completeINSTALL.md).
+
 ## Webinterface
 
 - it is reachable on port 3210 for http, 3211 for https
