@@ -306,6 +306,16 @@ input.error {
 .deviceNavi .tree li {
 	width: 81%;
 }
+.importer {
+	font-size: 12px;
+	font-weight: normal;
+	display: block;
+	float: right;
+	margin: 0 30px 0 0;
+}
+.importbtn {
+	width: 105px;
+}
 #deviceNavi > h2 > button {
 	display: inline-block;
 	margin: 0;
@@ -666,9 +676,22 @@ input.error {
 	width: fit-content;
 	font-weight: bold;
 	position: absolute;
-	right: 70px;
+	right: 75px;
 	top: 10px;
 	cursor: pointer;
+}
+.part d {
+	position: absolute;
+	top: 12px;
+	right: 60px;
+	border: 1px solid;
+	padding: 0px;
+	border-radius: 5px;
+	cursor: pointer;
+	background: #444;
+}
+.part d:hover {
+	background: #777;
 }
 .part .partcolor {
 	display: inline-block;

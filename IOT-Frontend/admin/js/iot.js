@@ -1025,6 +1025,10 @@ window.onload = ( loadev ) => {
 	    }
 	});
     }
+    const reassignBasic = ( dobj ) => {	
+	getBasics( dobj );
+	console.log('reassign basic', )
+    }
     const addPartDOMEvents = ( index, meshp ) => {
 	console.log('finding DOMObj',index,document.getElementById('part'+index));
 	const DOMObj = document.getElementById('part'+index);
@@ -1174,7 +1178,7 @@ window.onload = ( loadev ) => {
 	const dispsens = basic.display;
 	pi.insertAdjacentHTML(
 	    'beforeend',
-	    '<div id="part'+index+'" class="part"><strong>'+basic.name+'</strong><c data-id="'+basic.id+'" title="zum Basic">BASIC</c><div class="deviceidbox"><b>Device ID</b> <input name="deviceID" class="deviceID" placeholder="ID im Broker" autocomplete="off" value="'+deviceidp+'" /><div class="brokeridselect"></div><div class="sensorout"></div><br /><b>Broker Up</b> <input class="brokerUpMsg" autocomplete="off" value="'+brokerupmsg+'" /><div class="display"><input type="checkbox" class="displaysensorcheck" id="displaySensorChk'+index+'" '+(dispsens?' checked="checked"':'')+'/><b>Display</b> <span id="dispSensorMsr'+index+'" class="dispsensmsr"></span></div></div><div class="tooltip"><b>Tooltip</b> <textarea id="tooltip'+index+'" placeholder="mouseover Ballontext">'+(basic.tooltip||'')+'</textarea></div><div class="pins"><b>'+pinarr.length+' Pins</b> <button id="basicpinmap'+index+'" data-index="'+index+'" class="basicPinBtn">Anpassen</button><div class="pinmap"></div></div><i></i><s></s></div>' );
+	    '<div id="part'+index+'" class="part"><strong>'+basic.name+'</strong><c data-id="'+basic.id+'" title="zum Basic">BASIC</c><div class="deviceidbox"><b>Device ID</b> <input name="deviceID" class="deviceID" placeholder="ID im Broker" autocomplete="off" value="'+deviceidp+'" /><div class="brokeridselect"></div><div class="sensorout"></div><br /><b>Broker Up</b> <input class="brokerUpMsg" autocomplete="off" value="'+brokerupmsg+'" /><div class="display"><input type="checkbox" class="displaysensorcheck" id="displaySensorChk'+index+'" '+(dispsens?' checked="checked"':'')+'/><b>Display</b> <span id="dispSensorMsr'+index+'" class="dispsensmsr"></span></div></div><div class="tooltip"><b>Tooltip</b> <textarea id="tooltip'+index+'" placeholder="mouseover Ballontext">'+(basic.tooltip||'')+'</textarea></div><div class="pins"><b>'+pinarr.length+' Pins</b> <button id="basicpinmap'+index+'" data-index="'+index+'" class="basicPinBtn">Anpassen</button><div class="pinmap"></div></div><i></i><s></s><d title="Basic neu zuweisen">🧷</d></div>' );
 	pi.scrollTo({
 	    top: pi.scrollHeight,
 	    left: 0,
@@ -1205,6 +1209,9 @@ window.onload = ( loadev ) => {
 	};
 	DOMObj.querySelector( 'c' ).onclick = ( ev ) => {
 	    quickLoadBasic( ev.target.getAttribute('data-id') )
+	};
+	DOMObj.querySelector('d').onclick = ( ev ) => {
+	    reassignBasic( ev.target );
 	};
 	const closePinmap = (ev) => {
 	    const par=ev.target.parentNode;
@@ -2053,6 +2060,41 @@ window.onload = ( loadev ) => {
 	to.classList.remove('show');
 	window.setTimeout( () => { to.classList.remove('on'); }, 300 );
     }
+    const jsonToDevice = ( json ) => {
+	renderDevice(json);		
+//		controls.reset();
+	if ( json.type === 'basic' ) {
+	    isbasic = true;
+	    document.getElementById('liveBtn').classList.add('hidden');
+	    document.getElementById('saveDeviceBtn').classList.add('disabled');
+	    document.getElementById('saveBasicBtn').classList.remove('disabled');
+	    document.getElementById( 'DokumenteBtn' ).classList.add('disabled');
+	    document.getElementById( 'RoutingBtn' ).classList.add('disabled');
+	    document.getElementById( 'devType' ).innerHTML = 'Basic';
+	    document.getElementById( 'devStgHead' ).classList.add('basic');
+	}
+	else {
+	    isbasic = false;
+	    if ( json.camstart ) {
+		setCamStart( json.camstart );
+		RestoreCamPos( json.camstart );
+		console.log('CAMSTART');
+	    }
+	    document.getElementById('liveBtn').classList.remove('hidden');
+	    document.getElementById( 'RoutingBtn' ).classList.remove('disabled');
+	    document.getElementById('saveBasicBtn').classList.add('disabled');
+	    document.getElementById('saveDeviceBtn').classList.remove('disabled');
+	    document.getElementById( 'DokumenteBtn' ).classList.remove('disabled');
+	    document.getElementById( 'devType' ).innerHTML = 'Twin';
+	    document.getElementById( 'devStgHead' ).classList.remove('basic');
+	}
+	if ( json.mscale ) {
+	    document.getElementById('mscale').value = json.mscale;
+	    if ( json.munit ) {
+		document.getElementById('munit').value = json.munit;
+	    }
+	}
+    }
     const loadDevicePure = ( id ) => {
 	const url = '/api/getOne/'+id;
 	unsetControls();
@@ -2063,39 +2105,7 @@ window.onload = ( loadev ) => {
 	xhr.onreadystatechange = function () {
 	    if (xhr.readyState === 4 && xhr.status === 200) {
 		var json = JSON.parse(xhr.responseText);
-		renderDevice(json);		
-//		controls.reset();
-		if ( json.type === 'basic' ) {
-		    isbasic = true;
-		    document.getElementById('liveBtn').classList.add('hidden');
-		    document.getElementById('saveDeviceBtn').classList.add('disabled');
-		    document.getElementById('saveBasicBtn').classList.remove('disabled');
-		    document.getElementById( 'DokumenteBtn' ).classList.add('disabled');
-		    document.getElementById( 'RoutingBtn' ).classList.add('disabled');
-		    document.getElementById( 'devType' ).innerHTML = 'Basic';
-		    document.getElementById( 'devStgHead' ).classList.add('basic');
-		}
-		else {
-		    isbasic = false;
-		    if ( json.camstart ) {
-			setCamStart( json.camstart );
-			RestoreCamPos( json.camstart );
-			console.log('CAMSTART');
-		    }
-		    document.getElementById('liveBtn').classList.remove('hidden');
-		    document.getElementById( 'RoutingBtn' ).classList.remove('disabled');
-		    document.getElementById('saveBasicBtn').classList.add('disabled');
-		    document.getElementById('saveDeviceBtn').classList.remove('disabled');
-		    document.getElementById( 'DokumenteBtn' ).classList.remove('disabled');
-		    document.getElementById( 'devType' ).innerHTML = 'Twin';
-		    document.getElementById( 'devStgHead' ).classList.remove('basic');
-		}
-		if ( json.mscale ) {
-		    document.getElementById('mscale').value = json.mscale;
-		    if ( json.munit ) {
-			document.getElementById('munit').value = json.munit;
-		    }
-		}
+		jsonToDevice( json );
 		setControls();
 		console.log('loaded device',json);
 		hideThrobber();
@@ -2536,6 +2546,21 @@ window.onload = ( loadev ) => {
 	    renderRoutes( routespre );
 	}
     }
+    const replaceBasic = ( dobj, nid ) => {
+	const oldid = dobj.parentNode.querySelector('c').getAttribute('data-id');
+	const dev = findDevice( oldid );
+	const url = '/api/getOne/'+nid;
+	const xhr = new XMLHttpRequest();
+	xhr.open('GET',url,true);
+	xhr.setRequestHeader("Content-Type", "application/json");
+	xhr.onreadystatechange = function () {
+	    if (xhr.readyState === 4 && xhr.status === 200) {
+		var json = JSON.parse(xhr.responseText);
+		console.log( 'replaceBasic', dobj, oldid, nid, dev, json );
+	    }
+	}
+	xhr.send();
+    }
     const loadBasic = ( basic, noloadopen ) => {
 	const url = '/api/getOne/'+basic.id;
 	const xhr = new XMLHttpRequest();
@@ -2577,7 +2602,7 @@ window.onload = ( loadev ) => {
 	loadBasic( dev, true );
 //	console.log('selecting',dev);
     }
-    const getBasics = () => {
+    const getBasics = ( dobj ) => {
 	const ret = [];
 	const cont = document.getElementById('basicselect');
 	
@@ -2597,7 +2622,12 @@ window.onload = ( loadev ) => {
 		n.setAttribute( 'devid', o.id );
 		n.innerHTML = o.name;
 		n.onclick = ( ev ) => {
-		    selectBasic(o.id);
+		    if ( dobj ) {
+			replaceBasic( dobj, o.id );
+		    }
+		    else {
+			selectBasic(o.id);
+		    }
 		    cont.classList.remove('show');
 		}
 		cont.appendChild(n);
@@ -2646,6 +2676,14 @@ window.onload = ( loadev ) => {
 	document.getElementById( 'saveDeviceBtn').onclick = ( ev ) => {
 	    saveDevice();
 	};
+	document.getElementById( 'exportLink').onclick = ( ev ) => {
+	    const id = document.querySelector('#dbID span').innerHTML;
+	    if ( id !== 'new' ) {
+		console.log('export id',id);
+		window.open('/api/getOne/'+id);
+	    }
+	    
+	};
 	document.getElementById( 'dupDeviceBtn').onclick = ( ev ) => {
 	    cloneDevice();
 	};
@@ -2672,9 +2710,39 @@ window.onload = ( loadev ) => {
 	    if ( ev.target.classList.contains('disabled') ) return;
 	    const basics = getBasics();
 	};
+	document.getElementById( 'newgroup').onclick = ( ev ) => {
+	    if ( ev.target.classList.contains('disabled') ) return;
+	    const basics = getBasics();
+	};
 	document.getElementById( 'display' ).onclick = ( ev ) => {
 	    if ( ev.target.classList.contains('disabled') ) return;
 	    showAddDisplay();
+	};
+	const importHandler = ( finput ) => {
+	    const fname = finput.files[0].name;
+	    const ext = fname.substr(fname.lastIndexOf('.')+1);
+	    resetDevice();
+	    console.log('import twin:',finput.files[0].name,ext);
+	    if ( ext === 'json' ) {
+		console.log('import json');
+		const reader = new FileReader();
+		reader.onload = (e) => {
+		    const rawfile = e.target.result;
+		    const parsed = JSON.parse(rawfile);
+		    parsed._id = 'new';
+		    jsonToDevice( parsed );
+		    console.log('loading JSON:',parsed);
+		};
+		reader.readAsText(finput.files[0]);
+	    }
+	}
+	document.getElementById( 'importTwin' ).onchange = ( ev ) => {
+	    const finput = ev.target;
+	    importHandler( finput );
+	};
+	document.getElementById( 'importBasic' ).onchange = ( ev ) => {
+	    const finput = ev.target;
+	    importHandler( finput );
 	};
 
 	window.addEventListener( 'resize', onWindowResize );
@@ -3438,7 +3506,7 @@ window.onload = ( loadev ) => {
 	};
 	window.onmousemove = ( ev ) => {
 	    if ( dragmode ) {
-		const fact = 0.01;
+		const fact = 0.1;
 		let diff = (  dragmousestart - ev.clientY );
 		diff = diff * Math.abs(diff) * fact / 20;
 		const newv = dragstartval + diff;
