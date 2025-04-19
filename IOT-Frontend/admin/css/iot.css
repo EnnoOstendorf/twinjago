@@ -203,6 +203,23 @@ input.error {
 	float: left;
 	position: relative;
 }
+.boxed {
+	cursor: pointer;
+}
+#dynamic {
+	position: absolute;
+	top: 10px;
+	right: 30px;
+	border: 1px dotted #000;
+	padding: 3px 10px;
+	border-radius: 11px;
+	background: rgba(255,255,255,0.7);
+	cursor: pointer;
+}
+#dynamic.fixed {
+	opacity: 0.6;
+	text-decoration: line-through;
+}
 #plgOvl {
 	position: absolute;
 	top: 0;
@@ -676,14 +693,14 @@ input.error {
 	width: fit-content;
 	font-weight: bold;
 	position: absolute;
-	right: 75px;
+	right: 93px;
 	top: 10px;
 	cursor: pointer;
 }
 .part d {
 	position: absolute;
 	top: 12px;
-	right: 60px;
+	right: 70px;
 	border: 1px solid;
 	padding: 0px;
 	border-radius: 5px;

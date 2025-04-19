@@ -303,16 +303,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             error_response = {"error": "Ungültiges JSON oder fehlende Daten"}
             self.wfile.write(json.dumps(error_response).encode('utf-8'))
 
-def run(server_class=HTTPServer, handler_class=SimpleHTTPRequestHandler, host='freetwin.de', port=3555):
+def run(server_class=HTTPServer, handler_class=SimpleHTTPRequestHandler, host='twinjago.de', port=3555):
     server_address = (host, port)
     httpd = server_class(server_address, handler_class)
     
     # SSL konfigurieren
-    httpd.socket = ssl.wrap_socket(httpd.socket,
-                                   keyfile="/etc/letsencrypt/live/freetwin.de/privkey.pem",
-                                   certfile="/etc/letsencrypt/live/freetwin.de/cert.pem",
-                                   ca_certs="/etc/letsencrypt/live/freetwin.de/chain.pem",
-                                   server_side=True)    
+    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER);
+    ssl_context.load_cert_chain('/etc/letsencrypt/live/twinjago.de/cert.pem',
+                                '/etc/letsencrypt/live/twinjago.de/privkey.pem')
+    httpd.socket = ssl_context.wrap_socket(httpd.socket,server_side=True)    
     
     print(f'Starting https server on https://{host}:{port}')
     httpd.serve_forever()

@@ -192,12 +192,13 @@ window.onload = ( loadev ) => {
     playground = document.getElementById('playground');
     const width = playground.offsetWidth;
     const height = playground.offsetHeight;
-    const ghosttransp = 0.7;
+    const ghosttransp = 0.7;   
     const offset = {
 	x: playground.offsetLeft,
 	y: playground.offsetTop
     }
     let editmode = false;
+    let dynscroll = true;
     let saved = true;
     let editbackup = {
 	pos : {
@@ -1189,7 +1190,7 @@ window.onload = ( loadev ) => {
 	if ( dispsens ) {
 	    addDisplaySensor( deviceidp, meshp, basic.displaymeasures );
 	};
-	/*	DOMObj.onmouseover = ( ev ) => {
+	DOMObj.onmouseover = ( ev ) => {
 //	    console.log('hilite',meshp.userData.index);
 	    hilightPart( meshp );
 
@@ -1197,7 +1198,7 @@ window.onload = ( loadev ) => {
 	DOMObj.onmouseout = ( ev ) => {
 	    lolightParts();
 	};
-*/
+
 	DOMObj.querySelector( 'i' ).onclick = ( ev ) => {
 //	    console.log( 'edit part' );
 	    editmode = true;
@@ -1537,11 +1538,45 @@ window.onload = ( loadev ) => {
     let ptrans = 0.1;
     let strans = 0.01;
     let rtrans = 0.01;
+    let boxedObj = null;   
+
+    const markAndJump = ( part ) => {
+	part?.classList.add('over');
+	if ( dynscroll ) {
+	    const cont = part.parentNode;
+	    cont.scrollTo({
+		top: part.offsetTop - 100,
+		left: 0,
+		behavior: 'smooth'
+	    })
+	};
+    }
+    const boxObj = ( obj, col ) => {
+	if (hlp) unBox();
+	boxedObj = obj;
+	if ( ! col ) col = 0x00ffff;
+	hlp = new THREE.BoxHelper(obj, col);
+	scene.add(hlp);
+	playground.classList.add('boxed');
+    }
+    const unBox = () => {
+	    if ( hlp ) {
+		hlp.geometry.dispose();
+		hlp.material.dispose();
+		scene.remove( hlp );
+	    };
+	boxedObj = null;
+	playground.classList.remove('boxed');
+    }
     const hilightPart = ( obj ) => {
 	const ind = obj.userData.index;
 	const type = obj.userData.type;
+	const part = document.getElementById('part'+ind);
+	console.log('hilight part',obj);
 	if ( type === 'part' ) {
-	    document.getElementById('part'+ind)?.classList.add('over');
+	    markAndJump( part );
+	    boxObj( obj, 0x666666 );
+//	    console.log('hilight part');
 	    if ( obj.material?.color ) 
 		obj.material.color.set( '#33aa88' );
 	}
@@ -1549,13 +1584,19 @@ window.onload = ( loadev ) => {
 	    let t = obj;
 	    while ( t != mainmesh && !t.userData || !t.userData.type || t.userData.type != 'basic' )
 		t = t.parent;
-	    document.getElementById('part'+t.userData.index)?.classList.add('over');
+	    markAndJump( document.getElementById('part'+t.userData.index) );
+	    boxObj( t, 0x666666 );
+//	    console.log('hilight basicsign|basicpart',type);
+
 	}
 	else if ( type === 'basic' ) {
-	    document.getElementById('part'+ind)?.classList.add('over');
+//	    console.log('hilight basic');
+	    markAndJump( part );
+	    boxObj( obj, 0x666666 );
 	}
 	else if ( type === 'sign' ) {
 	    const t=document.getElementById('sign'+ind);
+//	    console.log('hilight sign');
 	    if ( t ) {
 		t.classList.add('over');
 		if ( obj.material?.color ) 
@@ -1565,6 +1606,7 @@ window.onload = ( loadev ) => {
     }
     const lolightParts = () => {
 	const hiparts = document.querySelector('.part.over,.sign.over');
+	unBox();
 	if ( hiparts ) hiparts.classList.remove('over');
 	for ( let i=0; i<mainmesh.children.length; i++ ) {
 	    const a=mainmesh.children[i];
@@ -1585,9 +1627,10 @@ window.onload = ( loadev ) => {
 	pointer.x = (xp/width)*2-1; pointer.y = - (yp/height)*2+1;
 	raycaster.setFromCamera( pointer, camera );
 	const intersects = raycaster.intersectObjects( scene.children );
+//	console.log('intersect', pointer, xp, yp, offset);
 	if ( intersects.length > 0 ) {
 	    if ( intersects[0].object.type !== 'AxesHelper'  ) {
-		const o3 = intersects[0].object;
+		let o3 = intersects[0].object;
 		if ( capturemode ) {
 		    const posis = o3.geometry.attributes.position;
 		    const face = intersects[0].face;
@@ -1602,12 +1645,32 @@ window.onload = ( loadev ) => {
 		    aktPinCoords();
 //		    console.log( 'intersects',intersects[0].point);//face.a,posis.getX(face.a) );
 		}
-		else if ( !intersects[0].object.userData.type ||
-			  intersects[0].object.userData.type !== 'sign' &&
-			  intersects[0].object.userData.type !== 'pin' &&
-			  intersects[0].object.userData.type !== 'pinlabel' ) {
+		else if ( !o3.userData.type ||
+			  o3.userData.type !== 'sign' &&
+			  o3.userData.type !== 'basicsign' &&
+			  o3.userData.type !== 'pin' &&
+			  o3.userData.type !== 'pinlabel' ) {
+		    if ( ! o3.userData.type ) {
+			while ( o3.parent && ! o3.userData.type ) {
+			    o3 = o3.parent;
+			}
+			if ( ! o3.userData.type ) return;
+		    }
+//		    console.log('intersect', o3);		    
+		    
 		    lolightParts();
-		    hilightPart( intersects[0].object );
+		    hilightPart( o3 );
+		}
+		else if ( o3.userData.type && o3.userData.type === 'basicsign' ) {
+		    while ( o3.parent && o3.userData.type !== 'basic' ) {
+			o3 = o3.parent;
+		    }
+		    lolightParts();
+		    hilightPart( o3 );
+		}
+		else {
+		    lolightParts();
+		    console.log('intersect unknown', o3.userData);
 		}
 	    }
 	}
@@ -1627,6 +1690,12 @@ window.onload = ( loadev ) => {
 	    MESHSTARTPOS.y = mainmesh.position.y;	
 	}
 	if ( capturemode ) stopCapture();
+	if ( boxedObj ) {
+	    dynscroll = !dynscroll;
+	    if ( !dynscroll ) document.getElementById( 'dynamic' ).classList.add( 'fixed' );
+	    else document.getElementById( 'dynamic' ).classList.remove( 'fixed' );
+	}
+	console.log('mousedown', boxedObj, dynscroll);
     }
     const aktEditCoords = () => {
 	console.log('aktEditCoords',aktmesh);
@@ -2453,16 +2522,23 @@ window.onload = ( loadev ) => {
     const initMouseEvents = () => {
 	playground.onmousedown = ( ev ) => {
 //	    console.log('mousebutton',ev.button);
-	    mouseDown( ev.clientX-offset.x, ev.clientY-offset.y,ev.button );
+	    const rect = ev.target.getBoundingClientRect();
+	    mouseDown( ev.clientX-rect.left, ev.clientY-rect.top );
+//	    mouseDown( ev.clientX-offset.x, ev.clientY-offset.y,ev.button );
 	};
 	playground.onmouseup = ( ev ) => {
-	    mouseUp( ev.clientX-offset.x, ev.clientY-offset.y );
+	    const rect = ev.target.getBoundingClientRect();
+	    mouseUp( ev.clientX-rect.left, ev.clientY-rect.top );
+//	    mouseUp( ev.clientX-offset.x, ev.clientY-offset.y );
 	};
 	playground.onmouseleave = ( ev ) => {
-	    mouseUp( ev.clientX-offset.x, ev.clientY-offset.y );
+	    const rect = ev.target.getBoundingClientRect();
+	    mouseUp( ev.clientX-rect.left, ev.clientY-rect.top );
+//	    mouseUp( ev.clientX-offset.x, ev.clientY-offset.y );
 	};
 	playground.onmousemove = ( ev ) => {
-	    mouseMove( ev.clientX-offset.x, ev.clientY-offset.y );
+	    const rect = ev.target.getBoundingClientRect();
+	    mouseMove( ev.clientX-rect.left, ev.clientY-rect.top );
 	};
 /*	playground.addEventListener( 'wheel', event => {
 	    const delta = Math.sign(event.deltaY);
@@ -2683,6 +2759,11 @@ window.onload = ( loadev ) => {
 		window.open('/api/getOne/'+id);
 	    }
 	    
+	};
+	document.getElementById( 'dynamic' ).onclick = ( ev ) => {
+	    dynscroll = !dynscroll;
+	    if ( !dynscroll ) document.getElementById( 'dynamic' ).classList.add( 'fixed' );
+	    else document.getElementById( 'dynamic' ).classList.remove( 'fixed' );
 	};
 	document.getElementById( 'dupDeviceBtn').onclick = ( ev ) => {
 	    cloneDevice();
@@ -3352,11 +3433,7 @@ window.onload = ( loadev ) => {
 	    const dlgdom = document.getElementById('editDlg');
 	    dlgdom.className = '';
 	    
-	    if ( hlp ) {
-		hlp.geometry.dispose();
-		hlp.material.dispose();
-		scene.remove( hlp );
-	    };
+	    unBox();
 	    ev.preventDefault();
 	};
 	document.getElementById('pinCancel').onclick = ( ev ) => {
