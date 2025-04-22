@@ -170,6 +170,15 @@ sudo systemctl restart grafana-server
 - copy the token for later use in config
 ![screenshot of grafana token dialogue](/grafana-token-scr.png)
 
+### prepare grafana for pipeguy
+grafana needs an influx datasource, you can create one on your own using the ui, than you have to copy the id of that data source into the file grafana-panel.json.
+this process will be part of a setup process in the future. the creation of the datasource can be done by api calls.
+
+you can get the id doing a call to the api
+`` curl http://admin:<ADMINPASSWORD>@localhost:3000/api/datasources``
+
+The file grafana-panel.json contains keys for the influx data source, there the field uid has to be replaced with the uid from the datasources api output. 
+
 
 ## pipeguy
 assuming you have copied the repo and changed to the root dir of it
@@ -203,15 +212,6 @@ CAFILEPATH=/etc/letsencrypt/live/<YOUR_DOMAIN>/chain.pem
 ```
 exchange the values in <> by that data you gathered through the above process  
 MQTT Server must exist externally
-
-### prepare grafana
-grafana needs an influx datasource, you can create one on your own using the ui, than you have to copy the id of that data source into the panel json.
-this process will be part of a setup process in the future. the creation of the datasource can be done by api calls.
-
-you can get the id doing a call to the api
-`` curl http://admin:<ADMINPASSWORD>@localhost:3000/api/datasources``
-
-the file grafana-panel.json has keys for the influx data source, there the field uid has to be replaced with the uid from the datasources api output. 
 
 ### run
 after first install, start pipeguy manually to see the status and error messages in the console
