@@ -154,11 +154,16 @@ cert_file = /etc/grafana/grafana.crt
 sudo systemctl restart grafana-server
 ```
 
-### initialize grafana web-frontend
+### initialize using plain auth (no ui interaction needed)
+- grafana initially has the admin account with password admin
+- the user and password has to be specified in the .env file
+- if you follow the next steps and change the password, you have to change it in .env also 
+
+### initialize grafana web-frontend [deprecated no need]
 - in your browser navigate to YOUR_DOMAIN:3000, eg: https://twinjago.de:3000
 - login with default username admin, password admin and change password, note the password
 
-### generate grafana user and token  
+### generate grafana user and token  [deprecated no need] 
 - navigate to /org/serviceaccount e.g. https://twinjago.de:3000/org/serviceaccount
 - click Add Service Account  
 - give a name and click on generate Token  
@@ -184,8 +189,11 @@ INFLUX_URL=http://localhost:8086
 INFLUX_TOKEN=<ADD YOUR INFLUX TOKEN FROM ABOVE>
 INFLUX_ORG=<YOUR_ORG>
 INFLUX_BUCKET=<YOUR_BUCKET>
-GRAFANA_URL=https://<YOUR_DOMAIN>:3000
-GRAFANA_TOKEN=<ADD YOUR GRAFANA TOKEN FROM ABOVE>
+GRAFANA_USER=admin
+GRAFANA_PASS=<ADMIN_PASSWORD>
+GRAFANA_PROTO=https
+GRAFANA_HOST=<YOUR_DOMAIN>
+GRAFANA_PORT=3000
 MQTTURL=<MQTT SERVER URL>
 MQTTUSER=<MQTT SERVER USER>
 MQTTPASS=<MQTT SERVER PASSWORD>
@@ -195,6 +203,15 @@ CAFILEPATH=/etc/letsencrypt/live/<YOUR_DOMAIN>/chain.pem
 ```
 exchange the values in <> by that data you gathered through the above process  
 MQTT Server must exist externally
+
+### prepare grafana
+grafana needs an influx datasource, you can create one on your own using the ui, than you have to copy the id of that data source into the panel json.
+this process will be part of a setup process in the future. the creation of the datasource can be done by api calls.
+
+you can get the id doing a call to the api
+`` curl http://admin:<ADMINPASSWORD>@localhost:3000/api/datasources``
+
+the file grafana-panel.json has keys for the influx data source, there the field uid has to be replaced with the uid from the datasources api output. 
 
 ### run
 after first install, start pipeguy manually to see the status and error messages in the console
