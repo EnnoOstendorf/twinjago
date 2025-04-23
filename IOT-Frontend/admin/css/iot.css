@@ -412,8 +412,23 @@ input.error {
     background-image: url(../imgs/equalify.png);
     right: 60px;
 }
-.part:hover,.part.over,.sign.over,.sign:hover {
-    background: #fff;
+.part.over,.sign.over {
+    animation-duration: 1s;
+    animation-name: attentani;
+    /* animation-timing-function: linear(1 0%, 0.5 2%, 1 4%, 0.5 5%, 1 6%, 0 100%); */
+   animation-timing-function: ease-out;
+}
+@keyframes attentani {
+    from {
+	background: rgba( 255,255,255,1);
+	color: #fff;
+	transform: scale(0.9);
+    }
+    to {
+	color: #000;
+	background: rgba( 255,255,255,0);
+	transform: scale(1);
+    }
 }
 .deviceidbox {
 	margin: 15px 0;
@@ -441,15 +456,31 @@ input.error {
 	white-space: nowrap;
 	border-bottom: 1px dotted #fff;
 }
+.sensordisplay::after {
+	content: '';
+	position: absolute;
+	width: 0px;
+	height: 30px;
+	display: block;
+	border-right: 1px dotted rgba(0,0,0,0.9);
+	border-left: 1px dotted #fff;
+	left: 50%;
+}
 .sensordisplay b {
 	max-width: 80px;
 	overflow: hidden;
 	display: inline-block;
 	/* padding: 3px 0 0; */
 	position: relative;
-	top: 2px;
+	top: 3px;
 	font-weight: normal;
 	line-height: 12px;
+}
+.dispsenshgt input {
+	width: 30px;
+}
+.dispsensmsr {
+	display: block;
 }
 .brokeridselect {
 	position: absolute;

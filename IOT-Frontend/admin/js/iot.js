@@ -1035,7 +1035,10 @@ window.onload = ( loadev ) => {
 	const DOMObj = document.getElementById('part'+index);
 	DOMObj.onmouseover = ( ev ) => {
 //	    console.log('hilite',meshp.userData.index);
+	    const odynscroll = dynscroll;
+	    dynscroll = false;
 	    hilightPart( meshp );
+	    dynscroll = odynscroll;
 
 	};
 	DOMObj.onmouseout = ( ev ) => {
@@ -1129,13 +1132,14 @@ window.onload = ( loadev ) => {
 	}
 	return sbtn;
     }
-    const addDisplaySensor = ( id, mesh, measures ) => {
+    const addDisplaySensor = ( id, mesh, measures, height ) => {
 	const ovl = document.getElementById( 'plgOvl' );
 	const sensdiv = document.createElement( 'div' );
 	sensdiv.id = 'display'+id; sensdiv.classList.add('sensordisplay');
 	ovl.appendChild(sensdiv);
-	Displays.push( { 'id' : id, 'mesh' : mesh, 'measures' : measures, 'dispdom' : sensdiv } );
+	Displays.push( { 'id' : id, 'mesh' : mesh, 'measures' : measures, 'dispdom' : sensdiv, 'height' : height||0 } );
 	console.log('add Display',id,Displays);
+	return Displays.length-1;
     }
     const addBasicPart = ( basic, meshp, rebuild ) => {
 	// save pins
@@ -1163,7 +1167,7 @@ window.onload = ( loadev ) => {
 		}
 	    }
 
-	    partobj = { 'name' : basic.name, 'type' : 'basic', 'id' : basic.id, 'deviceid': basic.deviceid, 'brokerupmsg': basic.brokerupmsg, 'tooltip' : basic.tooltip, 'mesh': meshp, 'pins' : pinarr, 'display' : basic.display, 'displaymeasures' : basic.displaymeasures };
+	    partobj = { 'name' : basic.name, 'type' : 'basic', 'id' : basic.id, 'deviceid': basic.deviceid, 'brokerupmsg': basic.brokerupmsg, 'tooltip' : basic.tooltip, 'mesh': meshp, 'pins' : pinarr, 'display' : basic.display, 'displayheight' : basic.displayheight||0, 'displaymeasures' : basic.displaymeasures };
 	    parts.push( partobj );	
 	    index = parts.length-1;
 	}
@@ -1177,9 +1181,10 @@ window.onload = ( loadev ) => {
 //	console.log('Dound deviceid',deviceidp);
 	const pi = document.getElementById('partsinner');
 	const dispsens = basic.display;
+	const disph = basic.displayheight || 0;
 	pi.insertAdjacentHTML(
 	    'beforeend',
-	    '<div id="part'+index+'" class="part"><strong>'+basic.name+'</strong><c data-id="'+basic.id+'" title="zum Basic">BASIC</c><div class="deviceidbox"><b>Device ID</b> <input name="deviceID" class="deviceID" placeholder="ID im Broker" autocomplete="off" value="'+deviceidp+'" /><div class="brokeridselect"></div><div class="sensorout"></div><br /><b>Broker Up</b> <input class="brokerUpMsg" autocomplete="off" value="'+brokerupmsg+'" /><div class="display"><input type="checkbox" class="displaysensorcheck" id="displaySensorChk'+index+'" '+(dispsens?' checked="checked"':'')+'/><b>Display</b> <span id="dispSensorMsr'+index+'" class="dispsensmsr"></span></div></div><div class="tooltip"><b>Tooltip</b> <textarea id="tooltip'+index+'" placeholder="mouseover Ballontext">'+(basic.tooltip||'')+'</textarea></div><div class="pins"><b>'+pinarr.length+' Pins</b> <button id="basicpinmap'+index+'" data-index="'+index+'" class="basicPinBtn">Anpassen</button><div class="pinmap"></div></div><i></i><s></s><d title="Basic neu zuweisen">🧷</d></div>' );
+	    '<div id="part'+index+'" class="part"><strong>'+basic.name+'</strong><c data-id="'+basic.id+'" title="zum Basic">BASIC</c><div class="deviceidbox"><b>Device ID</b> <input name="deviceID" class="deviceID" placeholder="ID im Broker" autocomplete="off" value="'+deviceidp+'" /><div class="brokeridselect"></div><div class="sensorout"></div><br /><b>Broker Up</b> <input class="brokerUpMsg" autocomplete="off" value="'+brokerupmsg+'" /><div class="display"><input type="checkbox" class="displaysensorcheck" id="displaySensorChk'+index+'" '+(dispsens?' checked="checked"':'')+'/><b>Display</b><span id="dispSensorHgt'+index+'" class="dispsenshgt">Höhe +<input id="dispsensheight'+index+'" value="'+disph+'" />px</span><span id="dispSensorMsr'+index+'" class="dispsensmsr"></span></div></div><div class="tooltip"><b>Tooltip</b> <textarea id="tooltip'+index+'" placeholder="mouseover Ballontext">'+(basic.tooltip||'')+'</textarea></div><div class="pins"><b>'+pinarr.length+' Pins</b> <button id="basicpinmap'+index+'" data-index="'+index+'" class="basicPinBtn">Anpassen</button><div class="pinmap"></div></div><i></i><s></s><d title="Basic neu zuweisen">🧷</d></div>' );
 	pi.scrollTo({
 	    top: pi.scrollHeight,
 	    left: 0,
@@ -1187,12 +1192,16 @@ window.onload = ( loadev ) => {
 	})
 	const DOMObj = document.getElementById('part'+index);
 	fillDisplayMeasures( DOMObj, partobj, basic.displaymeasures );
+	let dispind=-1;
 	if ( dispsens ) {
-	    addDisplaySensor( deviceidp, meshp, basic.displaymeasures );
+	    dispind = addDisplaySensor( deviceidp, meshp, basic.displaymeasures, basic.displayheight );
 	};
 	DOMObj.onmouseover = ( ev ) => {
 //	    console.log('hilite',meshp.userData.index);
+	    const odynscroll = dynscroll;
+	    dynscroll = false;
 	    hilightPart( meshp );
+	    dynscroll = odynscroll;
 
 	};
 	DOMObj.onmouseout = ( ev ) => {
@@ -1214,6 +1223,17 @@ window.onload = ( loadev ) => {
 	DOMObj.querySelector('d').onclick = ( ev ) => {
 	    reassignBasic( ev.target );
 	};
+	DOMObj.querySelector('.dispsenshgt input').onchange = ( ev ) => {
+	    const va = parseInt(ev.target.value);
+	    if ( !isNaN( va ) ) {
+		parts[index].displayheight = va;
+		if ( dispind > -1 ) {
+		    Displays[dispind].height = va;
+		    console.log('Display height change',Displays[dispind]);
+		}
+	    }
+	    console.log('changed display height', va);
+	};
 	const closePinmap = (ev) => {
 	    const par=ev.target.parentNode;
 	    if ( par.classList.contains( 'pinmap' ) ) {
@@ -1234,7 +1254,8 @@ window.onload = ( loadev ) => {
 	    if ( ev.target.checked ) {
 		partobj.display = true;		
 		partobj.displaymeasures = [];
-		addDisplaySensor( DOMObj.querySelector( '.deviceID' ).value, meshp, partobj.displaymeasures );
+		partobj.displayheight = 0;
+		addDisplaySensor( DOMObj.querySelector( '.deviceID' ).value, meshp, partobj.displaymeasures, 0 );
 		fillDisplayMeasures( DOMObj, partobj );
 	    }
 	    else {
@@ -1493,7 +1514,7 @@ window.onload = ( loadev ) => {
 	    v.project( camera );
 	    let left = Math.round((v.x+1)*width/2)-DISPWIDTHHALF;
 	    let top = Math.round((-v.y+1)*height/2);
-	    let bottom = height - top + DISPBOTTOMOFFSET;
+	    let bottom = height - top + DISPBOTTOMOFFSET + Displays[i].height;
 	    let hinview=false;
 	    let vinview=false;
 	    if ( left < -30 ) left = -30;
@@ -1539,10 +1560,10 @@ window.onload = ( loadev ) => {
     let strans = 0.01;
     let rtrans = 0.01;
     let boxedObj = null;   
+    let lastBoxedObjID = 0;   
 
-    const markAndJump = ( part ) => {
-	part?.classList.add('over');
-	if ( dynscroll ) {
+    const Jump = ( part, overwrite ) => {
+	if ( dynscroll || overwrite ) {
 	    const cont = part.parentNode;
 	    cont.scrollTo({
 		top: part.offsetTop - 100,
@@ -1550,6 +1571,9 @@ window.onload = ( loadev ) => {
 		behavior: 'smooth'
 	    })
 	};
+    }
+    const Mark = ( part ) => {
+	part?.classList.add('over');
     }
     const boxObj = ( obj, col ) => {
 	if (hlp) unBox();
@@ -1568,14 +1592,15 @@ window.onload = ( loadev ) => {
 	boxedObj = null;
 	playground.classList.remove('boxed');
     }
-    const hilightPart = ( obj ) => {
+    const hilightPart = ( obj, overwrite ) => {
 	const ind = obj.userData.index;
 	const type = obj.userData.type;
-	const part = document.getElementById('part'+ind);
-	console.log('hilight part',obj);
+	let part = document.getElementById('part'+ind);
+//	console.log('hilight part',type);
 	if ( type === 'part' ) {
-	    markAndJump( part );
-	    boxObj( obj, 0x666666 );
+	    Mark( part );
+	    Jump( part, overwrite );
+	    boxObj( obj, 0xbbbbbb );
 //	    console.log('hilight part');
 	    if ( obj.material?.color ) 
 		obj.material.color.set( '#33aa88' );
@@ -1584,15 +1609,18 @@ window.onload = ( loadev ) => {
 	    let t = obj;
 	    while ( t != mainmesh && !t.userData || !t.userData.type || t.userData.type != 'basic' )
 		t = t.parent;
-	    markAndJump( document.getElementById('part'+t.userData.index) );
-	    boxObj( t, 0x666666 );
-//	    console.log('hilight basicsign|basicpart',type);
+	    part = document.getElementById('part'+t.userData.index);
+	    Mark( part );
+	    Jump( part, overwrite );
+	    boxObj( t, 0xbbbbbb );
+	    console.log('hilight basicsign|basicpart',type);
 
 	}
 	else if ( type === 'basic' ) {
-//	    console.log('hilight basic');
-	    markAndJump( part );
-	    boxObj( obj, 0x666666 );
+//	    console.log('hilight basic',part);
+	    Mark( part );
+	    Jump( part, overwrite );
+	    boxObj( obj, 0xbbbbbb );
 	}
 	else if ( type === 'sign' ) {
 	    const t=document.getElementById('sign'+ind);
@@ -1691,11 +1719,28 @@ window.onload = ( loadev ) => {
 	}
 	if ( capturemode ) stopCapture();
 	if ( boxedObj ) {
-	    dynscroll = !dynscroll;
-	    if ( !dynscroll ) document.getElementById( 'dynamic' ).classList.add( 'fixed' );
-	    else document.getElementById( 'dynamic' ).classList.remove( 'fixed' );
+	    console.log('dynscroll', lastBoxedObjID, boxedObj.id );
+	    if ( boxedObj.id !== lastBoxedObjID ) {
+		if ( dynscroll ) dynscroll = false;
+	    }
+	    else {
+		if ( !dynscroll ) dynscroll = true;
+		lastBoxedObjID = 0;
+	    }
+	    
+	    hilightPart( boxedObj, true );
+	    console.log('dynscroll2', lastBoxedObjID, boxedObj.id );
+	    lastBoxedObjID = boxedObj.id;
 	}
-	console.log('mousedown', boxedObj, dynscroll);
+	else {
+	    if ( !dynscroll ) {
+		dynscroll = true;
+		lastBoxedObjID = 0;
+	    }
+	}
+	if ( !dynscroll ) document.getElementById( 'dynamic' ).classList.add( 'fixed' );
+	else document.getElementById( 'dynamic' ).classList.remove( 'fixed' );
+//	console.log('mousedown', boxedObj, dynscroll);
     }
     const aktEditCoords = () => {
 	console.log('aktEditCoords',aktmesh);
@@ -2353,6 +2398,7 @@ window.onload = ( loadev ) => {
 		    'type' : apa.type,
 		    'pins' : apa.pins,
 		    'display' : apa.display,
+		    'displayheight' : apa.displayheight,
 		    'displaymeasures' : apa.displaymeasures,
 		    'modifications' : {
 			'position' : { 'x' : apa.mesh.position.x, 'y' : apa.mesh.position.y, 'z' : apa.mesh.position.z },
@@ -2373,6 +2419,7 @@ window.onload = ( loadev ) => {
 		    'origdata' : apa.origdata,
 		    'pins' : [],
 		    'display' : apa.display,
+		    'displayheight' : apa.displayheight,
 		    'displaymeasures' : apa.displaymeasures,
 		    'modifications' : {
 			'position' : { 'x' : apa.mesh.position.x, 'y' : apa.mesh.position.y, 'z' : apa.mesh.position.z },

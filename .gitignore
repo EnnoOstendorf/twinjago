@@ -3,6 +3,9 @@
 \#*\#
 .\#*
 
+# certs and keys
+*.pem
+
 # Logs
 logs
 *.log

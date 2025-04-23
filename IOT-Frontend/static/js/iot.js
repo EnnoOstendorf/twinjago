@@ -793,14 +793,14 @@ window.onload = ( loadev ) => {
 	}
 	return shortname;
     };
-    const addDisplaySensor = ( id, mesh, measures ) => {
+    const addDisplaySensor = ( id, mesh, measures, height ) => {
 	const ovl = document.getElementById( 'plgOvl' );
 	const sensdiv = document.createElement( 'div' );
 	sensdiv.id = 'display'+id; sensdiv.classList.add('sensordisplay');
 	ovl.appendChild(sensdiv);
-	Displays.push( { 'id' : id, 'mesh' : mesh, 'measures' : measures, 'dispdom' : sensdiv } );
-//	console.log('addDisplaySensor',broker.devices[id].lastdata[0]);
-	if ( broker.devices[id].lastdata[0] ) aktDisplayById( id, broker.devices[id].lastdata[0] );
+	Displays.push( { 'id' : id, 'mesh' : mesh, 'measures' : measures, 'dispdom' : sensdiv, 'height' : height||0 } );
+	console.log('add Display',id,Displays);
+	return Displays.length-1;
     }
     const addBasicPart = ( basic, meshp, rebuild ) => {
 	// save pins
@@ -828,7 +828,7 @@ window.onload = ( loadev ) => {
 //		    console.log('pinarr',o);
 		}
 	    }
-	    partobj = { 'name' : basic.name, 'type' : 'basic', 'id' : basic.id, 'deviceid': basic.deviceid, 'brokerupmsg': basic.brokerupmsg, 'tooltip' : basic.tooltip, 'mesh': meshp, 'pins' : pinarr, 'display' : basic.display, 'displaymeasures' : basic.displaymeasures };
+	    partobj = { 'name' : basic.name, 'type' : 'basic', 'id' : basic.id, 'deviceid': basic.deviceid, 'brokerupmsg': basic.brokerupmsg, 'tooltip' : basic.tooltip, 'mesh': meshp, 'pins' : pinarr, 'display' : basic.display, 'displayheight' : basic.displayheight||0, 'displaymeasures' : basic.displaymeasures };
 	    parts.push(partobj);
 	
 	    const pl = document.getElementById('partlist');
@@ -845,7 +845,7 @@ window.onload = ( loadev ) => {
 	}
 //	console.log( 'addBasicPart', basic );
 	if ( basic.display ) {
-	    addDisplaySensor( basic.deviceid, meshp, basic.displaymeasures );
+	    addDisplaySensor( basic.deviceid, meshp, basic.displaymeasures, basic.displayheight );
 	};
 	meshp.userData.index = index;
     }
@@ -934,7 +934,7 @@ window.onload = ( loadev ) => {
 	    v.project( camera );
 	    let left = Math.round((v.x+1)*width/2)-DISPWIDTHHALF;
 	    let top = Math.round((-v.y+1)*height/2);
-	    let bottom = height - top + DISPBOTTOMOFFSET;
+	    let bottom = height - top + DISPBOTTOMOFFSET + Displays[i].height;
 	    let hinview=false;
 	    let vinview=false;
 	    if ( left < -30 ) left = -30;
