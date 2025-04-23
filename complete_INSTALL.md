@@ -78,7 +78,7 @@ influx auth create \
   --org ORG_NAME \
   --all-access
 ```
-exchange the USERNAME, PASSWORD, ORG_NAME and BUCKET_Name Vars and
+exchange the USERNAME, PASSWORD, ORG_NAME and BUCKET_Name Vars, save them and
 **note the token in the output (!important!)**
 this is the all-access token used by twinjago
 
@@ -154,30 +154,10 @@ cert_file = /etc/grafana/grafana.crt
 sudo systemctl restart grafana-server
 ```
 
-### initialize using plain auth (no ui interaction needed)
+### we use grafana using plain auth (no ui interaction needed)
 - grafana initially has the admin account with password admin
-- the user and password has to be specified in the .env file
-- if you follow the next steps and change the password, you have to change it in .env also 
-
-### initialize grafana web-frontend [deprecated no need]
-- in your browser navigate to YOUR_DOMAIN:3000, eg: https://twinjago.de:3000
-- login with default username admin, password admin and change password, note the password
-
-### generate grafana user and token  [deprecated no need] 
-- navigate to /org/serviceaccount e.g. https://twinjago.de:3000/org/serviceaccount
-- click Add Service Account  
-- give a name and click on generate Token  
-- copy the token for later use in config
-![screenshot of grafana token dialogue](/grafana-token-scr.png)
-
-### prepare grafana for pipeguy
-grafana needs an influx datasource, you can create one on your own using the ui, than you have to copy the id of that data source into the file grafana-panel.json.
-this process will be part of a setup process in the future. the creation of the datasource can be done by api calls.
-
-you can get the id doing a call to the api
-`` curl http://admin:<ADMINPASSWORD>@localhost:3000/api/datasources``
-
-The file grafana-panel.json contains keys for the influx data source, there the field uid has to be replaced with the uid from the datasources api output. 
+- the user and password has to be specified in the .env file for pipeguy
+- if you use the webinterface and change the admin password, you have to change it in ``.env`` also 
 
 
 ## pipeguy
@@ -196,8 +176,10 @@ PORT=3458
 HTTPSPORT=3459
 INFLUX_URL=http://localhost:8086
 INFLUX_TOKEN=<ADD YOUR INFLUX TOKEN FROM ABOVE>
-INFLUX_ORG=<YOUR_ORG>
-INFLUX_BUCKET=<YOUR_BUCKET>
+INFLUX_ORG=<ADD INFLUX ORG FROM ABOVE>
+INFLUX_USER=<ADD INFLUX USER FROM ABOVE>
+INFLUX_PASS=<ADD INFLUX PASSWORD FROM ABOVE>
+INFLUX_BUCKET=<ADD INFLUX BUCKET FROM ABOVE>
 GRAFANA_USER=admin
 GRAFANA_PASS=<ADMIN_PASSWORD>
 GRAFANA_PROTO=https
@@ -212,6 +194,25 @@ CAFILEPATH=/etc/letsencrypt/live/<YOUR_DOMAIN>/chain.pem
 ```
 exchange the values in <> by that data you gathered through the above process  
 MQTT Server must exist externally
+
+### prepare grafana for pipeguy (automatic)
+grafana needs an influx datasource, which has to be addressed by pipeguy when it generates the dashboards.
+This can be created automatically by using the setup program in this folder.
+
+When influx and grafana are installed, the values in the ``.env`` File are complete and correct, you can execute it by calling
+```
+node setupGrafana.js
+```
+
+### prepare grafana for pipeguy (manual)
+you can create a datasource on your own using the grafana ui, than you have to copy the id of that data source into the file grafana-panel.json, which is used by pipeguy as a template for dashboard creation.
+
+you can get the ids of all datasources in a shell doing a call to the api
+`` curl http://admin:<ADMINPASSWORD>@localhost:3000/api/datasources``
+
+The file ``grafana-panel.json`` contains keys for the influx datasource, there the field ``uid`` has to be replaced with the uid from the datasources api output. The ``datasource`` has at least 2 appearances, maybe more.
+
+
 
 ### run
 after first install, start pipeguy manually to see the status and error messages in the console
@@ -357,3 +358,17 @@ if no errors are shown, stop the demon (``STRG-C``) and restart it in background
 ```
 pm2 start index.js
 ```
+
+
+## Trivia
+
+### initialize grafana web-frontend [deprecated no need]
+- in your browser navigate to YOUR_DOMAIN:3000, eg: https://twinjago.de:3000
+- login with default username admin, password admin and change password, note the password
+
+### generate grafana user and token  [deprecated no need] 
+- navigate to /org/serviceaccount e.g. https://twinjago.de:3000/org/serviceaccount
+- click Add Service Account  
+- give a name and click on generate Token  
+- copy the token for later use in config
+![screenshot of grafana token dialogue](/grafana-token-scr.png)
