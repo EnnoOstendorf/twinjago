@@ -30,24 +30,29 @@ const rawstate = require('./pipestate.json');
 
 console.log('Connect to InfluxDB',process.env.INFLUX_URL);
 
-
+console.log('grafana-panel-json',PANELJSON);
 
 // GRAFANA STUFF
 const GRAFANA_URL = process.env.GRAFANA_URL;
 const GRAFANA_TOKEN = process.env.GRAFANA_TOKEN;
+const GRAFANA_USER = process.env.GRAFANA_USER;
+const GRAFANA_PASS = process.env.GRAFANA_PASS;
+const GRAFANA_PROTO = process.env.GRAFANA_PROTO;
+const GRAFANA_HOST = process.env.GRAFANA_HOST;
+const GRAFANA_PORT = process.env.GRAFANA_PORT;
 //const GRAFANA_URL = 'https://freetwin.de:3000';
 //const GRAFANA_TOKEN = 'glsa_L0Y091GkqFgeEKRCGqICCnd7gVjL6LN6_c2a11d40';
 
 const axios = require('axios');
 
 const sendGrafanaApi = ( met, url, dat, succb, errcb ) => {
+    console.log('Call grafana api',GRAFANA_PROTO + '://' + GRAFANA_USER + ':' + GRAFANA_PASS + '@'+ GRAFANA_HOST + ':' + GRAFANA_PORT +url);
     axios({
 	method: met,
-	url: GRAFANA_URL + url,
+	url: GRAFANA_PROTO + '://' + GRAFANA_USER + ':' + GRAFANA_PASS + '@'+ GRAFANA_HOST + ':' + GRAFANA_PORT +url,
 	headers: {
 	    'Accept': 'application/json', 
-	    'Content-Type': 'application/json', 
-	    'Authorization': 'Bearer '+GRAFANA_TOKEN
+	    'Content-Type': 'application/json'
 	},
 	data: dat
     }).then( ( resp ) => {

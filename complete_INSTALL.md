@@ -27,12 +27,8 @@ sudo apt-get install unzip
 nodejs executes the app  
 https://nodejs.org/en/download
 ```
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash
-\. "$HOME/.nvm/nvm.sh"
-nvm install 23
-node -v # Should print "v23.10.0".
-nvm current # Should print "v23.10.0".
-npm -v # Should print "10.9.2".
+sudo apt install nodejs
+sudo apt install npm
 ```
 
 ### install pm2
@@ -40,6 +36,7 @@ processmanager for node
 https://pm2.keymetrics.io/docs/usage/quick-start/
 ```
 npm install pm2@latest -g
+pm2 startup # make bootstable
 ```
 
 ## influxdb
@@ -146,6 +143,7 @@ enforce_domain = false
 root_url = https://YOUR_DOMAIN:3000
 cert_key = /etc/grafana/grafana.key
 cert_file = /etc/grafana/grafana.crt
+allow_embedding = true
 ```
 
 ### restart grafana
@@ -158,6 +156,12 @@ sudo systemctl restart grafana-server
 - grafana initially has the admin account with password admin
 - the user and password has to be specified in the .env file for pipeguy
 - if you use the webinterface and change the admin password, you have to change it in ``.env`` also 
+
+
+### initialize grafana web-frontend
+for maintenance and checking the grafana web-frontend should be used
+- in your browser navigate to YOUR_DOMAIN:3000, eg: https://twinjago.de:3000
+- login with default username admin, password admin and change password, note the password for use in the ``.env`` file of pipeguy
 
 
 ## pipeguy
@@ -222,6 +226,7 @@ node mqttInfluxGrafanaPipe.js
 it should connect to InfluxDB, connect to the MQTT server and new devices should be detected.
 Upon detection the grafana dashboards should be created.
 
+
 ### run in background
 if no errors are shown, stop the demon (``STRG-C``) and restart it in background using pm2
 ```
@@ -284,6 +289,7 @@ curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | \
 echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
 sudo apt-get update
 sudo apt-get install -y mongodb-org
+sudo systemctl enable mongod # make bootstable
 sudo systemctl start mongod
 sudo systemctl status mongod
 ```
@@ -359,12 +365,24 @@ if no errors are shown, stop the demon (``STRG-C``) and restart it in background
 pm2 start index.js
 ```
 
+### make process config boot stable
+At this point all demons have been started via pm2. Now save this state so that it
+can be restored after system boot
+```
+pm2 save
+```
+
+
+
 
 ## Trivia
 
-### initialize grafana web-frontend [deprecated no need]
-- in your browser navigate to YOUR_DOMAIN:3000, eg: https://twinjago.de:3000
-- login with default username admin, password admin and change password, note the password
+### problems with grafana dashboards in twinjago
+if you encounter errors in the grafana dashboards shown in twinjago, you can check the dashboard in the grafana web-frontend: ``https://twinjago.de:3000``
+- under Dashboards is a list of all dashboards named per device, click on the problematic device
+- you see a panel for each measurement with a graph for the last hour
+- choose ``edit`` in the burger menu of a panel or press ``e`` while hovering over a panel
+- click ``Save dashboard`` in the upper right corner of the screen
 
 ### generate grafana user and token  [deprecated no need] 
 - navigate to /org/serviceaccount e.g. https://twinjago.de:3000/org/serviceaccount
