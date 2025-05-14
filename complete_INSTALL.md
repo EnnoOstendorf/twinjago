@@ -383,6 +383,8 @@ if you encounter errors in the grafana dashboards shown in twinjago, you can che
 - you see a panel for each measurement with a graph for the last hour
 - choose ``edit`` in the burger menu of a panel or press ``e`` while hovering over a panel
 - click ``Save dashboard`` in the upper right corner of the screen
+- after the dashboard has been saved, the grafana panels in twinjago should be fine
+- it is a bug in grafana, that automatically created dashboards have to be saved manually once and we have no workaround for that atm.
 
 ### generate grafana user and token  [deprecated no need] 
 - navigate to /org/serviceaccount e.g. https://twinjago.de:3000/org/serviceaccount
