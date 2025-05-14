@@ -37,7 +37,9 @@ const HEADER_HIDE_AFTER = 20000; // time until header is hidden
 
 const url = 'wss://iot.fh-muenster.de/mqtt'
 
-const WILCOURL = 'https://freetwin.de:3211/';
+const hostname = location.hostname;
+console.log('running twinjago on',hostname);
+const WILCOURL = 'https://'+hostname+':3211/';
 
 const isTouchDevice = () => {
   return (('ontouchstart' in window) ||
@@ -78,7 +80,7 @@ const MSGBUFFERLINES = 4;
 // fetch devices from the pipe service
 let pipedevs = [];
 const loadAllPipedDevices = () => {
-    const url = 'https://freetwin.de:3459/getAll';
+    const url = 'https://'+hostname+':3459/getAll';
     const xhr = new XMLHttpRequest();
     xhr.open('get',url,true);
     xhr.setRequestHeader("Content-Type", "application/json");
@@ -860,8 +862,8 @@ window.onload = ( loadev ) => {
 	if ( !isbasicp ) {
 	    addPart(oname, mesh, fname, deviceid, brokerupmsg, tooltip, data);
 	    mainmesh.add( mesh );
-//	    console.log('adding glb',mainmesh);
 	}
+//	    console.log('adding glb',mesh);
 	return mesh;
     };
 
@@ -998,7 +1000,7 @@ window.onload = ( loadev ) => {
     let rtrans = 0.01;
     const hilightPart = ( obj ) => {
 //	obj.userData.origcol = obj.material.color;
-	obj.material.color.set( '#aaaa00' );
+	obj.material?.color.set( '#aaaa00' );
 	hiobj = obj;
     }
     const hilightBasic = ( obj ) => {
@@ -1056,6 +1058,18 @@ window.onload = ( loadev ) => {
 	    document.getElementById('liveData').classList.remove('show');
 	}
     }
+    const hiDevice = ( ind ) => {
+	if ( parts[ind] ) {
+	    if ( parts[ind].deviceid && parts[ind].deviceid != '' ) {
+		aktdevice = parts[ind].deviceid;
+		aktdevicei = ind;
+	    }
+	    else {
+		aktdevice = '';
+		aktdevicei = -1;
+	    }
+	}
+    }
     const mouseOver3D = ( xp, yp ) => {
 	const raycaster = new THREE.Raycaster();
 	const pointer = new THREE.Vector2();
@@ -1080,7 +1094,7 @@ window.onload = ( loadev ) => {
 //		console.log('intersects',xp,yp,o3);
 		if ( ! o3.userData.type ) {
 		    while ( o3.parent && ! o3.userData.type ) o3 = o3.parent;
-		    o3 = o3.parent;
+//		    o3 = o3.parent;
 		}		
 		if ( !o3 ) return;
 		if ( o3.userData.type ) {
@@ -1088,61 +1102,30 @@ window.onload = ( loadev ) => {
 		    if ( o3.userData.type === 'part' ) {
 			hilightPart( o3 );
 			const ind = o3.userData.index;
-			if ( parts[ind] ) {
-			    if ( parts[ind].deviceid && parts[ind].deviceid != '' ) {
-				aktdevice = parts[ind].deviceid;
-				aktdevicei = ind;
-			    }
-			    else {
-				aktdevice = '';
-				aktdevicei = -1;
-			    }
-			    if ( parts[ind].tooltip && parts[ind].tooltip != '' ) {
-//				showTooltip( xp, yp, parts[ind].tooltip );
-				showTooltip( xp, yp, o3.userData.tooltip );
-			    }
-			    
-			}
+			hiDevice( ind );
+			showTooltip( xp, yp, o3.userData.tooltip );	    
+//			console.log('highlight part', ind)
 		    }
 		    else if ( o3.userData.type === 'basic' ) {
 			const ind = o3.userData.index;
-			if ( parts[ind] && parts[ind].tooltip && parts[ind].tooltip != '' ) {
-			    let label = '<b>'+parts[ind].tooltip+'</b>';
-			    if ( o3.userData.tooltip && o3.userData.tooltip != '' ) {
-				label += '<br/>'+o3.userData.tooltip;
-			    }
-			    if ( parts[ind].deviceid && parts[ind].deviceid != '' ) {
-				aktdevice = parts[ind].deviceid;
-				aktdevicei = ind;
-			    }
-			    else {
-				aktdevice = '';
-				aktdevicei = -1;
-			    }
-			    showTooltip( xp, yp, label );
-			}
+			hiDevice( ind );			
+			showTooltip( xp, yp, o3.userData.tooltip );
 //			console.log('highlight basic', ind)
 		    }
 		    else if ( o3.userData.type === 'basicpart' || o3.userData.type === 'basicsign' ) {
 			const ind = o3.parent.userData.index;
 //			console.log('highlight basicpart', o3)
 			if ( o3.userData.type === 'basicpart' ) hilightPart( o3 );
+			hiDevice( ind );			
 
-			if ( parts[ind] && parts[ind].deviceid && parts[ind].deviceid != '' ) {
-			    aktdevice = parts[ind].deviceid;
-			    aktdevicei = ind;
-			}
-			else {
-			    aktdevice = '';
-			    aktdevicei = -1;
-			}
-			if ( parts[ind] && parts[ind].tooltip && parts[ind].tooltip != '' ) {
+			if ( parts[ind] ) {
 			    let label = '<b>'+parts[ind].tooltip+'</b>';
 			    if ( o3.userData.tooltip && o3.userData.tooltip != '' ) {
 				label += '<br/>'+o3.userData.tooltip;
 			    }
 			    showTooltip( xp, yp, label );
 			}
+//			console.log('highlight basicpart', ind)
 
 		    }
 		    else {
@@ -1291,7 +1274,7 @@ window.onload = ( loadev ) => {
     const renderDevice = ( devdata, isbasic ) => {
 	let target;
 	if ( isbasic ) target = new THREE.Object3D();
-//	console.log('render device', devdata, isbasic, target);
+	console.log('render device', devdata, isbasic, target);
 	if ( !isbasic ) {
 	    document.getElementById('deviceName').innerHTML = devdata.name;
 	    document.querySelector('#dbID span').innerHTML = devdata._id;
@@ -1979,7 +1962,7 @@ window.onload = ( loadev ) => {
 	if ( !grdata ) return;
 	//	const grurl = grdata.grafana.url;
 	const grurl = '/public-dashboards/'+grdata.grafana.pubtoken;
-	lvdom.insertAdjacentHTML( 'beforeend', '<iframe width="100%" height="350" src="https://freetwin.de:3000'+grurl+'?kiosk" id="'+grid+'" />' );
+	lvdom.insertAdjacentHTML( 'beforeend', '<iframe width="100%" height="350" src="https://'+hostname+':3000'+grurl+'?kiosk" id="'+grid+'" />' );
 //	lvdom.appendChild(grdom);
 //	return grdom;
 //	console.log('renderGrafana',aktdevice,grdata);

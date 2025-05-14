@@ -12,8 +12,9 @@ let HTMLready = false;
 let controls;
 const Displays = [];
 const DISPWIDTH = 120;
+const hostname = location.hostname;
 
-const DUMMYSENDERURL = 'https://freetwin.de:3457/Dummy_Sender.html';
+const DUMMYSENDERURL = 'https://'+hostname+':3457/Dummy_Sender.html';
 
 const url = 'wss://iot.fh-muenster.de/mqtt'
 
@@ -292,6 +293,7 @@ window.onload = ( loadev ) => {
     let signmesh=new THREE.Group();
     signmesh.userData.id="signs";
     let hlp = null;
+    let edithlp = null;
     let axishelp = new THREE.AxesHelper( 6 );
     mainmesh.add( axishelp );
     mainmesh.add( routemesh );
@@ -317,8 +319,8 @@ window.onload = ( loadev ) => {
 	return target;
     }
     const showEditDlg = ( mode ) => {
-	hlp = new THREE.BoxHelper(aktmesh, 0x00ffff);
-	scene.add(hlp);
+	edithlp = new THREE.BoxHelper(aktmesh, 0x00ffff);
+	scene.add(edithlp);
 	const edtDlg = document.getElementById('editDlg');
 	const box = document.getElementById('partsinner');
 	document.body.classList.add('modalmode');
@@ -1593,6 +1595,7 @@ window.onload = ( loadev ) => {
 	playground.classList.remove('boxed');
     }
     const hilightPart = ( obj, overwrite ) => {
+	if ( editmode ) return;
 	const ind = obj.userData.index;
 	const type = obj.userData.type;
 	let part = document.getElementById('part'+ind);
@@ -3479,8 +3482,11 @@ window.onload = ( loadev ) => {
 	    restoreBackup(aktmesh);
 	    const dlgdom = document.getElementById('editDlg');
 	    dlgdom.className = '';
-	    
-	    unBox();
+	    if ( edithlp ) {
+		edithlp.geometry.dispose();
+		edithlp.material.dispose();
+		scene.remove( edithlp );
+	    };
 	    ev.preventDefault();
 	};
 	document.getElementById('pinCancel').onclick = ( ev ) => {
@@ -3498,10 +3504,10 @@ window.onload = ( loadev ) => {
 	};
 	document.getElementById('editConfirm').onclick = ( ev ) => {
 	    editmode = false;
-	    if ( hlp ) {
-		hlp.geometry.dispose();
-		hlp.material.dispose();
-		scene.remove( hlp );
+	    if ( edithlp ) {
+		edithlp.geometry.dispose();
+		edithlp.material.dispose();
+		scene.remove( edithlp );
 	    };
 	    document.getElementById('editDlg').className = '';
 	    document.body.classList.remove('modalmode');
