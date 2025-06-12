@@ -22,12 +22,15 @@
     </head>
     <body>
       <header>
-	<div id="logo">
-	  <img src="imgs/logo.png" />
-	</div>
-	<div id="nav">
-	  <div id="navleft"></div>	    
-	  <div id="navright"></div>	    
+	<div id="hdrCnt">
+	  <div id="logo">
+	    <img src="imgs/logo.png" />
+	    <h1>Twinjago Editor</h1>
+	  </div>
+	  <div id="nav">
+	    <div id="navleft"></div>	    
+	    <div id="navright"></div>	    
+	  </div>
 	</div>
 	<div class="modalovl"></div>
       </header>
@@ -41,6 +44,10 @@
 	
 	<ol>		
 	</ol>
+	  <div class="globalCtrl">
+	    <button id="iotManagerBtn">IOT Manager</button>
+	    <button id="globalSettings" title="globale Einstellungen">globale Einstellungen</button>
+	  </div>
 	<div class="modalovl"></div>
       </div>
       <div id="deviceStage" class="deviceStage">
@@ -70,10 +77,6 @@
 	    <button id="dupDeviceBtn">clone</button>
 	    <button id="exportLink">export</button>
 	    <div class="modalovl"></div>
-	  </div>
-	  <div class="globalCtrl">
-	    <button id="dummySender">dummy Sender</button>
-	    <button id="globalSettings">globale Einstellungen</button>
 	  </div>
 	</div>
 	<div id="parts"><h2>Bauteile</h2>
@@ -263,12 +266,33 @@
 	<button id="globalCancel">Abbrechen</button>
 	<button id="globalConfirm">Setzen</button>
       </div>
+      <div id="iotManagerCont">
+	<h3>IOT-Devices</h3>
+	<!--div id="iotMngrTabs">
+	  <div id="iotMngrTabBroker" class="active">Broker</div>
+	  <div id="iotMngrTabPipeguy">Pipeguy</div>
+	</div-->
+	<div id="iotMngrList" class="active">
+	</div>
+	<!--div id="iotMngrListPipeguy">
+	</div-->
+	<button id="iotManagerClose">X</button>
+	<div id="aktintervalbox">
+	  Aktualisierungsintervall:
+	  <select id="aktintervalsel" autocomplete="off">
+	    <option value="1000">sekündlich</option>
+	    <option value="60000" selected="selected">minütlich</option>
+	    <option value="900000">15-minütlich</option>
+	    <option value="-1">nie</option>
+	  </select>
+	</div>
+	<button id="dummySender">dummy Sender</button>
+      </div>
       <div id="dummySenderCont">
 	<div id="dummySenderBox">
 	</div>
 	<button id="dummySenderClose">X</button>
       </div>
-      
       <div id="serverstats">
 	<div id="mqtttask" class="task"><span>MQTT <b></b></span></div>
 	<div id="influximport" class="task"><span>-&gt;influx <b></b></span></div>

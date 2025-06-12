@@ -24,11 +24,60 @@ body {
     display:block;
 }
 /* FH-Header */
+header {
+	position: absolute;
+	background: #fff;
+	z-index: 2;
+	width: 100%;
+	border-bottom:1px dotted #000;
+	box-shadow:0 0 5px #000;
+}
+header h1 {
+	display: inline-block;
+	margin: 10px 40px;
+	padding: 0 0 0 40px;
+	border-left: 1px dotted #000;
+	font-size: 36px;
+	line-height: 36px;
+}
+#hdrCnt {
+	overflow: hidden;
+	height: 142px;
+	transition: height 0.5s ease-in-out;
+}
+header.hidden #hdrCnt {
+    height:0px;
+}
+header::before {
+	content: 'V';
+	position: absolute;
+	bottom: -21px;
+	width: 20px;
+	height: 20px;
+	left: calc(50% - 10px);
+	background: rgba(0,0,0,0.2);
+	box-shadow: 0 0 3px #fff;
+	border-radius: 0 0 8px 8px;
+	font-size: 16px;
+	text-align: center;
+	color: rgba(255,255,255,0.9);
+	line-height: 23px;
+	border-top: 1px dotted #000;
+	opacity: 1;
+	transition:opacity 0.2s ease-in-out;
+}
+header:hover::before {
+    content: '^';
+    background: rgba(0,0,0,0.5);
+    border-top: 1px dotted #fff;
+    opacity:0;
+}
 #logo {
 	padding: 20px;
 }
 #logo img {
-	height: 50px;
+    height: 50px;
+    vertical-align:top;
 }
 #nav {
 	height: 46px;
@@ -60,6 +109,8 @@ body {
 	background: #e5e5cc;
 	padding: 10px;
 	border-radius: 20px;
+	position: relative;
+	margin: 30px 0;
 }
 #deviceNavi ul, #deviceNavi ol {
 	margin: 10px 0 20px;
@@ -93,7 +144,7 @@ body {
 	display: none;
 }
 .deviceStage {
-	margin: 0 1%;
+	margin: 40px 1% 0;
 	float: left;
 	width: 79%;
 	position: absolute;
@@ -275,17 +326,20 @@ input.error {
 }
 .globalCtrl {
 	position: absolute;
-	/* top: 0; */
-	/* left: 46%; */
-	bottom: -100px;
-	right: 0;
+	bottom: 10px;
+	left: 10px;
 }
-#globalSettings,#dummySender {
+#globalSettings,#dummySender, #iotManagerBtn {
 	font-size: 16px;
 	padding: 5px 20px;
 	cursor: pointer;
-	display: block;
+	display: inline-block;
 	margin: 5px 0;
+}
+#globalSettings {
+	background: url(../imgs/globoptions.png) 7px/27px no-repeat #eee;
+	text-indent: -2000px;
+	width: 40px;
 }
 #deviceNavi > h2 {
 	position: relative;
@@ -1297,8 +1351,8 @@ input.error {
 #serverstats {
 	position: absolute;
 	width: 173px;
-	top: 10px;
-	right: 10px;
+	bottom: 10px;
+	left: 10px;
 	border: 1px solid #000;
 	border-radius: 20px;
 	box-shadow: 0 0 5px;
@@ -1331,7 +1385,7 @@ input.error {
 }
 
 
-#globalConf,#dummySenderCont {
+#globalConf,#dummySenderCont,#iotManagerCont {
 	position: fixed;
 	width: 60%;
 	background: rgba(255,255,255,0.95);
@@ -1346,15 +1400,16 @@ input.error {
 	border: 1px solid #888;
 	box-shadow: 0 0 10px;
 	display: none;
+	z-index:2;
 }
-#globalConf.show,#dummySenderCont.show {
+#globalConf.show,#dummySenderCont.show,#iotManagerCont.show {
     display:block;
 }
-#globalConf h3,#dummySenderCont h3 {
+#globalConf h3,#dummySenderCont h3,#iotManagerCont h3 {
 	margin: 20px;
 	font-size: 24px;
 }
-#dummySenderCont {
+#dummySenderCont,#iotManagerCont {
 	width: 90%;
 	height: 90%;
 	overflow: visible;
@@ -1370,7 +1425,7 @@ input.error {
 	width: 100%;
 	height: 100%;
 }
-#dummySenderClose {
+#dummySenderClose,#iotManagerClose,.clsBtn {
 	position: absolute;
 	left: -10px;
 	top: -10px;
@@ -1383,7 +1438,132 @@ input.error {
 	transition: all 0.2s ease-in-out;
 	cursor: pointer;
 }
-#dummySenderClose:hover {
+#iotMngrTabs {
+	position: absolute;
+	left: 40px;
+	top: 40px;
+}
+#iotMngrTabs > div {
+	display: inline-block;
+	font-size: 18px;
+	font-weight: bold;
+	padding: 5px 10px 1px;
+	background: #ccc;
+	opacity: 0.5;
+	transition: opacity 0.2s ease-in-out;
+}
+#iotMngrTabs > div.active, #iotMngrTabs > div:hover {
+	opacity: 1;
+	cursor: pointer;
+}
+#iotMngrTabs > div.active {
+	cursor: default;
+}
+
+#iotMngrList, #iotMngrListPipeguy {
+	overflow: auto;
+	height: 80%;
+	position: absolute;
+	opacity: 0;
+	transition: opacity 0.2s ease-in-out;
+	width: 100%
+}
+#iotMngrList.active, #iotMngrListPipeguy.active {
+	opacity: 1;
+}
+
+#dummySender {
+	position: absolute;
+	top: 2%;
+	right: 40px;
+}
+#aktintervalbox {
+	position: absolute;
+	bottom: 3%;
+	right: 40px;
+}
+.iotMngrDev {
+	text-align: left;
+	margin: 5px 40px;
+	background: #eee;
+	width: calc(100% - 80px);
+	position:relative;
+}
+.iotMngrDev.passthru {
+	background: #fff;
+	color:#666;
+}
+.iotMngrDev:hover {
+	background: #e0e0e0;
+}
+.iotMngrDev.passthru,.iotMngrDev.passthru:hover {
+	background: #fff;
+	color:#666;
+}
+.iotMngrDev a {
+	position: absolute;
+	right: 200px;
+	top: 13px;
+}
+.iotMngrDev h4 {
+	display: inline-block;
+	font-size: 16px;
+	margin: 10px;
+}
+.iotMngrDev i {
+	color: #eee;
+	background: #111;
+	padding: 5px;
+	margin: 0 10px;
+}
+.iotMngrDev.passthru i {
+	color: #eee;
+	background: #666;
+}
+.iotdevremovebtn, .iotdevpassbtn, .iotdevviewbtn {
+	margin: 10px 20px;
+	/* float: right; */
+	cursor: pointer;
+	background: url(../imgs/reinitdash.png) 9px/36px no-repeat #fff;
+	width: 60px;
+	height: 40px;
+	text-indent: -20000px;
+	position: absolute;
+	right: -5px;
+	top: -10px;
+	transition: all 0.2s ease-in-out;
+}
+.iotdevremovebtn:hover,.iotdevviewbtn:hover,.iotdevpassbtn:hover,.iotdevpassbtn.active {
+	background-size: 50px;
+	background-position: 3px;
+}
+.iotdevviewbtn {
+	right: 60px;
+	background-image: url(../imgs/viewdash.png);
+}
+.iotdevpassbtn {
+	right: 120px;
+	background: url(../imgs/nodash.png) 9px/40px no-repeat transparent;
+	opacity: 0.5;
+}
+.iotdevpassbtn:hover,.iotdevpassbtn.active {
+    opacity:1;
+}
+.showdash {
+	width: 30%;
+	height: 70%;
+	position: absolute;
+	top: 15%;
+	left: 35%;
+	z-index: 2;
+}
+.showdash iframe {
+	width: 100%;
+	height: 100%;
+}
+.showdash .clsBtn:hover {
+}
+#dummySenderClose:hover,#iotManagerClose:hover,.clsBtn:hover {
     background: #fff;
     color: #000;
 }

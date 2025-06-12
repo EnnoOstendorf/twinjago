@@ -30,7 +30,7 @@ const rawstate = require('./pipestate.json');
 
 console.log('Connect to InfluxDB',process.env.INFLUX_URL);
 
-console.log('grafana-panel-json',PANELJSON);
+
 
 // GRAFANA STUFF
 const GRAFANA_URL = process.env.GRAFANA_URL;
@@ -46,7 +46,6 @@ const GRAFANA_PORT = process.env.GRAFANA_PORT;
 const axios = require('axios');
 
 const sendGrafanaApi = ( met, url, dat, succb, errcb ) => {
-    console.log('Call grafana api',GRAFANA_PROTO + '://' + GRAFANA_USER + ':' + GRAFANA_PASS + '@'+ GRAFANA_HOST + ':' + GRAFANA_PORT +url);
     axios({
 	method: met,
 	url: GRAFANA_PROTO + '://' + GRAFANA_USER + ':' + GRAFANA_PASS + '@'+ GRAFANA_HOST + ':' + GRAFANA_PORT +url,
@@ -137,7 +136,7 @@ const prepareState = () => {
 prepareState();
 
 const createGrafanaDash = ( id, msg ) => {
-    let dashjson = JSON.parse(JSON.stringify(DASHJSON));;
+    let dashjson = JSON.parse(JSON.stringify(DASHJSON));
     dashjson.title = id;
     for ( let i=0; i<msg.payloadStructure.length; i++ ) {
 	const o = msg.payloadStructure[i];
@@ -165,15 +164,23 @@ const createGrafanaDash = ( id, msg ) => {
 //    console.log('create Grafana Dashboard', id, msg, dashjson)
 }
 
+const deleteGrafanaDash = ( id ) => {
+    const dev = devices[id];
+    const uid = dev.grafana.id;
+    sendGrafanaApi( 'delete', '/api/dashboards/uid/'+uid, ( response ) => {
+	console.log('deleted grafana dashboard',id,uid);
+    }, ( response ) => { console.log('deleted grafana dashboard',id,uid) });
+}
+
 const publishDashboard = ( id, uid ) => {
-    console.log('publish Dashboard',id,uid);
+//    console.log('publish Dashboard',id,uid);
     sendGrafanaApi( 'post', '/api/dashboards/uid/'+uid+'/public-dashboards/', { "isEnabled" : true }, (response) => {
 	devices[id].grafana.pubuid = response.data.uid;
 	devices[id].grafana.pubdbuid = response.data.dashboardUid;
 	devices[id].grafana.pubtoken = response.data.accessToken;
 	saveState();
 
-	console.log('success',response.data,devices[id].grafana);
+	console.log('published',id);
     }, (err2) => {
 	console.log('error2',err2.response.data);
     });
@@ -189,6 +196,7 @@ const parseMessage = ( id, msg ) => {
     }
     if ( type === 'meta' ) {
 //	console.log('meta',id,msg);
+	if ( devices[id].ignore ) return;
 	devices[id].meta = msg;
 
 	if ( !devices[id].grafana ) {
@@ -199,6 +207,7 @@ const parseMessage = ( id, msg ) => {
 	}
     }
     else if ( type === 'sensor' ) {
+	if ( devices[id].ignore ) return;
 	devices[id].datacount++;
 	if ( !devices[id].meta || !devices[id].meta.payloadStructure ) {
 	    // Devices wich do net send a payload Structure on the meta channel could not be handled atm
@@ -215,6 +224,7 @@ const parseMessage = ( id, msg ) => {
 	};
     }
     else if ( type === 'beacon' ) {
+	if ( devices[id].ignore ) return;
 	devices[id].beaconcount++;
 //	console.log('beacon',msg);
     }
@@ -307,6 +317,7 @@ app.get('/delete/:id', (req, res) => {
     for ( let i=0; i<deviceids.length; i++ ) {
 	const key = deviceids[i];
 	if ( key === delid ) {
+	    deleteGrafanaDash( key );
 	    deviceids.splice(i,1);
 	    delete devices[key];
 	    saveState();
@@ -316,6 +327,46 @@ app.get('/delete/:id', (req, res) => {
     };
 
     res.json({ 'delete' : req.params.id });
+});
+
+app.get('/ignore/:id', (req, res) => {
+    console.log('ignore:',req.params.id);
+    const ignid=req.params.id;
+    for ( let i=0; i<deviceids.length; i++ ) {
+	const key = deviceids[i];
+	if ( key === ignid ) {
+	    const o=devices[key];
+	    if ( o.ignore ) return;
+	    if ( o.grafana ) {
+		deleteGrafanaDash( key );
+		delete o.grafana;
+	    }
+	    o.ignore=true;
+	    saveState();
+//	    console.log('found',i,deviceids,devices);
+	    break;
+	}
+    };
+
+    res.json({ 'ignore' : req.params.id });
+});
+
+app.get('/deignore/:id', (req, res) => {
+    console.log('deignore:',req.params.id);
+    const ignid=req.params.id;
+    for ( let i=0; i<deviceids.length; i++ ) {
+	const key = deviceids[i];
+	if ( key === ignid ) {
+	    const o=devices[key];
+	    o.ignore=false;
+	    delete o.ignore;
+	    saveState();
+//	    console.log('found',i,deviceids,devices);
+	    break;
+	}
+    };
+
+    res.json({ 'deignore' : req.params.id });
 });
 
 // Starting both http & https servers

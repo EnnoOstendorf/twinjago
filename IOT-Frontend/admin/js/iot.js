@@ -104,6 +104,7 @@ const parseMessage = ( idp, msg ) => {
 	broker.devices[id].meta = msg;
     }
     else if ( type === 'sensor' ) {
+	if ( isNaN( broker.devices[id].datacount ) ) broker.devices[id].datacount = 0;
 	broker.devices[id].datacount++;
 	let message = '';
 	if ( !broker.devices[id].meta || !broker.devices[id].meta.payloadStructure ) {
@@ -134,6 +135,7 @@ const parseMessage = ( idp, msg ) => {
 	}
     }
     else if ( type === 'beacon' ) {
+	if ( isNaN( broker.devices[id].beaconcount ) ) broker.devices[id].beaconcount = 0;
 	broker.devices[id].beaconcount++;
 //	console.log('beacon',msg);
     }
@@ -178,6 +180,88 @@ const genControls = ( camera, renderer ) => {
     controls.saveState();
     controls.keys = [ 65, 83, 68 ];
     console.log('generate controls',controls);
+}
+
+// fetch devices from the pipe service
+let pipedevs = [];
+const loadAllPipedDevices = ( succ ) => {
+    const url = 'https://'+hostname+':3459/getAll';
+    const xhr = new XMLHttpRequest();
+    xhr.open('get',url,true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onreadystatechange = function () {
+	if (xhr.readyState === 4 && xhr.status === 200) {
+	    var json = JSON.parse(xhr.responseText);
+	    pipedevs=json;
+	    document.getElementById( 'influximport' ).classList.add('ready');
+	    for ( let i=0; i<json.length; i++ ) {
+		const o = json[i];
+		const tid = o.id;
+		const ld = o.data.lastdata;
+//		console.log('piped device',tid,ld);
+		if ( ! broker.devices[tid] ) broker.devices[tid] = { 'lastdata' : [] };
+		if ( o.data.ignore ) broker.devices[tid].ignore = true;
+		else {
+		    broker.devices[tid].ignore = false;
+		    delete broker.devices[tid].ignore;
+		}
+		if ( ld ) {
+		    for ( let j=0; j<ld.length; j++ ) {
+			broker.devices[tid].lastdata.push( ld[j] );
+		    }
+		}
+		if ( o.data.grafana ) broker.devices[tid].grafanaurl = o.data.grafana.pubtoken;
+		else if ( broker.devices[tid].grafanaurl ) delete broker.devices[tid].grafanaurl;
+	    }
+	    if ( typeof succ === 'function' ) succ();
+	    console.log('loaded all piped devices', pipedevs );
+	}
+    };
+    xhr.send();
+}
+
+loadAllPipedDevices();
+
+const pipeGuyDelete = ( id, succ ) => {
+    const url = 'https://'+hostname+':3459/delete/'+id;
+    const xhr = new XMLHttpRequest();
+    xhr.open('get',url,true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onreadystatechange = function () {
+	if (xhr.readyState === 4 && xhr.status === 200) {
+	    if ( typeof succ === 'function' ) succ();
+	    console.log('deleted pipeguy device', id );
+	}
+    };
+    xhr.send();
+}
+
+const pipeGuyIgnore = ( id, succ ) => {
+    const url = 'https://'+hostname+':3459/ignore/'+id;
+    const xhr = new XMLHttpRequest();
+    xhr.open('get',url,true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onreadystatechange = function () {
+	if (xhr.readyState === 4 && xhr.status === 200) {
+	    if ( typeof succ === 'function' ) succ();
+	    console.log('pipeguy device ignore', id );
+	}
+    };
+    xhr.send();
+}
+
+const pipeGuyDeIgnore = ( id, succ ) => {
+    const url = 'https://'+hostname+':3459/deignore/'+id;
+    const xhr = new XMLHttpRequest();
+    xhr.open('get',url,true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onreadystatechange = function () {
+	if (xhr.readyState === 4 && xhr.status === 200) {
+	    if ( typeof succ === 'function' ) succ();
+	    console.log('pipeguy device deignore', id );
+	}
+    };
+    xhr.send();
 }
 
 window.onload = ( loadev ) => {
@@ -239,6 +323,7 @@ window.onload = ( loadev ) => {
     let hiobj = null;
     let loadopencount = 0;
     let loadclosefuncs = [];
+    let iotmanagerto = null;
     
     scene.background = new THREE.Color( '#000000' );
 
@@ -406,6 +491,157 @@ window.onload = ( loadev ) => {
 	const dumDlg = document.getElementById('dummySenderCont');
 	document.body.classList.remove('modalmode');	
 	dumDlg.classList.remove('show');
+	// const dumBox = document.getElementById('dummySenderBox');
+	// dumBox.replaceChildren();
+	//	console.log( 'clicked dokumente button' );
+    }
+    let iotmngrstopmode = false;
+    let iotmngraktint = 60000;
+    const intvalsel = document.getElementById( 'aktintervalsel' );
+    const resetIOTDevice = ( id ) => {
+	pipeGuyDelete( id, () => {
+	    loadAllPipedDevices( () => {
+//		fillIOTManager( document.getElementById('iotManagerCont') );
+	    });
+	});
+	console.log( 'resetIOTDevice', id );
+    }
+    const refreshIOTManager = () => {
+	window.clearTimeout( iotmanagerto );
+	fillIOTManager( document.getElementById('iotManagerCont') );
+    }
+    const fillIOTManager = ( box ) => {
+	if ( ! box.classList.contains('show') ) return;
+	const listbox = document.getElementById('iotMngrList');
+	const addLine = ( id, o ) => {
+//	    console.log('addLine',id,o);
+	    const line = document.createElement('div');
+	    line.classList.add('iotMngrDev');
+	    line.innerHTML = '<h4>'+id+'</h4> ( '+(o.datacount?o.datacount:0)+' / '
+		+(o.beaconcount?o.beaconcount:0)+ ')'+
+		(o.lastdata&&o.lastdata[0]?' <i>'+o.lastdata[0]+'</i>':'')+
+		'<a href="https://'+hostname+':3211/?filter='+id+'" target="_blank">Archiv</a>';
+	    const passBtn = document.createElement( 'div' );
+	    passBtn.classList.add('iotdevpassbtn');
+	    if ( o.ignore ) {
+		passBtn.classList.add('active');
+		line.classList.add('passthru');
+	    }
+	    passBtn.title='Ignorieren: Es werden keine Daten für dieses Devices gespeichert und kein Dashboard angelegt.';
+	    passBtn.onclick = () => {
+		if ( passBtn.classList.contains( 'active' ) )
+		{
+		    pipeGuyDeIgnore( id, () => {
+			window.setTimeout( () => {
+			    loadAllPipedDevices( () => {
+				refreshIOTManager();
+			    });
+			}, 5000 );
+			passBtn.classList.remove('active');
+			passBtn.parentNode.classList.remove('passthru');
+		    });
+		}
+		else {
+		    pipeGuyIgnore( id, () => {
+			window.setTimeout( () => {
+			    loadAllPipedDevices( () => {
+				refreshIOTManager();
+			    });
+			}, 5000 );
+			passBtn.classList.add('active');
+			passBtn.parentNode.classList.add('passthru');
+		    });
+		}
+	    }
+	    line.appendChild( passBtn );
+	    if ( ! o.ignore ) {
+		if ( o.grafanaurl ) {
+		    const viewBtn = document.createElement( 'button' );
+		    viewBtn.classList.add('iotdevviewbtn');
+		    viewBtn.title='Dashboard ansehen.';
+		    viewBtn.innerHTML='Dashboard ansehen';
+		    viewBtn.onclick = () => {
+			console.log('view dash',o.grafanaurl);
+			showIOTDeviceDash( id, o.grafanaurl );
+		    }
+		    line.appendChild( viewBtn );
+		}
+		
+		const resetBtn = document.createElement( 'button' );
+		resetBtn.classList.add('iotdevremovebtn');
+		resetBtn.title='Dashboard zurücksetzen: Das Dashboard des Devices wird gelöscht. Sobald das Device wieder etwas sendet, wird ein neues Dashboard angelegt.';
+		resetBtn.innerHTML='Dashboard zurücksetzen';
+		resetBtn.onclick = () => {
+		    resetIOTDevice( id );
+		}
+		line.appendChild( resetBtn );
+	    }
+
+	    listbox.appendChild( line );
+	}
+	if ( ! iotmngrstopmode ) {
+	    listbox.replaceChildren();
+	    const keysarr = Object.keys(broker.devices);	
+	    console.log('fillIOTManager');
+	    for ( let i=0; i<keysarr.length; i++ ) {
+		const k = keysarr[i];
+		const o = broker.devices[k];
+//		console.log('iot manager dev',i,o);
+		addLine( k, o );
+	    };
+	};
+	iotmanagerto = window.setTimeout( () => { fillIOTManager( box ) }, iotmngraktint );
+    }
+    intvalsel.onchange = ( ev ) => {
+	const val = parseInt(ev.target.value);
+	if ( val && !isNaN(val) && val != -1 ) {
+	    iotmngraktint = val;
+	    iotmngrstopmode = false;
+	    window.clearTimeout( iotmanagerto );
+	    fillIOTManager( document.getElementById('iotManagerCont') );
+	}
+	else {
+	    iotmngraktint = 10000;
+	    iotmngrstopmode = true;
+	}
+	console.log( 'intvalselchange', ev.target.value );
+    }
+    
+    const showIOTDeviceDash = ( id, url ) => {
+	document.body.classList.add('modalmode');	
+	const dashdlg = document.createElement( 'div' );
+	dashdlg.id="ShowDashboard";
+	dashdlg.classList.add('showdash');
+	const grurl = '/public-dashboards/'+url;
+	dashdlg.innerHTML = '<iframe src="https://'+hostname+':3000'+grurl+'?kiosk"></iframe>';
+	const cls = document.createElement( 'span' );
+	cls.classList.add('clsBtn');
+	cls.innerHTML = 'X';
+	cls.onclick = ( ev ) => {
+	    cls.replaceChildren();
+	    dashdlg.replaceChildren();
+	    dashdlg.remove();
+	}
+	dashdlg.appendChild( cls );
+	document.body.appendChild(dashdlg);
+    }
+    const showIOTManagerDlg = () => {
+	const dumDlg = document.getElementById('iotManagerCont');
+	document.body.classList.add('modalmode');	
+	dumDlg.classList.add('show');
+	loadAllPipedDevices( () => {
+	    fillIOTManager( dumDlg );
+	});
+
+	//	const mngrBox = document.getElementById('dummySenderBox');
+	
+//	console.log( 'clicked dokumente button' );
+    }
+    const hideIOTManagerDlg = () => {
+	const dumDlg = document.getElementById('iotManagerCont');
+	document.body.classList.remove('modalmode');	
+	dumDlg.classList.remove('show');
+	window.clearTimeout( iotmanagerto );
 	// const dumBox = document.getElementById('dummySenderBox');
 	// dumBox.replaceChildren();
 	//	console.log( 'clicked dokumente button' );
@@ -1565,6 +1801,7 @@ window.onload = ( loadev ) => {
     let lastBoxedObjID = 0;   
 
     const Jump = ( part, overwrite ) => {
+	if ( !part ) return;
 	if ( dynscroll || overwrite ) {
 	    const cont = part.parentNode;
 	    cont.scrollTo({
@@ -2837,6 +3074,28 @@ window.onload = ( loadev ) => {
 	document.getElementById( 'dummySenderClose').onclick = ( ev ) => {
 	    hideDummySenderDlg();
 	};
+	document.getElementById( 'iotManagerBtn').onclick = ( ev ) => {
+	    showIOTManagerDlg();
+	};
+	// document.getElementById( 'iotMngrTabBroker').onclick = ( ev ) => {
+	//     if ( ev.target.classList.contains( 'active' ) ) return;
+	//     ev.target.parentNode.parentNode.querySelectorAll( '.active' ).forEach( ( o, i ) => {
+	// 	o.classList.remove('active');
+	//     });
+	//     ev.target.classList.add('active');
+	//     document.getElementById('iotMngrList').classList.add('active');
+	// };
+	// document.getElementById( 'iotMngrTabPipeguy').onclick = ( ev ) => {
+	//     if ( ev.target.classList.contains( 'active' ) ) return;
+	//     ev.target.parentNode.parentNode.querySelectorAll( '.active' ).forEach( ( o, i ) => {
+	// 	o.classList.remove('active');
+	//     });
+	//     ev.target.classList.add('active');
+	//     document.getElementById('iotMngrListPipeguy').classList.add('active');
+	// };
+	document.getElementById( 'iotManagerClose').onclick = ( ev ) => {
+	    hideIOTManagerDlg();
+	};
 	document.getElementById( 'newgroup').onclick = ( ev ) => {
 	    if ( ev.target.classList.contains('disabled') ) return;
 	    const basics = getBasics();
@@ -2913,7 +3172,7 @@ window.onload = ( loadev ) => {
     const fillDisplayMeasures = ( dspBox, part, prefill ) => {
 	const dispmsrdiv = dspBox.querySelector('.dispsensmsr');
 	const id = dspBox.querySelector('.deviceID').value;
-	if ( !broker.devices[id] ) return;
+	if ( !broker.devices[id] || !broker.devices[id].meta ) return;
 	dispmsrdiv.replaceChildren();
 	const msrs = broker.devices[id].meta.payloadStructure;
 	for ( let i=0; i<msrs.length; i++ ) {
@@ -3688,5 +3947,20 @@ window.onload = ( loadev ) => {
 	}
     }
     initEditEvents();
+
+    // FH-Header
+    const fhheader = document.querySelector('header');
+    fhheader.onmouseenter = () => {
+	console.log('enter fhheader');
+	fhheader.classList.remove('hidden');
+    }
+    fhheader.onmouseleave = () => {
+	console.log('leave fhheader');
+	fhheader.classList.add('hidden');
+    }
+    window.setTimeout( () => {
+	fhheader.classList.add('hidden');
+    }, 2000 );
+
     HTMLready = true;
 };
