@@ -27,3 +27,5 @@ A doc describing installation of each part and a dockerfile for running all on o
 We have gathered all the bash stuff into a [complete Install Howto](complete_INSTALL.md).
 You just need the MQTT-Broker credentials, which is not part of twinjago.
 
+## Roadmap
+[Roadmap](Roadmap.md)
