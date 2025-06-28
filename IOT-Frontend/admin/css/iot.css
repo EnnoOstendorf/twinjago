@@ -594,6 +594,20 @@ input.error {
     max-height:140px;
     z-index:100;
 }
+.display {
+	width: 48%;
+	display: inline-block;
+}
+.sensor3D {
+	width: 48%;
+	display: inline-block;
+}
+.sensor3D b {
+	width: auto;
+}
+.sensor3D input.sensor3Dcontrol {
+	width: auto;
+}
 
 .tooltip {
 	margin: 10px 0;

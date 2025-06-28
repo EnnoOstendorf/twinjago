@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { ArcballControls } from 'three/addons/controls/ArcballControls.js';
+import { TWEEN } from 'three/addons/libs/tween.module.min.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 console.log('Welcome to the IOT-System-Frontend of FH Münster', location.search.substr(1).split('='));
@@ -89,7 +90,78 @@ const aktDisplay = ( display, msg ) => {
     };
 }
 
+const attachSensor3D = ( id, mesh ) => {
+    if ( ! broker.devices[id] ) {
+	broker.devices[id] = { 'meta' : '', 'datacount' : 0, 'beaconcount' : 0, 'lastdata' : [] };
+	console.log('attachSensor3D: no such Device, creating new', id);
+    }    
+    if ( ! mesh ) {
+	console.log('attachSensor3D: no mesh', mesh);
+	return;
+    }
+    broker.devices[id].control3D = mesh;
+}
 
+const detachSensor3D = ( id ) => {
+    if ( ! broker.devices[id] ) {
+	console.log('detachSensor3D: no such Device', id);
+	return;
+    }    
+    broker.devices[id].control3D = false;
+}
+
+const control3DObj = ( id, msg ) => {
+    const mmesh = broker.devices[id].control3D;
+    const ud = mmesh.userData;
+    const changed = {
+	position : { x : ud.opos.x, y : ud.opos.y, z : ud.opos.z, changed: false },
+	rotation : { x : ud.orot.x, y : ud.orot.y, z : ud.orot.z, changed: false },
+	scale : { x : ud.oscl.x, y : ud.oscl.y, z : ud.oscl.z, changed: false }
+    }
+    for( let i=0; i<broker.devices[id].meta.payloadStructure.length; i++ ) {
+	const o=broker.devices[id].meta.payloadStructure[i];
+	
+	if ( o.name == 'position.x' ) {
+	    changed.position.x += parseFloat(msg[i]); changed.position.changed=true; }
+	if ( o.name == 'position.y' ) {
+	    changed.position.y += parseFloat(msg[i]); changed.position.changed=true; }
+	if ( o.name == 'position.z' ) {
+	    changed.position.z += parseFloat(msg[i]); changed.position.changed=true; }
+	if ( o.name == 'rotation.x' ) {
+	    changed.rotation.x += parseFloat(msg[i]); changed.rotation.changed=true; }
+	if ( o.name == 'rotation.y' ) {
+	    changed.rotation.y += parseFloat(msg[i]); changed.rotation.changed=true; }
+	if ( o.name == 'rotation.z' ) {
+	    changed.rotation.z += parseFloat(msg[i]); changed.rotation.changed=true; }
+	if ( o.name == 'scale.x' ) {
+	    changed.scale.x *= parseFloat(msg[i]); changed.scale.changed=true; }
+	if ( o.name == 'scale.y' ) {
+	    changed.scale.y *= parseFloat(msg[i]); changed.scale.changed=true; }
+	if ( o.name == 'scale.z' ) {
+	    changed.scale.z *= parseFloat(msg[i]); changed.scale.changed=true; }
+    };
+    if ( changed.position.changed ) {
+	//	mmesh.position.set( changed.position.x, changed.position.y, changed.position.z );
+	new TWEEN.Tween(mmesh.position)
+	    .to( { x : changed.position.x, y : changed.position.y, z : changed.position.z }, 500 )
+	    .start();
+	console.log('control3d position',ud.opos,changed);
+    }
+    if ( changed.rotation.changed ) {
+	new TWEEN.Tween(mmesh.rotation)
+	    .to( { x : changed.rotation.x, y : changed.rotation.y, z : changed.rotation.z }, 500 )
+	    .start();
+//	mmesh.rotation.set( changed.rotation.x, changed.rotation.y, changed.rotation.z );
+	console.log('control3d rotation',ud.orot,changed);
+    }
+    if ( changed.scale.changed ) {
+	new TWEEN.Tween(mmesh.scale)
+	    .to( { x : changed.scale.x, y : changed.scale.y, z : changed.scale.z }, 500 )
+	    .start();
+//	mmesh.scale.set( changed.scale.x, changed.scale.y, changed.scale.z );
+	console.log('control3d scale',ud.oscl,changed);
+    }
+}
 
 const parseMessage = ( idp, msg ) => {
 
@@ -107,7 +179,7 @@ const parseMessage = ( idp, msg ) => {
 	if ( isNaN( broker.devices[id].datacount ) ) broker.devices[id].datacount = 0;
 	broker.devices[id].datacount++;
 	let message = '';
-	if ( !broker.devices[id].meta || !broker.devices[id].meta.payloadStructure ) {
+	if ( !broker.devices[id].meta || !broker.devices[id].meta.payloadStructure ) {                     
 	    // Devices wich do net send a payload Structure on the meta channel could not be handled atm
 	    // nothing will be written to influx
 	    //	    console.log('no payloadStructure for id '+id+', no writePoint(',msg,')');
@@ -132,6 +204,9 @@ const parseMessage = ( idp, msg ) => {
 		    break;
 		}
 	    }
+	}
+	if ( broker.devices[id].control3D ) {
+	    control3DObj( id, msg   );
 	}
     }
     else if ( type === 'beacon' ) {
@@ -327,7 +402,9 @@ window.onload = ( loadev ) => {
     
     scene.background = new THREE.Color( '#000000' );
 
-    const camera = new THREE.PerspectiveCamera( 27, width/height, 1, 3500 );
+    const camnear = 1;
+    const camfar = 10000;
+    const camera = new THREE.PerspectiveCamera( 27, width/height, camnear, camfar );
     camera.position.z = 200;
     camera.position.x = 200;
     camera.position.y = 100;
@@ -1419,10 +1496,11 @@ window.onload = ( loadev ) => {
 //	console.log('Dound deviceid',deviceidp);
 	const pi = document.getElementById('partsinner');
 	const dispsens = basic.display;
+	const control3D = basic.control3D;
 	const disph = basic.displayheight || 0;
 	pi.insertAdjacentHTML(
 	    'beforeend',
-	    '<div id="part'+index+'" class="part"><strong>'+basic.name+'</strong><c data-id="'+basic.id+'" title="zum Basic">BASIC</c><div class="deviceidbox"><b>Device ID</b> <input name="deviceID" class="deviceID" placeholder="ID im Broker" autocomplete="off" value="'+deviceidp+'" /><div class="brokeridselect"></div><div class="sensorout"></div><br /><b>Broker Up</b> <input class="brokerUpMsg" autocomplete="off" value="'+brokerupmsg+'" /><div class="display"><input type="checkbox" class="displaysensorcheck" id="displaySensorChk'+index+'" '+(dispsens?' checked="checked"':'')+'/><b>Display</b><span id="dispSensorHgt'+index+'" class="dispsenshgt">Höhe +<input id="dispsensheight'+index+'" value="'+disph+'" />px</span><span id="dispSensorMsr'+index+'" class="dispsensmsr"></span></div></div><div class="tooltip"><b>Tooltip</b> <textarea id="tooltip'+index+'" placeholder="mouseover Ballontext">'+(basic.tooltip||'')+'</textarea></div><div class="pins"><b>'+pinarr.length+' Pins</b> <button id="basicpinmap'+index+'" data-index="'+index+'" class="basicPinBtn">Anpassen</button><div class="pinmap"></div></div><i></i><s></s><d title="Basic neu zuweisen">🧷</d></div>' );
+	    '<div id="part'+index+'" class="part"><strong>'+basic.name+'</strong><c data-id="'+basic.id+'" title="zum Basic">BASIC</c><div class="deviceidbox"><b>Device ID</b> <input name="deviceID" class="deviceID" placeholder="ID im Broker" autocomplete="off" value="'+deviceidp+'" /><div class="brokeridselect"></div><div class="sensorout"></div><br /><b>Broker Up</b> <input class="brokerUpMsg" autocomplete="off" value="'+brokerupmsg+'" /><div class="display"><input type="checkbox" class="displaysensorcheck" id="displaySensorChk'+index+'" '+(dispsens?' checked="checked"':'')+'/><b>Display</b><span id="dispSensorHgt'+index+'" class="dispsenshgt">Höhe +<input id="dispsensheight'+index+'" value="'+disph+'" />px</span><span id="dispSensorMsr'+index+'" class="dispsensmsr"></span></div><div class="sensor3D"><b>3D control</b> <input type="checkbox" class="sensor3Dcontrol" id="sensor3DControl'+index+'" '+(control3D?' checked="checked"':'')+' /></div></div><div class="tooltip"><b>Tooltip</b> <textarea id="tooltip'+index+'" placeholder="mouseover Ballontext">'+(basic.tooltip||'')+'</textarea></div><div class="pins"><b>'+pinarr.length+' Pins</b> <button id="basicpinmap'+index+'" data-index="'+index+'" class="basicPinBtn">Anpassen</button><div class="pinmap"></div></div><i></i><s></s><d title="Basic neu zuweisen">🧷</d></div>' );
 	pi.scrollTo({
 	    top: pi.scrollHeight,
 	    left: 0,
@@ -1503,6 +1581,19 @@ window.onload = ( loadev ) => {
 	    }
 	    console.log('displaysensorcheck change', ev.target.checked);
 	};
+	DOMObj.querySelector( '.sensor3Dcontrol' ).onchange = ( ev ) => {
+//	    if ( !partobj.deviceid ) return;
+	    if ( ev.target.checked ) {
+		partobj.control3D = true;
+		attachSensor3D( DOMObj.querySelector( '.deviceID' ).value, meshp );
+		console.log('sensor 3D control on',partobj,parts,index);
+	    }
+	    else {
+		partobj.control3D = false;
+		detachSensor3D( DOMObj.querySelector( '.deviceID' ).value );
+		console.log('sensor 3D control off',partobj,parts,index);
+	    }
+	};
 	DOMObj.querySelector('.basicPinBtn').onclick = ( ev ) => {	    
 	    const outputBox = ev.target.nextSibling;
 	    const saveBtn = createButton( 'Speichern', 'savePinTrans', ( evi ) => {
@@ -1566,6 +1657,10 @@ window.onload = ( loadev ) => {
 	    rebuildPartsDom();
 //	    console.log( 'clicked delete button', parts, index, parts[index] );
 	};
+	if ( basic.deviceid && basic.control3D ) {
+	    console.log('broker.deviceids',broker.deviceids);
+	    attachSensor3D( basic.deviceid, meshp );
+	}
     }
 
     const create3DFromGlb = ( index, glb, fname, data, deviceid, brokerupmsg, tooltip, mods, isbasicp ) => {
@@ -1783,7 +1878,7 @@ window.onload = ( loadev ) => {
 	    
 	}
 	renderer.render( scene, camera );
-
+	TWEEN.update();
     }
 
     let MOUSEDOWN = false;
@@ -2170,6 +2265,11 @@ window.onload = ( loadev ) => {
 	}
 	return null;
     }
+    const savePositionUserData = ( o ) => {
+	o.userData.opos = { x: o.position.x, y:o.position.y, z:o.position.z};
+	o.userData.orot = { x: o.rotation.x, y:o.rotation.y, z:o.rotation.z};
+	o.userData.oscl = { x: o.scale.x, y:o.scale.y, z:o.scale.z};
+    }
     const applyModifications = ( o, mods ) => {
 	o.position.x = mods.position.x || 0; o.position.y = mods.position.y || 0;
 	o.position.z = mods.position.z || 0;
@@ -2178,6 +2278,12 @@ window.onload = ( loadev ) => {
 	o.scale.x = mods.scale?.x || 1;
 	o.scale.y = mods.scale?.y || 1;
 	o.scale.z = mods.scale?.z || 1;
+	savePositionUserData( o );
+	/*	o.userData.orot = new THREE.Vector3();
+	o.userData.oscl = new THREE.Vector3();
+	o.position.copy(o.userData.opos);
+	o.rotation.copy(o.userData.orot);
+	o.scale.copy(o.userData.oscl);*/
 	if ( mods.hasOwnProperty('depthWrite') ) o.material.depthWrite = mods.depthWrite;
 	if ( mods.hasOwnProperty('side') ) o.material.side = mods.side;
 	if ( mods.hasOwnProperty('ghost') && mods.ghost ) {
@@ -2640,6 +2746,7 @@ window.onload = ( loadev ) => {
 		    'display' : apa.display,
 		    'displayheight' : apa.displayheight,
 		    'displaymeasures' : apa.displaymeasures,
+		    'control3D' : apa.control3D,
 		    'modifications' : {
 			'position' : { 'x' : apa.mesh.position.x, 'y' : apa.mesh.position.y, 'z' : apa.mesh.position.z },
 			'rotation' : { 'x' : apa.mesh.rotation.x, 'y' : apa.mesh.rotation.y, 'z' : apa.mesh.rotation.z },
@@ -2661,6 +2768,7 @@ window.onload = ( loadev ) => {
 		    'display' : apa.display,
 		    'displayheight' : apa.displayheight,
 		    'displaymeasures' : apa.displaymeasures,
+		    'control3D' : apa.control3D,
 		    'modifications' : {
 			'position' : { 'x' : apa.mesh.position.x, 'y' : apa.mesh.position.y, 'z' : apa.mesh.position.z },
 			'rotation' : { 'x' : apa.mesh.rotation.x, 'y' : apa.mesh.rotation.y, 'z' : apa.mesh.rotation.z },
@@ -3763,6 +3871,7 @@ window.onload = ( loadev ) => {
 	};
 	document.getElementById('editConfirm').onclick = ( ev ) => {
 	    editmode = false;
+	    savePositionUserData(aktmesh);
 	    if ( edithlp ) {
 		edithlp.geometry.dispose();
 		edithlp.material.dispose();
