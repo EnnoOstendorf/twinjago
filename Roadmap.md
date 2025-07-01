@@ -1,6 +1,6 @@
 # Twinjago Roadmap
 
-![Picture of a game called twinjago](/twinjago_Spiel_05.jpg)
+![Picture of a game called twinjago](/twinjago_Spiel_07.png)
 
 ## latest features
 - **control3D** a sensor can change position/rotation/scale of a connected basic of a twin

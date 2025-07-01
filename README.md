@@ -1,6 +1,6 @@
 # Twinjago
 
-![Picture of a game called twinjago](/twinjago_Spiel_05.jpg)
+![Picture of a game called twinjago](/twinjago_Spiel_07.png)
 
 a **_Digital Twin_** Editor and Presenter.
 This tool enables you to create a digital Twin of your _Thing_, 
