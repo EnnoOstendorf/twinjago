@@ -59,6 +59,7 @@
 	    <p>1 Einheit = <input id="mscale" title="Geben sie eine Zahl an, die einer Einheit in ihrer 3D-Datei entspricht" autocomplete="off" /> <input id="munit" value="Meter" autocomplete="off" title="Bitte geben Sie eine Einheit ein, z.b. mm oder Meter"></p>
 	  </div>
 	  <div id="TwinCnfBtns">
+	    <button id="SzeneBtn" class="disabled" title="Szeneneinstellungen des Twins (für Basics nicht verfügbar)">Szene</button>
 	    <button id="DokumenteBtn" class="disabled" title="Informationen zum Twin (für Basics nicht verfügbar)">Informationen</button>
 	    <button id="RoutingBtn" class="disabled" title="Routing Editor">Routing</button>
 	    <button id="liveBtn" title="zur Live-Ansicht"><img src="imgs/augen.png" /> &nbsp;</button>
@@ -149,7 +150,48 @@
 	    </div>
 	    <button id="editCancel">Abbrechen</button>
 	    <button id="editConfirm">Setzen</button>
+	    <div id="editCopy" class="copybtn">Kopieren</div>
+	    <div id="editPaste" class="pastebtn">Einfügen</div>
 	  </form>
+	</div>
+	<div id="szeneDlg">
+	  <h3>Beleuchtung</h3>
+	  <h4>Ambient</h4>
+	  <span>Farbe: <input class="lightcolor" id="ambientcolor" type="text" value="#111111" autocomplete="off" data-coloris="" /></span>
+	  <span>Intensität: <input class="lightstrength" id="ambientintensity" type="text" autocomplete="off" value="1" /><i id="ambientintensityhs" class="hotspot" data-factor="1"></i></span><br />
+	  <h4>Directional Light</h4>
+	  <span>Farbe: <input class="lightcolor" id="light1color" type="text" value="#ffffff" autocomplete="off" data-coloris="" /></span>
+	  <span>Intensität: <input class="lightstrength" id="light1intensity" value="2.5" autocomplete="off" type="text" /><i id="light1intensity" class="hotspot" data-factor="0.001"></i></span><br />
+	  <div class="inprow" id="ligth1pos">Position:
+	    x: <input class="coord" name="light1x" id="light1x" value="2000" autocomplete="off" /> <i id="light1xhs" class="hotspot" data-factor="1"></i>
+	    y: <input class="coord" name="light1y" id="light1y" value="500" autocomplete="off" /> <i id="light1yhs" class="hotspot" data-factor="1"></i>
+	    z: <input class="coord" name="light1z" id="light1z" value="3000" autocomplete="off" /> <i id="light1zhs" class="hotspot" data-factor="1"></i>
+	  </div><br />
+	  <h4>Point Light 1</h4>
+	  <span>Farbe: <input class="lightcolor" id="light2color" value="#ffffff" type="text" autocomplete="off" data-coloris="" /></span>
+	  <span>Intensität: <input class="lightstrength" id="light2intensity" value="0.01" autocomplete="off" type="text" /><i id="light2intensity" class="hotspot"  data-factor="1000"></i></span><br />
+	  <div class="inprow" id="ligth2pos">Position:
+	    x: <input class="coord" name="light2x" id="light2x" value="-2000" autocomplete="off" /> <i id="light2xhs" class="hotspot" data-factor="1"></i>
+	    y: <input class="coord" name="light2y" id="light2y" value="-1700" autocomplete="off" /> <i id="light2yhs" class="hotspot" data-factor="1"></i>
+	    z: <input class="coord" name="light2z" id="light2z" value="-3000" autocomplete="off" /> <i id="light2zhs" class="hotspot" data-factor="1"></i>
+	  </div><br />
+	  <h4>Point Light 2</h4>
+	  <span>Farbe: <input class="lightcolor" id="light3color" value="#ffffff" type="text" autocomplete="off" data-coloris="" /></span>
+	  <span>Intensität: <input class="lightstrength" id="light3intensity" value="25000000" autocomplete="off" type="text" /><i id="light3intensityhs" class="hotspot" data-factor="1000"></i></span><br />
+	  <div class="inprow" id="ligth3pos">Position:
+	    x: <input class="coord" name="light3x" id="light3x" value="-1500" autocomplete="off" /> <i id="light3xhs" class="hotspot" data-factor="1"></i>
+	    y: <input class="coord" name="light3y" id="light3y" value="-3500" autocomplete="off" /> <i id="light3yhs" class="hotspot" data-factor="1"></i>
+	    z: <input class="coord" name="light3z" id="light3z" value="1500" autocomplete="off" /> <i id="light3zhs" class="hotspot" data-factor="1"></i>
+	  </div><br />
+	  <h4>Point Light 3</h4>
+	  <span>Farbe: <input class="lightcolor" id="light4color" value="#ffffff" type="text" autocomplete="off" data-coloris="" /></span>
+	  <span>Intensität: <input class="lightstrength" id="light4intensity" value="0.01" autocomplete="off" type="text" /><i id="light4intensityhs" class="hotspot" data-factor="1000"></i></span><br />
+	  <div class="inprow" id="ligth4pos">Position:
+	    x: <input class="coord" name="light4x" id="light4x" value="1500" autocomplete="off" /> <i id="light4xhs" class="hotspot" data-factor="1"></i>
+	    y: <input class="coord" name="light4y" id="light4y" value="4500" autocomplete="off" /> <i id="light4yhs" class="hotspot" data-factor="1"></i>
+	    z: <input class="coord" name="light4z" id="light4z" value="-1500" autocomplete="off" /> <i id="light4zhs" class="hotspot" data-factor="1"></i>
+	  </div><br />
+	  <button id="sznDlgCls">Schließen</button>
 	</div>
 	<div id="dokumenteDlg">
 	  <h3>Informationen</h3>
@@ -247,6 +289,8 @@
 	    </div>
 	    <div id="pinConfirm">Setzen
 	    </div>
+	    <div id="pinCopy" class="copybtn">Kopieren</div>
+	    <div id="pinPaste" class="copybtn">Einfügen</div>
 	  </form>
 	</div>
       </div>

@@ -218,6 +218,9 @@ input.error {
 	border-left: 1px dotted #fff;
 	left: 50%;
 }
+.sensordisplay .ini {
+	opacity: 0.7;
+}
 .sensordisplay b {
 	max-width: 80px;
 	overflow: hidden;

@@ -119,6 +119,7 @@ header:hover::before {
 	overflow: auto;
 	background: rgba(255,255,255,0.5);
 	transition: padding 0.3s linear;
+	width: 90%;
 }
 #deviceNavi ul.filled,#deviceNavi ol.filled {
     padding-top: 0;
@@ -363,6 +364,7 @@ input.error {
 }
 .tree.open {
 	height: auto;
+	border-bottom: 3px solid #000;
 }
 .deviceNavi li.cat {
 	font-weight: bold;
@@ -642,7 +644,7 @@ input.error {
 	background: #eee;
 	margin: 10px;
 }
-#DokumenteBtn,#RoutingBtn,#liveBtn {
+#DokumenteBtn,#RoutingBtn,#liveBtn,#SzeneBtn {
 	display: inline-block;
 }
 #liveBtn.hidden {
@@ -686,7 +688,7 @@ input.error {
     box-shadow: none;
     background: #ccc;
 }
-#DokumenteBtn.disabled,#newpart.disabled, #RoutingBtn.disabled {
+#DokumenteBtn.disabled,#SzeneBtn.disabled,#newpart.disabled, #RoutingBtn.disabled {
     display:none;
 }
 .newpart input,.newsign input {
@@ -868,7 +870,7 @@ input.error {
 .pin:last-child > s {
 	display: inline-block;
 }
-#editDlg,#pinDlg,#dokumenteDlg,#routingDlg,#editDisplayDlg {
+#editDlg,#pinDlg,#dokumenteDlg,#szeneDlg,#routingDlg,#editDisplayDlg {
 	position: absolute;
 	visibility: hidden;
 	background: rgba(230,230,230,0.95);
@@ -1061,20 +1063,36 @@ input.error {
 .selpin:hover {
 	background: #ddd;
 }
-#editDlg.vis,#pinDlg.vis,#dokumenteDlg.vis,#editDisplayDlg.vis {
+#editDlg.vis,#pinDlg.vis,#dokumenteDlg.vis,#szeneDlg.vis,#editDisplayDlg.vis {
     visibility: visible;
 }
-#dokumenteDlg {
+#dokumenteDlg,#szeneDlg {
 	right: auto;
 	padding-bottom: 10px;
 }
-#dokumenteDlg h3 {
+#szeneDlg {
+	right: 0;
+	top: 0;
+	padding: 0 20px 20px;
+}
+#dokumenteDlg h3,#szeneDlg h3 {
 	margin: 20px 0 12px;
 	text-align: left;
 	font-size: 20px;
 	border-top: 1px solid #999;
 	padding: 10px 0;
 	position: relative;
+}
+#szeneDlg h4 {
+	margin: 20px 0 5px 0;
+}
+.lightstrength {
+    width: 70px;
+    text-align:right;
+}
+.lightcolor {
+    width: 100px;
+    text-shadow: 0 0 3px #fff;
 }
 #newfilelist {
 	background: #ddd;
@@ -1104,7 +1122,7 @@ input.error {
 #dokdbmaint.active {
 	display: block;
 }
-#dokDlgCls,#dokDlgSave {
+#dokDlgCls,#dokDlgSave,#sznDlgCls,#sznDlgSave {
 	font-size: 20px;
 	padding: 10px 20px;
 	margin: 10px 0 0;
@@ -1185,6 +1203,17 @@ input.error {
 #pinCancel:hover, #pinConfirm:hover {
 	background: #ccc;
 }
+.copybtn, .pastebtn {
+	display: inline-block;
+	padding: 5px;
+	border: 1px dotted #4b4b4b;
+	margin: 0 10px;
+	cursor: pointer;
+	border-radius: 5px;
+}
+.copybtn:hover, .pastebtn:hover {
+	background: #fff;
+}
 #editDlg .inprow, #pinDlg .inprow {
 	font-weight: bold;
 	margin: 5px;
@@ -1201,7 +1230,7 @@ input.error {
 	width: 60px;
 	margin: 5px 0 5px 5px;
 }
-#editForm .inprow i,#pinForm .inprow i {
+#editForm .inprow i,#pinForm .inprow i, #szeneDlg .hotspot {
 	width: 24px;
 	height: 24px;
 	display: inline-block;

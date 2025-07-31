@@ -133,6 +133,7 @@ router.post('/post', async (req, res) => {
 	type: o.type,
 	mscale: o.mscale,
 	munit: o.munit,
+	scene: o.scene,
         parts: o.parts,
         signs: o.signs,
         files: o.files,

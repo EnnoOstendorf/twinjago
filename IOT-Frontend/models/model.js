@@ -41,6 +41,10 @@ const dataSchema = new mongoose.Schema({
         required: false,
         type: Object
     },
+    scene: {
+        required: false,
+        type: Object
+    },
     parts: {
 	required: true,
 	type: Array

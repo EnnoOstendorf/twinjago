@@ -11,6 +11,7 @@ let aktdevice = null;
 let aktsensorout = null;
 let HTMLready = false;
 let controls;
+let editmode = false;
 const Displays = [];
 const DISPWIDTH = 120;
 const hostname = location.hostname;
@@ -111,6 +112,7 @@ const detachSensor3D = ( id ) => {
 }
 
 const control3DObj = ( id, msg ) => {
+    if ( editmode ) return;
     const mmesh = broker.devices[id].control3D;
     const ud = mmesh.userData;
     const changed = {
@@ -145,21 +147,21 @@ const control3DObj = ( id, msg ) => {
 	new TWEEN.Tween(mmesh.position)
 	    .to( { x : changed.position.x, y : changed.position.y, z : changed.position.z }, 500 )
 	    .start();
-	console.log('control3d position',ud.opos,changed);
+//	console.log('control3d position',ud.opos,changed);
     }
     if ( changed.rotation.changed ) {
 	new TWEEN.Tween(mmesh.rotation)
 	    .to( { x : changed.rotation.x, y : changed.rotation.y, z : changed.rotation.z }, 500 )
 	    .start();
 //	mmesh.rotation.set( changed.rotation.x, changed.rotation.y, changed.rotation.z );
-	console.log('control3d rotation',ud.orot,changed);
+//	console.log('control3d rotation',ud.orot,changed);
     }
     if ( changed.scale.changed ) {
 	new TWEEN.Tween(mmesh.scale)
 	    .to( { x : changed.scale.x, y : changed.scale.y, z : changed.scale.z }, 500 )
 	    .start();
 //	mmesh.scale.set( changed.scale.x, changed.scale.y, changed.scale.z );
-	console.log('control3d scale',ud.oscl,changed);
+//	console.log('control3d scale',ud.oscl,changed);
     }
 }
 
@@ -357,7 +359,6 @@ window.onload = ( loadev ) => {
 	x: playground.offsetLeft,
 	y: playground.offsetTop
     }
-    let editmode = false;
     let dynscroll = true;
     let saved = true;
     let editbackup = {
@@ -384,6 +385,7 @@ window.onload = ( loadev ) => {
     }
     let dragmode = false;
     let dragstartval = 0;
+    let dragfactor = 0.1;
     let dragmousestart = 0;
     let dragtarget = null;
     let draginp = null;
@@ -428,6 +430,18 @@ window.onload = ( loadev ) => {
 	    'z' : camera.rotation.z
 	}
     }
+    const camstartdefault = {
+	'position' : {
+	    'x' : 293,
+	    'y' : -396,
+	    'z' : 294
+	},
+	'rotation' : {
+	    'x' : 0.85,
+	    'y' : 0.58,
+	    'z' : 0.01
+	}
+    }
     
     const ambientLight = new THREE.AmbientLight( 0x111111 );
     scene.add( ambientLight );
@@ -436,15 +450,15 @@ window.onload = ( loadev ) => {
     light1.position.set( 2000, 500, 3000 );
     scene.add( light1 );
     
-    const light2 = new THREE.DirectionalLight( 0xffffff, 0.01 );
+    const light2 = new THREE.PointLight( 0xffffff, 0.01 );
     light2.position.set( -2000, -1700, -3000 );
     scene.add( light2 );
 
-    const light3 = new THREE.DirectionalLight( 0xffffff, 2.5 );
+    const light3 = new THREE.PointLight( 0xffffff, 25000000 );
     light3.position.set( -1500, -3500, 1500 );
     scene.add( light3 );
 
-    const light4 = new THREE.DirectionalLight( 0xffffff, 0.01 );
+    const light4 = new THREE.PointLight( 0xffffff, 0.01 );
     light4.position.set( 1500, 4500, -1500 );
     scene.add( light4 );
 
@@ -483,12 +497,16 @@ window.onload = ( loadev ) => {
     const showEditDlg = ( mode ) => {
 	edithlp = new THREE.BoxHelper(aktmesh, 0x00ffff);
 	scene.add(edithlp);
+	window.setTimeout( () => {
+	    backupCoords( aktmesh );
+	    restoreBackup( aktmesh );
+	    aktEditCoords();
+	}, 500 );
 	const edtDlg = document.getElementById('editDlg');
 	const box = document.getElementById('partsinner');
 	document.body.classList.add('modalmode');
 	edtDlg.classList.add('vis');
 	edtDlg.classList.add(mode);
-	aktEditCoords();
 //	console.log( 'clicked edit button', document.getElementById('partsinner').scrollTop );
     }
     const showDokumenteDlg = () => {
@@ -503,6 +521,21 @@ window.onload = ( loadev ) => {
 	document.body.classList.remove('modalmode');
 	
 	dokDlg.classList.remove('vis');
+//	console.log( 'clicked dokumente button' );
+    }   
+    const showSzeneDlg = () => {
+	const sznDlg = document.getElementById('szeneDlg');
+	document.body.classList.add('modalmode');
+	showSceneHelpers();
+	sznDlg.classList.add('vis');
+//	console.log( 'clicked dokumente button' );
+    }
+    const hideSzeneDlg = () => {
+	const sznDlg = document.getElementById('szeneDlg');
+	document.body.classList.remove('modalmode');
+	hideSceneHelpers();
+
+	sznDlg.classList.remove('vis');
 //	console.log( 'clicked dokumente button' );
     }   
     const fillCatSelect = () => {
@@ -975,25 +1008,6 @@ window.onload = ( loadev ) => {
 	}
     }
     initPinDlg();
-    const backupCoords = ( mesh ) => {
-	editbackup.pos.x = mesh.position.x;
-	editbackup.pos.y = mesh.position.y;
-	editbackup.pos.z = mesh.position.z;
-	editbackup.rot.x = mesh.rotation.x;
-	editbackup.rot.y = mesh.rotation.y;
-	editbackup.rot.z = mesh.rotation.z;
-	editbackup.scl.x = mesh.scale.x;
-	editbackup.scl.y = mesh.scale.y;
-	editbackup.scl.z = mesh.scale.z;
-    }
-    const backupLabelCoords = ( mesh ) => {
-	labelbackup.pos.x = mesh.position.x;
-	labelbackup.pos.y = mesh.position.y;
-	labelbackup.pos.z = mesh.position.z;
-	labelbackup.rot.x = mesh.rotation.x;
-	labelbackup.rot.y = mesh.rotation.y;
-	labelbackup.rot.z = mesh.rotation.z;
-    }
     const restoreBackup = ( mesh ) => {
 	mesh.position.x = editbackup.pos.x;
 	mesh.position.y = editbackup.pos.y;
@@ -1004,6 +1018,26 @@ window.onload = ( loadev ) => {
 	mesh.scale.x = editbackup.scl.x;
 	mesh.scale.y = editbackup.scl.y;
 	mesh.scale.z = editbackup.scl.z;
+    }
+    const backupCoords = ( mesh ) => {
+	console.log('backupCoords',mesh.userData);
+	editbackup.pos.x = mesh.userData.opos?.x || 0;// || mesh.position.x;
+	editbackup.pos.y = mesh.userData.opos?.y || 0;// || mesh.position.y;
+	editbackup.pos.z = mesh.userData.opos?.z || 0;// || mesh.position.z;
+	editbackup.rot.x = mesh.userData.orot?.x || 0;// || mesh.rotation.x;
+	editbackup.rot.y = mesh.userData.orot?.y || 0;// || mesh.rotation.y;
+	editbackup.rot.z = mesh.userData.orot?.z || 0;// || mesh.rotation.z;
+	editbackup.scl.x = mesh.userData.oscl?.x || 1;// || mesh.scale.x;
+	editbackup.scl.y = mesh.userData.oscl?.y || 1;// || mesh.scale.y;
+	editbackup.scl.z = mesh.userData.oscl?.z || 1;// || mesh.scale.z;
+    }
+    const backupLabelCoords = ( mesh ) => {
+	labelbackup.pos.x = mesh.position.x;
+	labelbackup.pos.y = mesh.position.y;
+	labelbackup.pos.z = mesh.position.z;
+	labelbackup.rot.x = mesh.rotation.x;
+	labelbackup.rot.y = mesh.rotation.y;
+	labelbackup.rot.z = mesh.rotation.z;
     }
     const restoreLabelBackup = ( mesh ) => {
 	mesh.position.x = labelbackup.pos.x;
@@ -1237,7 +1271,7 @@ window.onload = ( loadev ) => {
 				     +'" index="'+pinindex+'"><span>'+pname+'</span><i></i><s></s></div>');
 	const pinDOM = document.getElementById('pin'+partindex+'-'+pinindex);
 	parts[partindex].pins[pinindex].objDOM = pinDOM;
-	console.log('addPINDOM', partindex, pinindex, pinscont.innerHTML, pinDOM);
+//	console.log('addPINDOM', partindex, pinindex, pinscont.innerHTML, pinDOM);
 	pinDOM.onmouseover = ( ev ) => {
 	    mesh.material.color.set( '#aaaa00' );
 	};
@@ -1310,7 +1344,7 @@ window.onload = ( loadev ) => {
 	    const pinDOM = document.getElementById('pin'+index+'-'+pinindex);
 	    let newpin = { 'name': pname, 'objDOM': pinDOM, 'part' : partname, 'obj3d' : mesh, 'index':pinindex, 'label': nmesh, 'color' : col }
 	    parts[index].pins.push(newpin);
-	    console.log('add Pin', pinindex, index);
+//	    console.log('add Pin', pinindex, index);
 	    pname = pinname || 'Pin '+pinindex;
 	    addPinDOM( index, pinindex, pname, mesh );
 //	    console.log('addPin',parts[index].pins);
@@ -1346,7 +1380,7 @@ window.onload = ( loadev ) => {
 	console.log('reassign basic', )
     }
     const addPartDOMEvents = ( index, meshp ) => {
-	console.log('finding DOMObj',index,document.getElementById('part'+index));
+//	console.log('finding DOMObj',index,document.getElementById('part'+index));
 	const DOMObj = document.getElementById('part'+index);
 	DOMObj.onmouseover = ( ev ) => {
 //	    console.log('hilite',meshp.userData.index);
@@ -1360,6 +1394,9 @@ window.onload = ( loadev ) => {
 	    lolightParts();
 	};
 	    
+	DOMObj.querySelector( '.tooltip textarea' ).onchange = ( ev ) => {
+	    if ( parts[index] )	parts[index].tooltip = ev.target.value;
+	};
 	DOMObj.querySelector( '.addPinBtn' ).onclick = ( ev ) => {
 	    const pinscont = ev.target.parentNode;
 	    addPin( index, meshp, pinscont );
@@ -1402,11 +1439,11 @@ window.onload = ( loadev ) => {
 	    'beforeend',
 	    '<div id="part'+index+'" class="part" data-index="'+index+'"><strong>'+namep+'</strong><em>('+(fnamep||'-')+')</em><input class="partcolor" style="background:'+colcode+';" type="text" value="'+colcode+'" data-coloris /><div class="tooltip"><b>Tooltip</b> <textarea id="tooltip'+index+'" placeholder="mouseover Ballontext">'+(tooltipp||'')+'</textarea></div><div class="pins"><b>0 Pins</b><button id="addPintoPart'+index+'" data-index="'+index+'" class="addPinBtn">+</button><br /></div><i></i><s></s></div>' );
 
-	console.log('adding part DOM', index, document.getElementById( 'part'+index ).innerHTML);
+//	console.log('adding part DOM', index, document.getElementById( 'part'+index ).innerHTML);
 	return index;
     }
     const addPartMesh = ( meshp, datap, index ) => {
-	console.log('adding part Mesh', index);
+//	console.log('adding part Mesh', index);
 	parts[index].mesh = meshp;
 	parts[index].origdata = datap;
 	addPartDOMEvents( index, meshp );
@@ -1414,8 +1451,7 @@ window.onload = ( loadev ) => {
     }
     document.addEventListener('coloris:pick', event => {
 	const col = event.detail.color;
-	event.detail.currentEl.style='background:'+col;
-	
+	event.detail.currentEl.style='background:'+col;	
 	if ( aktmesh ) {
 	    aktmesh.origcolor = col;
 	    if ( aktmesh?.material?.color ) {
@@ -1423,8 +1459,31 @@ window.onload = ( loadev ) => {
 	    }
 	}
 	
-
-	console.log('New Color', event, aktmesh);
+	if ( event.detail.currentEl.id === 'ambientcolor' ) {
+	    ambientLight.color.set( event.detail.color );
+	    console.log( 'ambient light color',event.detail.color,ambientLight);
+	}
+	else if ( event.detail.currentEl.id === 'light1color' ) {
+	    light1.color.set( event.detail.color );
+	    light1.userData.helper.update();
+	    console.log( 'light1 light color',event.detail.color);
+	}
+	else if ( event.detail.currentEl.id === 'light2color' ) {
+	    light2.color.set( event.detail.color );
+	    light2.userData.helper.update();
+	    console.log( 'light2 light color',event.detail.color);
+	}
+	else if ( event.detail.currentEl.id === 'light3color' ) {
+	    light3.color.set( event.detail.color );
+	    light3.userData.helper.update();
+	    console.log( 'light3 light color',event.detail.color);
+	}
+	else if ( event.detail.currentEl.id === 'light4color' ) {
+	    light4.color.set( event.detail.color );
+	    light4.userData.helper.update();
+	    console.log( 'light4 light color',event.detail.color);
+	}
+//	console.log('New Color', event.detail.currentEl.id);
     });
     const shortenPartName = ( name ) => {
 	let shortname;
@@ -1453,7 +1512,7 @@ window.onload = ( loadev ) => {
 	sensdiv.id = 'display'+id; sensdiv.classList.add('sensordisplay');
 	ovl.appendChild(sensdiv);
 	Displays.push( { 'id' : id, 'mesh' : mesh, 'measures' : measures, 'dispdom' : sensdiv, 'height' : height||0 } );
-	console.log('add Display',id,Displays);
+//	console.log('add Display',id,Displays);
 	return Displays.length-1;
     }
     const addBasicPart = ( basic, meshp, rebuild ) => {
@@ -1681,7 +1740,7 @@ window.onload = ( loadev ) => {
 	const col = data.color || '#ffffff';
 	const oname = data.name || fname;
 	if ( mods && mods.ghost ) {
-	    console.log('ghost part', mods);
+//	    console.log('ghost part', mods);
 	    material = new THREE.MeshStandardMaterial({
 		transparent: true,
 		opacity: ghosttransp, flatShading: true
@@ -1738,7 +1797,7 @@ window.onload = ( loadev ) => {
 		console.log('loading stl',e.target);
 	    	stlloader.load( e.target.result, ( geometry ) => {
 		    create3DFromGeom( index, geometry, fname, { type: 'stl', color: '#888888', file: e.target.result, name: fname.replace('.stl','') } );
-		    console.log('loaded stl',geometry);
+//		    console.log('loaded stl',geometry);
 		});
 	    };
 	    reader.readAsDataURL(finput.files[0]);
@@ -1749,7 +1808,7 @@ window.onload = ( loadev ) => {
 		console.log('loading glb',e.target);
 	    	gltfloader.load( e.target.result, ( glb ) => {
 		    create3DFromGlb( index, glb, fname, { type: 'glb', color: '#888888', file: e.target.result, name: fname.replace('.gltf','') } );
-		    console.log('loaded glb',glb);
+//		    console.log('loaded glb',glb);
 		});
 	    };
 	    reader.readAsDataURL(finput.files[0]);
@@ -1948,7 +2007,7 @@ window.onload = ( loadev ) => {
 	    Mark( part );
 	    Jump( part, overwrite );
 	    boxObj( t, 0xbbbbbb );
-	    console.log('hilight basicsign|basicpart',type);
+//	    console.log('hilight basicsign|basicpart',type);
 
 	}
 	else if ( type === 'basic' ) {
@@ -2033,7 +2092,7 @@ window.onload = ( loadev ) => {
 		}
 		else {
 		    lolightParts();
-		    console.log('intersect unknown', o3.userData);
+//		    console.log('intersect unknown', o3.userData);
 		}
 	    }
 	}
@@ -2054,7 +2113,7 @@ window.onload = ( loadev ) => {
 	}
 	if ( capturemode ) stopCapture();
 	if ( boxedObj ) {
-	    console.log('dynscroll', lastBoxedObjID, boxedObj.id );
+//	    console.log('dynscroll', lastBoxedObjID, boxedObj.id );
 	    if ( boxedObj.id !== lastBoxedObjID ) {
 		if ( dynscroll ) dynscroll = false;
 	    }
@@ -2064,7 +2123,7 @@ window.onload = ( loadev ) => {
 	    }
 	    
 	    hilightPart( boxedObj, true );
-	    console.log('dynscroll2', lastBoxedObjID, boxedObj.id );
+//	    console.log('dynscroll2', lastBoxedObjID, boxedObj.id );
 	    lastBoxedObjID = boxedObj.id;
 	}
 	else {
@@ -2119,6 +2178,101 @@ window.onload = ( loadev ) => {
 	}
 	    
 	//	document.getElementById('sclz').value=aktmesh.scale.z;
+    }
+    const editCopy = () => {
+	const buf = {};
+	buf.posx = document.getElementById('posx').value;
+	buf.posy = document.getElementById('posy').value;
+	buf.posz = document.getElementById('posz').value;
+	buf.rotx = document.getElementById('rotx').value;
+	buf.roty = document.getElementById('roty').value;
+	buf.rotz = document.getElementById('rotz').value;
+	buf.sclx = document.getElementById('sclx').value;
+	buf.scly = document.getElementById('scly').value;
+	buf.sclz = document.getElementById('sclz').value;
+	localStorage.setItem('twinjago.edit.buffer', JSON.stringify(buf));
+	console.log('editCopy',buf);
+    }
+    const editPaste = () => {
+	const buf=JSON.parse(localStorage.getItem('twinjago.edit.buffer'));
+	if ( !buf ) return;
+	document.getElementById('posx').value=buf.posx;
+	aktmesh.position.x = parseFloat(buf.posx.replace(',','.'));
+	document.getElementById('posy').value=buf.posy;
+	aktmesh.position.y = parseFloat(buf.posy.replace(',','.'));
+	document.getElementById('posz').value=buf.posz;
+	aktmesh.position.z = parseFloat(buf.posz.replace(',','.'));
+	document.getElementById('rotx').value=buf.rotx;
+	aktmesh.rotation.x = parseFloat(buf.rotx.replace(',','.'));
+	document.getElementById('roty').value=buf.roty;
+	aktmesh.rotation.y = parseFloat(buf.roty.replace(',','.'));
+	document.getElementById('rotz').value=buf.rotz;
+	aktmesh.rotation.z = parseFloat(buf.rotz.replace(',','.'));
+	document.getElementById('sclx').value=buf.sclx;
+	aktmesh.scale.x = parseFloat(buf.sclx.replace(',','.'));
+	document.getElementById('scly').value=buf.scly;
+	aktmesh.scale.y = parseFloat(buf.scly.replace(',','.'));
+	document.getElementById('sclz').value=buf.sclz;
+	aktmesh.scale.z = parseFloat(buf.sclz.replace(',','.'));
+	console.log('editPaste',buf);
+    }
+    const pinPaste = () => {
+	const buf=JSON.parse(localStorage.getItem('twinjago.pin.buffer'));
+	if ( !buf ) return;
+	document.getElementById('pinx').value=buf.posx;
+	document.getElementById('piny').value=buf.posy;
+	document.getElementById('pinz').value=buf.posz;
+	document.getElementById('pinrotx').value=buf.rotx;
+	document.getElementById('pinroty').value=buf.roty;
+	document.getElementById('pinrotz').value=buf.rotz;
+	document.getElementById('pinsclx').value=buf.sclx;
+	document.getElementById('pinscly').value=buf.scly;
+	document.getElementById('pinsclz').value=buf.sclz;
+	document.getElementById('labelposx').value=buf.labelposx;
+	document.getElementById('labelposy').value=buf.labelposy;
+	document.getElementById('labelposz').value=buf.labelposz;
+	document.getElementById('labelrotx').value=buf.labelrotx;
+	document.getElementById('labelroty').value=buf.labelroty;
+	document.getElementById('labelrotz').value=buf.labelrotz;
+	if ( ! aktpin ) return;
+	const obj3d = aktpin.obj3d;
+	const label = aktpin.label;
+	obj3d.position.x = parseFloat(buf.posx.replace(',','.'));
+	obj3d.position.y = parseFloat(buf.posy.replace(',','.'));
+	obj3d.position.z = parseFloat(buf.posz.replace(',','.'));
+	obj3d.rotation.x = parseFloat(buf.rotx.replace(',','.'));
+	obj3d.rotation.y = parseFloat(buf.roty.replace(',','.'));
+	obj3d.rotation.z = parseFloat(buf.rotz.replace(',','.'));
+	obj3d.scale.z = parseFloat(buf.sclz.replace(',','.'));
+	obj3d.scale.x = parseFloat(buf.sclx.replace(',','.'));
+	obj3d.scale.y = parseFloat(buf.scly.replace(',','.'));
+	label.position.x = parseFloat(buf.labelposx.replace(',','.'));
+	label.position.y = parseFloat(buf.labelposy.replace(',','.'));
+	label.position.z = parseFloat(buf.labelposz.replace(',','.'));
+	label.rotation.x = parseFloat(buf.labelrotx.replace(',','.'));
+	label.rotation.y = parseFloat(buf.labelroty.replace(',','.'));
+	label.rotation.z = parseFloat(buf.labelrotz.replace(',','.'));
+	console.log('pinPaste',buf);
+    }
+    const pinCopy = () => {
+	const buf = {};
+	buf.posx = document.getElementById('pinx').value;
+	buf.posy = document.getElementById('piny').value;
+	buf.posz = document.getElementById('pinz').value;
+	buf.rotx = document.getElementById('pinrotx').value;
+	buf.roty = document.getElementById('pinroty').value;
+	buf.rotz = document.getElementById('pinrotz').value;
+	buf.sclx = document.getElementById('pinsclx').value;
+	buf.scly = document.getElementById('pinscly').value;
+	buf.sclz = document.getElementById('pinsclz').value;
+	buf.labelposx = document.getElementById('labelposx').value;
+	buf.labelposy = document.getElementById('labelposy').value;
+	buf.labelposz = document.getElementById('labelposz').value;
+	buf.labelrotx = document.getElementById('labelrotx').value;
+	buf.labelroty = document.getElementById('labelroty').value;
+	buf.labelrotz = document.getElementById('labelrotz').value;
+	localStorage.setItem('twinjago.pin.buffer', JSON.stringify(buf));
+	console.log('pinCopy',buf);
     }
     const aktPinCoords = () => {
 //	console.log('aktpincoords',aktpin);
@@ -2194,7 +2348,7 @@ window.onload = ( loadev ) => {
 		am.parent.remove(am);
 	    }
 	    else {
-		console.log('RemoveMesh unknown type',am);
+//		console.log('RemoveMesh unknown type',am);
 	    };
 	}
     }
@@ -2208,6 +2362,7 @@ window.onload = ( loadev ) => {
 	    document.getElementById('newpart').classList.remove('disabled');
 	    document.getElementById('newgroup').classList.add('disabled');
 	    document.getElementById( 'DokumenteBtn' ).classList.add('disabled');
+	    document.getElementById( 'SzeneBtn' ).classList.add('disabled');
 	    document.getElementById( 'RoutingBtn' ).classList.add('disabled');
 	    document.getElementById( 'devType' ).innerHTML = 'Basic';
 	}
@@ -2219,6 +2374,7 @@ window.onload = ( loadev ) => {
 	    document.getElementById('liveBtn').classList.remove('hidden');
 	    document.getElementById( 'DokumenteBtn' ).classList.remove('disabled');
 	    document.getElementById( 'RoutingBtn' ).classList.remove('disabled');
+	    document.getElementById( 'SzeneBtn' ).classList.remove('disabled');
 	    document.getElementById('filelist').replaceChildren();
 	    document.getElementById('linklist').replaceChildren();
 	    document.getElementById('newfilelist').replaceChildren();
@@ -2226,6 +2382,7 @@ window.onload = ( loadev ) => {
 	    document.getElementById('routingPinDlg').replaceChildren();
 	    document.getElementById('newgroup').classList.remove('disabled');
 	    document.getElementById( 'devType' ).innerHTML = 'Twin';
+	    renderSceneData(iniscenedata);
 	}
 	aktsign = null;
 	aktroute = null;
@@ -2279,6 +2436,7 @@ window.onload = ( loadev ) => {
 	o.scale.y = mods.scale?.y || 1;
 	o.scale.z = mods.scale?.z || 1;
 	savePositionUserData( o );
+//	console.log('applyModifications',o.userData);
 	/*	o.userData.orot = new THREE.Vector3();
 	o.userData.oscl = new THREE.Vector3();
 	o.position.copy(o.userData.opos);
@@ -2287,7 +2445,7 @@ window.onload = ( loadev ) => {
 	if ( mods.hasOwnProperty('depthWrite') ) o.material.depthWrite = mods.depthWrite;
 	if ( mods.hasOwnProperty('side') ) o.material.side = mods.side;
 	if ( mods.hasOwnProperty('ghost') && mods.ghost ) {
-	    console.log('applyModifications found ghost object',o,mods);
+//	    console.log('applyModifications found ghost object',o,mods);
 	    if ( !o.material.transparency ) o.material.transparency=true;
 	    o.material.side=THREE.DoubleSide;
 	    o.material.opacity = ghosttransp;
@@ -2295,11 +2453,11 @@ window.onload = ( loadev ) => {
 	}
     }
     const findPinObject = ( pin ) => {
-	console.log('findPinObject', pin, parts);
+//	console.log('findPinObject', pin, parts);
 	for ( let i=0; i<parts.length; i++ ) {
-	    console.log('findPinObject part', parts[i].name);
+//	    console.log('findPinObject part', parts[i].name);
 	    if ( pin.part === parts[i].name ) {
-		console.log('findPinObject found part', pin.part);
+//		console.log('findPinObject found part', pin.part);
 		const op = parts[i].pins;
 		for ( let j=0; j<op.length; j++ ) {
 		    if ( op[j] && op[j].name === pin.name ) {
@@ -2326,7 +2484,107 @@ window.onload = ( loadev ) => {
 	    }
 //	    console.log('route h',o.h);
 	});
-	console.log( 'render routes', dra );
+//	console.log( 'render routes', dra );
+    }
+    const iniscenedata = {
+	ambient: {
+	    color: '#111111',
+	    intensity: 1
+	},
+	lights : [
+	    {
+		color:'#ffffff',
+		intensity: 2.5,
+		position: {
+		    x:2000,
+		    y:500,
+		    z:3000
+		}
+	    },
+	    {
+		color:'#ffffff',
+		intensity: 0.01,
+		position: {
+		    x:-1500,
+		    y:3500,
+		    z:1500
+		}
+	    },
+	    
+	    {
+		color:'#ffffff',
+		intensity: 25000000,
+		position: {
+		    x:-1500,
+		    y:-3500,
+		    z:1500
+		}
+	    },
+	    {
+		color:'#ffffff',
+		intensity: 0.01,
+		position: {
+		    x:1500,
+		    y:4500,
+		    z:-1500
+		}
+	    },
+	
+	]
+    }
+    const renderSceneData = ( scenedata ) => {
+	console.log('render scene data',scenedata);
+	const ambcolinp = document.getElementById('ambientcolor');
+	ambcolinp.value = scenedata.ambient.color;
+	ambcolinp.style.background = scenedata.ambient.color;
+	ambientLight.color.set( scenedata.ambient.color );
+	ambcolinp.dispatchEvent(new Event('input', { bubbles: true }));
+
+	document.getElementById('ambientintensity').value = scenedata.ambient.intensity;
+	ambientLight.intensity = scenedata.ambient.intensity;
+	const lights = [ light1, light2, light3, light4 ];
+	for ( let i=0; i<4; i++ ) {
+	    const licolinp = document.getElementById('light'+(i+1)+'color');
+	    licolinp.value = scenedata.lights[i].color;
+	    licolinp.style.background = scenedata.lights[i].color;
+	    licolinp.dispatchEvent(new Event('input', { bubbles: true }));
+	    document.getElementById('light'+(i+1)+'intensity').value = scenedata.lights[i].intensity;
+	    document.getElementById('light'+(i+1)+'x').value = scenedata.lights[i].position.x;
+	    document.getElementById('light'+(i+1)+'y').value = scenedata.lights[i].position.y;
+	    document.getElementById('light'+(i+1)+'z').value = scenedata.lights[i].position.z;
+	    if ( lights[i] ) {
+//		console.log('render light',i,lights[i]);
+		lights[i].color.set(scenedata.lights[i].color);
+		lights[i].intensity=scenedata.lights[i].intensity;
+		lights[i].position.x=scenedata.lights[i].position.x;
+		lights[i].position.y=scenedata.lights[i].position.y;
+		lights[i].position.z=scenedata.lights[i].position.z;
+		if ( lights[i].userData.helper ) lights[i].userData.helper.update();
+	    }
+	}
+    }
+    const showSceneHelpers = ( ) => {
+	const lightobjs = [ light2, light3, light4 ]
+	const hlp = new THREE.DirectionalLightHelper( light1 )
+	light1.userData.helper = hlp;
+	scene.add(hlp);
+	for ( let i=0; i<3; i++ ) {
+	    const o=lightobjs[i];
+	    const helper = new THREE.PointLightHelper( o );
+	    o.userData.helper = helper;
+	    scene.add(helper);
+	}
+    }
+    const hideSceneHelpers = ( ) => {
+	const lightobjs = [ light1, light2, light3, light4 ]
+	for ( let i=0; i<4; i++ ) {
+	    const o=lightobjs[i];
+	    if ( o.userData.helper ) {
+		o.userData.helper.dispose();
+		scene.remove( o.userData.helper );
+		delete o.userData.helper;
+	    }
+	}
     }
     const renderDevice = ( devdata, isbasicp, fin ) => {
 	let target;
@@ -2340,12 +2598,17 @@ window.onload = ( loadev ) => {
 	    if ( devdata.type === 'basic' ) {
 		document.getElementById( 'newgroup' ).classList.add('disabled');
 		document.getElementById( 'DokumenteBtn' ).classList.add('disabled');
+		document.getElementById( 'SzeneBtn' ).classList.add('disabled');
 		document.getElementById('newpart').classList.remove('disabled');
 	    }
 	    else {
 		document.getElementById('newpart').classList.add('disabled');
 		document.getElementById( 'newgroup' ).classList.remove('disabled');
 		document.getElementById( 'DokumenteBtn' ).classList.remove('disabled');
+		document.getElementById( 'SzeneBtn' ).classList.remove('disabled');
+	    }
+	    if ( devdata.scene ) {
+		renderSceneData( devdata.scene );
 	    }
 	    if ( devdata.doks && devdata.doks.length === 3 ) {
 		for ( let i=0; i<devdata.doks.length; i++ ) {
@@ -2416,7 +2679,7 @@ window.onload = ( loadev ) => {
 			if ( isbasicp && target ) target.add(o3);
 			loadopencount--;
 			CheckOpenCount();			
-			console.log('loaded glb',glb);
+//			console.log('loaded glb',glb);
 		    });
 		}
 		else {
@@ -2466,6 +2729,7 @@ window.onload = ( loadev ) => {
 	camera.rotation.y = akt.rotation.y;
 	camera.rotation.z = akt.rotation.z;
 	camera.updateProjectionMatrix();
+	console.log('RestoerCamPos',akt);
     };
     const setControls = () => {
 	const ocampo = {
@@ -2529,9 +2793,11 @@ window.onload = ( loadev ) => {
 	    document.getElementById('saveDeviceBtn').classList.add('disabled');
 	    document.getElementById('saveBasicBtn').classList.remove('disabled');
 	    document.getElementById( 'DokumenteBtn' ).classList.add('disabled');
+	    document.getElementById( 'SzeneBtn' ).classList.add('disabled');
 	    document.getElementById( 'RoutingBtn' ).classList.add('disabled');
 	    document.getElementById( 'devType' ).innerHTML = 'Basic';
 	    document.getElementById( 'devStgHead' ).classList.add('basic');
+	    RestoreCamPos( camstartdefault );
 	}
 	else {
 	    isbasic = false;
@@ -2545,6 +2811,7 @@ window.onload = ( loadev ) => {
 	    document.getElementById('saveBasicBtn').classList.add('disabled');
 	    document.getElementById('saveDeviceBtn').classList.remove('disabled');
 	    document.getElementById( 'DokumenteBtn' ).classList.remove('disabled');
+	    document.getElementById( 'SzeneBtn' ).classList.remove('disabled');
 	    document.getElementById( 'devType' ).innerHTML = 'Twin';
 	    document.getElementById( 'devStgHead' ).classList.remove('basic');
 	}
@@ -2705,6 +2972,27 @@ window.onload = ( loadev ) => {
 	};
 	xhr.send();
     }
+    const getDeviceScene = () => {
+	const scenestruct = {
+	    ambient : {
+		color: document.getElementById('ambientcolor').value,
+		intensity: parseFloat( document.getElementById('ambientintensity').value )
+	    },
+	    lights : []
+	};
+	for ( let i=1; i<5; i++ ) {
+	    scenestruct.lights.push({
+		color: document.getElementById('light'+i+'color').value,
+		intensity: document.getElementById('light'+i+'intensity').value,
+		position: {
+		    x: document.getElementById('light'+i+'x').value,
+		    y: document.getElementById('light'+i+'y').value,
+		    z: document.getElementById('light'+i+'z').value
+		}
+	    });
+	};
+	return scenestruct;
+    }
     const saveDevice = ( typep ) => {
 	const devicenameo = document.getElementById('deviceName');
 	const devicecato = document.getElementById('deviceCat');
@@ -2719,13 +3007,16 @@ window.onload = ( loadev ) => {
 	const devicecat = devicecato.value;
 	const devicemscale = document.getElementById('mscale').value;
 	const devicemunit = document.getElementById('munit').value;
+	const devicescene = getDeviceScene();
 	const devicedoks = [
 	    document.getElementById('dok1txt').value,
 	    document.getElementById('dok2txt').value,
 	    document.getElementById('dok3txt').value
 	];
 	setCamStart( camera );
-	let devdata = { 'name': devicename, 'category': devicecat, 'type': type, 'camstart' : camstart, 'doks': devicedoks, 'parts': [], 'signs': [], 'files' : [], 'links' : [], 'routes' : [] };
+	let devdata = { 'name': devicename, 'category': devicecat, 'type': type, 'camstart' : camstart,
+			'scene': devicescene, 'doks': devicedoks, 'parts': [], 'signs': [],
+			'files' : [], 'links' : [], 'routes' : [] };
 	if ( devicemscale && devicemscale != '' ) {
 	    devdata.mscale = devicemscale;
 	    devdata.munit = devicemunit;
@@ -2736,7 +3027,7 @@ window.onload = ( loadev ) => {
 	    let partdata;
 	    const col = document.querySelector( '#part'+i+' .partcolor' )?.value;
 	    if ( apa.origdata?.color ) apa.origdata.color = col;
-	    console.log('save part col',i,col);
+//	    console.log('save part col',i,col);
 	    if ( apa.type === 'basic' ) {
 		partdata = {
 		    'name' : apa.name,
@@ -3046,7 +3337,7 @@ window.onload = ( loadev ) => {
 		const index = parts.length-1;
 		o3.userData.index = index;
 		o3.userData.type = 'basic';
-//		console.log('loaded Basic',basic.name);
+		basic.name=json.name;
 		if ( basic.modifications ) applyModifications( o3, basic.modifications );
 		mainmesh.add(o3);
 		if ( noloadopen ) {
@@ -3351,6 +3642,23 @@ window.onload = ( loadev ) => {
 //	console.log('broker devices',broker.devices);
 	const keysarr = Object.keys(broker.devices);	
 	const partnode = selbox.parentNode.parentNode;
+	const nodev = document.createElement( 'div' );
+	nodev.innerHTML = '--';
+	const deviceIdClick = ( k ) => {
+	    const oldid = partnode.querySelector('.deviceID').value;
+	    setDeviceId(k, selbox );
+	    selbox.classList.remove('show');
+	    deleteDisplay( oldid );
+	    deleteDisplayMeasures( partnode );
+	    console.log(k);
+	}
+	const deviceIdBlank = () => {
+	    const oldid = partnode.querySelector('.deviceID').value;
+	}
+	nodev.onclick = ( ev ) => {
+	    deviceIdClick('--');
+	}
+	selbox.appendChild(nodev);
 	for ( let i=0; i<keysarr.length; i++ ) {
 	    const k = keysarr[i];
 	    const o = broker.devices[k];
@@ -3362,12 +3670,7 @@ window.onload = ( loadev ) => {
 	    }
 	    else {
 		devlabel.onclick = ( ev ) => {
-		    const oldid = partnode.querySelector('.deviceID').value;
-		    setDeviceId(k, selbox );
-		    selbox.classList.remove('show');
-		    deleteDisplay( oldid );
-		    deleteDisplayMeasures( partnode );
-		    console.log(k);
+		    deviceIdClick( k );
 		}
 	    }
 	    selbox.appendChild(devlabel);
@@ -3378,7 +3681,7 @@ window.onload = ( loadev ) => {
     }
     const ROUTEHEIGHT = 5;
     const add3DRoute = ( ro ) => {
-	console.log('adding 3D route',ro);
+//	console.log('adding 3D route',ro);
 	const rtmsh = new THREE.Object3D();
 	const pinoffs = { 'x':0, 'y':0,'z':-1 };
 	const routeh = ROUTEHEIGHT + (ro.hmod?ro.hmod:0) + routes.length;
@@ -3565,6 +3868,16 @@ window.onload = ( loadev ) => {
 	    if ( ev.target.classList.contains('disabled') ) return;
 	    showDokumenteDlg();
 	}
+	document.getElementById('ambientcolor').onchange = ( ev ) => {
+	    console.log('change ambient color',ev.target.value);
+	}
+	document.getElementById('ambientintensity').onchange = ( ev ) => {
+	    console.log('change ambient intensity',ev.target.value,ambientLight.intensity);
+	}
+	document.getElementById('SzeneBtn').onclick = ( ev ) => {
+	    if ( ev.target.classList.contains('disabled') ) return;
+	    showSzeneDlg();
+	}
 	document.getElementById('RoutingBtn').onclick = ( ev ) => {
 	    if ( ev.target.classList.contains('disabled') ) return;
 	    const routinglyr = document.getElementById('routingDlg');
@@ -3584,6 +3897,9 @@ window.onload = ( loadev ) => {
 	}
 	document.getElementById('dokDlgCls').onclick = ( ev ) => {
 	    hideDokumenteDlg();
+	}
+	document.getElementById('sznDlgCls').onclick = ( ev ) => {
+	    hideSzeneDlg();
 	}
 	document.getElementById('deldokdo').onclick = ( ev ) => {
 	    const maintlyr = document.getElementById('dokdbmaint');
@@ -3869,6 +4185,13 @@ window.onload = ( loadev ) => {
 	    document.body.classList.remove('modalmode');
 	    ev.preventDefault();
 	};
+	document.getElementById('editCopy').onclick = ( ev ) => {
+	    editCopy();
+	};
+	document.getElementById('editPaste').onclick = ( ev ) => {
+	    editPaste();
+	    console.log('editPaste');	    
+	};
 	document.getElementById('editConfirm').onclick = ( ev ) => {
 	    editmode = false;
 	    savePositionUserData(aktmesh);
@@ -3884,6 +4207,12 @@ window.onload = ( loadev ) => {
 	document.getElementById('pinname').onblur = ( ev ) => {
 	    aktpin.name = ev.target.value;
 //	    console.log('pinname',aktpin,ev.target.value);
+	};
+	document.getElementById('pinCopy').onclick = ( ev ) => {
+	    pinCopy();
+	};
+	document.getElementById('pinPaste').onclick = ( ev ) => {
+	    pinPaste();
 	};
 	document.getElementById('pinConfirm').onclick = ( ev ) => {
 //	    editmode = false;
@@ -3940,35 +4269,54 @@ window.onload = ( loadev ) => {
 	    console.log('deviceCat blur');
 	};
 	// Coord Number Fields
-	document.querySelectorAll( '.coord' ).forEach( ( o,i ) => {
+	document.querySelectorAll( '.coord,.lightstrength' ).forEach( ( o,i ) => {
 	    o.onblur = ( ev ) => {
 		if ( ev.target.value && ev.target.value.indexOf(',')>-1) {
 		    ev.target.value = ev.target.value.replace( ',', '.' );
-		    console.log( 'value', ev.target.value );
 		}
-		if ( ev.target.id === 'posx' ) aktmesh.position.x = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'posy' ) aktmesh.position.y = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'posz' ) aktmesh.position.z = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'rotx' ) aktmesh.rotation.x = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'roty' ) aktmesh.rotation.y = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'rotz' ) aktmesh.rotation.z = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'width' ) aktmesh.scale.x = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'height' ) aktmesh.scale.y = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'sclx' ) aktmesh.scale.x = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'scly' ) aktmesh.scale.y = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'sclz' ) aktmesh.scale.z = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'pinx' ) aktpin.obj3d.position.x = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'piny' ) aktpin.obj3d.position.y = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'pinz' ) aktpin.obj3d.position.z = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'pinsclx' ) aktpin.obj3d.scale.x = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'pinscly' ) aktpin.obj3d.scale.y = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'pinsclz' ) aktpin.obj3d.scale.z = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'pinrotx' ) aktpin.obj3d.rotation.x = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'pinroty' ) aktpin.obj3d.rotation.y = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'pinrotz' ) aktpin.obj3d.rotation.z = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'labelposx' ) aktpin.label.position.x = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'labelposy' ) aktpin.label.position.y = parseFloat( ev.target.value );
-		else if ( ev.target.id === 'labelposz' ) aktpin.label.position.z = parseFloat( ev.target.value );
+		let v = parseFloat(ev.target.value).toFixed(4);
+		o.value=v;
+		console.log( 'value', ev.target.value,v,o,o.value );
+		if ( ev.target.id === 'posx' ) aktmesh.position.x = v;
+		else if ( ev.target.id === 'posy' ) aktmesh.position.y = v;
+		else if ( ev.target.id === 'posz' ) aktmesh.position.z = v;
+		else if ( ev.target.id === 'rotx' ) aktmesh.rotation.x = v;
+		else if ( ev.target.id === 'roty' ) aktmesh.rotation.y = v;
+		else if ( ev.target.id === 'rotz' ) aktmesh.rotation.z = v;
+		else if ( ev.target.id === 'width' ) aktmesh.scale.x = v;
+		else if ( ev.target.id === 'height' ) aktmesh.scale.y = v;
+		else if ( ev.target.id === 'sclx' ) aktmesh.scale.x = v;
+		else if ( ev.target.id === 'scly' ) aktmesh.scale.y = v;
+		else if ( ev.target.id === 'sclz' ) aktmesh.scale.z = v;
+		else if ( ev.target.id === 'pinx' ) aktpin.obj3d.position.x = v;
+		else if ( ev.target.id === 'piny' ) aktpin.obj3d.position.y = v;
+		else if ( ev.target.id === 'pinz' ) aktpin.obj3d.position.z = v;
+		else if ( ev.target.id === 'pinsclx' ) aktpin.obj3d.scale.x = v;
+		else if ( ev.target.id === 'pinscly' ) aktpin.obj3d.scale.y = v;
+		else if ( ev.target.id === 'pinsclz' ) aktpin.obj3d.scale.z = v;
+		else if ( ev.target.id === 'pinrotx' ) aktpin.obj3d.rotation.x = v;
+		else if ( ev.target.id === 'pinroty' ) aktpin.obj3d.rotation.y = v;
+		else if ( ev.target.id === 'pinrotz' ) aktpin.obj3d.rotation.z = v;
+		else if ( ev.target.id === 'labelposx' ) aktpin.label.position.x = v;
+		else if ( ev.target.id === 'labelposy' ) aktpin.label.position.y = v;
+		else if ( ev.target.id === 'labelposz' ) aktpin.label.position.z = v;
+		else if ( ev.target.id === 'ambientintensity' ) ambientLight.intensity = v;
+		else if ( ev.target.id === 'light1intensity' ) light1.intensity = v;
+		else if ( ev.target.id === 'light1x' ) light1.position.x = v;
+		else if ( ev.target.id === 'light1y' ) light1.position.y = v;
+		else if ( ev.target.id === 'light1z' ) light1.position.z = v;
+		else if ( ev.target.id === 'light2intensity' ) light2.intensity = v;
+		else if ( ev.target.id === 'light2x' ) light2.position.x = v;
+		else if ( ev.target.id === 'light2y' ) light2.position.y = v;
+		else if ( ev.target.id === 'light2z' ) light2.position.z = v;
+		else if ( ev.target.id === 'light3intensity' ) light3.intensity = v;
+		else if ( ev.target.id === 'light3x' ) light3.position.x = v;
+		else if ( ev.target.id === 'light3y' ) light3.position.y = v;
+		else if ( ev.target.id === 'light3z' ) light3.position.z = v;
+		else if ( ev.target.id === 'light4intensity' ) light4.intensity = v;
+		else if ( ev.target.id === 'light4x' ) light4.position.x = v;
+		else if ( ev.target.id === 'light4y' ) light4.position.y = v;
+		else if ( ev.target.id === 'light4z' ) light4.position.z = v;
 		aktPinCoords();
 		aktEditCoords();
 		console.log('changed coord',ev.target.id);
@@ -3983,12 +4331,15 @@ window.onload = ( loadev ) => {
 		draginp = document.getElementById( ev.target.id.replace('hs','' ) );
 		dragstartval = parseFloat(draginp.value);
 		dragmousestart = ev.clientY;
-		console.log('Enter Dragmode',dragmousestart,dragstartval,draginp);
+		if ( ev.target.getAttribute( 'data-factor' ) )
+		    dragfactor = parseFloat( ev.target.getAttribute( 'data-factor' ) );
+//		console.log('Enter Dragmode',dragmousestart,dragstartval,draginp);
 	    };
 	});
 	window.onmouseup = ( ev ) => {
 	    if ( dragmode ) {
 		dragmode = false;
+		dragfactor = 0.1;
 		aktPinCoords();
 		aktEditCoords();
 		console.log('Leave Dragmode',dragtarget);
@@ -3997,6 +4348,7 @@ window.onload = ( loadev ) => {
 	window.onmouseleave = ( ev ) => {
 	    if ( dragmode ) {
 		dragmode = false;
+		dragfactor = 0.1;
 		aktPinCoords();
 		aktEditCoords();
 		console.log('Leave Dragmode',dragtarget);
@@ -4004,11 +4356,12 @@ window.onload = ( loadev ) => {
 	};
 	window.onmousemove = ( ev ) => {
 	    if ( dragmode ) {
-		const fact = 0.1;
+		const fact = dragfactor;//0.1;
 		let diff = (  dragmousestart - ev.clientY );
 		diff = diff * Math.abs(diff) * fact / 20;
 		const newv = dragstartval + diff;
-		draginp.value = newv;
+		draginp.value = newv.toFixed(4);
+		let cobj=null;
 		if ( dragtarget.id === 'posxhs' ) aktmesh.position.x = newv;
 		else if ( dragtarget.id === 'posyhs' ) aktmesh.position.y = newv;
 		else if ( dragtarget.id === 'poszhs' ) aktmesh.position.z = newv;
@@ -4029,8 +4382,31 @@ window.onload = ( loadev ) => {
 		else if ( dragtarget.id === 'labelposxhs' ) aktpin.label.position.x = newv;
 		else if ( dragtarget.id === 'labelposyhs' ) aktpin.label.position.y = newv;
 		else if ( dragtarget.id === 'labelposzhs' ) aktpin.label.position.z = newv;
+		else if ( dragtarget.id === 'ambientintensityhs' ) ambientLight.intensity = newv;
+		else if ( dragtarget.id === 'light1xhs' ) { light1.position.x = newv; cobj = light1; }
+		else if ( dragtarget.id === 'light1yhs' ) { light1.position.y = newv; cobj = light1; }
+		else if ( dragtarget.id === 'light1zhs' ) { light1.position.z = newv; cobj = light1; }
+		else if ( dragtarget.id === 'light2xhs' ) { light2.position.x = newv; cobj = light2; }
+		else if ( dragtarget.id === 'light2yhs' ) { light2.position.y = newv; cobj = light2; }
+		else if ( dragtarget.id === 'light2zhs' ) { light2.position.z = newv; cobj = light2; }
+		else if ( dragtarget.id === 'light3xhs' ) { light3.position.x = newv; cobj = light3; }
+		else if ( dragtarget.id === 'light3yhs' ) { light3.position.y = newv; cobj = light3; }
+		else if ( dragtarget.id === 'light3zhs' ) { light3.position.z = newv; cobj = light3; }
+		else if ( dragtarget.id === 'light4xhs' ) { light4.position.x = newv; cobj = light4; }
+		else if ( dragtarget.id === 'light4yhs' ) { light4.position.y = newv; cobj = light4; }
+		else if ( dragtarget.id === 'light4zhs' ) { light4.position.z = newv; cobj = light4; }
+		else if ( dragtarget.id === 'light1intensityhs' || dragtarget.id === 'light1intensity' ) {
+		    light1.intensity = newv; cobj = light1; }
+		else if ( dragtarget.id === 'light2intensityhs' || dragtarget.id === 'light2intensity' ) {
+		    light2.intensity = newv; cobj = light2; }
+		else if ( dragtarget.id === 'light3intensityhs' || dragtarget.id === 'light3intensity' ) {
+		    light3.intensity = newv; cobj = light3; }
+		else if ( dragtarget.id === 'light4intensityhs' || dragtarget.id === 'light4intensity' ) {
+		    light4.intensity = newv; cobj = light4; }
+		if ( cobj && cobj.userData.helper ) {
+		    cobj.userData.helper.update();		    
+		}
 		if ( hlp ) hlp.update();
-		//		console.log('Dragging',diff,editbackup);
 	    };
 	};
 	
@@ -4060,11 +4436,11 @@ window.onload = ( loadev ) => {
     // FH-Header
     const fhheader = document.querySelector('header');
     fhheader.onmouseenter = () => {
-	console.log('enter fhheader');
+//	console.log('enter fhheader');
 	fhheader.classList.remove('hidden');
     }
     fhheader.onmouseleave = () => {
-	console.log('leave fhheader');
+//	console.log('leave fhheader');
 	fhheader.classList.add('hidden');
     }
     window.setTimeout( () => {

@@ -127,6 +127,7 @@ client.on('connect', function () {
     }
 })
 
+
 client.on('error', function (err) {
     console.log('error',err);
 })
@@ -154,7 +155,7 @@ const pubMessage = ( id, msg ) => {
 }
 
 const aktMeter = ( id, msg, ind ) => {
-    if ( !broker.devices[id].meta.payloadStructure || !msg ) return;
+    if ( !broker.devices[id] || !broker.devices[id].meta || !broker.devices[id].meta.payloadStructure || !msg ) return;
     let mname = 'sensormeters' + (ind>0?ind-1:'');;
 //    if ( i>0 ) mname += (i-1);
     const meterdom = document.getElementById(mname);
@@ -192,7 +193,7 @@ const aktMeter = ( id, msg, ind ) => {
 }
 
 const aktSensorout = ( id, msg, ind ) => {
-    if ( !broker.devices[id].meta.payloadStructure ) return;
+    if ( !broker.devices[id].meta?.payloadStructure ) return;
     const nname = 'sensorout' + (ind>0?ind-1:'');
     const out = document.getElementById( nname );
     let message = '';
@@ -205,18 +206,18 @@ const aktSensorout = ( id, msg, ind ) => {
     out.innerHTML = message + '<br />' + out.innerHTML;//message;    
 }
 
-    const getGrafanaData = ( id ) => {
-	for ( let i=0; i<pipedevs.length; i++ ) {
-	    const o = pipedevs[i];
-	    if ( o && o.id && o.id === id ) {
-		return o.data;
-	    }
+const getGrafanaData = ( id ) => {
+    for ( let i=0; i<pipedevs.length; i++ ) {
+	const o = pipedevs[i];
+	if ( o && o.id && o.id === id ) {
+	    return o.data;
 	}
     }
+}
 
 
 
-const aktDisplay = ( display, msg ) => {
+const aktDisplay = ( display, msg, initial ) => {   
     // when broker data has not yet arrived, stash the akt request for a second
     if ( ! broker.devices[display.id].meta || ! broker.devices[display.id].meta.payloadStructure ) {
 	window.setTimeout( () => { aktDisplay( display, msg ); }, 1000 );
@@ -232,16 +233,20 @@ const aktDisplay = ( display, msg ) => {
 //		    console.log('akt Display',typeof msg[i]);
 		    //	Displays.push( { 'id' : id, 'mesh' : mesh, 'measures' : measures, 'dispdom' : sensdiv } );
 		    const tmsg = typeof msg[i] === 'number' ? msg[i].toFixed(2) : msg[i];
-		    display.dispdom.insertAdjacentHTML( 'beforeend', '<b>'+ struct[i].name + ':</b> ' + tmsg + ' ' + (struct[i].unit || '') + '<br />' );
+		    display.dispdom.insertAdjacentHTML( 'beforeend', '<span'+(initial?' class="ini"':'')+'><b>'+ struct[i].name + ':</b> ' + tmsg + ' ' + (struct[i].unit || '') + '</span><br />' );
 		}
 	    }
     };
 }
 
 const aktDisplayById = ( id, msg ) => {
+    const ld = broker.devices[id].lastdata;
+    const sld = ld[ld.length-1];
+    console.log('akt display by id',id,msg,sld);
+    const m = msg || sld;
     for ( let i=0; i<Displays.length; i++ ) {
-	if ( Displays[i].id === id ) {
-	    aktDisplay( Displays[i], msg );
+	if ( Displays[i].id === id && m ) {
+	    aktDisplay( Displays[i], m, true );
 	    break;
 	}
     }
@@ -561,15 +566,15 @@ window.onload = ( loadev ) => {
     light1.position.set( 2000, 500, 3000 );
     scene.add( light1 );
     
-    const light2 = new THREE.DirectionalLight( 0xffffff, 0.01 );
+    const light2 = new THREE.PointLight( 0xffffff, 0.01 );
     light2.position.set( -2000, -1700, -3000 );
     scene.add( light2 );
 
-    const light3 = new THREE.DirectionalLight( 0xffffff, 2.5 );
+    const light3 = new THREE.PointLight( 0xffffff, 25000000 );
     light3.position.set( -1500, -3500, 1500 );
     scene.add( light3 );
 
-    const light4 = new THREE.DirectionalLight( 0xffffff, 0.01 );
+    const light4 = new THREE.PointLight( 0xffffff, 0.01 );
     light4.position.set( 1500, 4500, -1500 );
     scene.add( light4 );
 
@@ -881,6 +886,7 @@ window.onload = ( loadev ) => {
 	sensdiv.id = 'display'+id; sensdiv.classList.add('sensordisplay');
 	ovl.appendChild(sensdiv);
 	Displays.push( { 'id' : id, 'mesh' : mesh, 'measures' : measures, 'dispdom' : sensdiv, 'height' : height||0 } );
+	aktDisplayById( id );
 	console.log('add Display',id,Displays);
 	return Displays.length-1;
     }
@@ -1308,6 +1314,7 @@ window.onload = ( loadev ) => {
 	document.getElementById('routelist').replaceChildren();
 	document.getElementById('dokDatLyr').classList.remove('show');
 	document.getElementById('deviceTabs').querySelector('.akt')?.classList.remove('akt');
+	renderSceneData(iniscenedata);
 //	document.getElementById('linklist').replaceChildren();
 //	console.log('reset device', mainmesh, signmesh);
     }
@@ -1363,6 +1370,69 @@ window.onload = ( loadev ) => {
 	});
 //	console.log( 'render routes', dra );
     }
+    const iniscenedata = {
+	ambient: {
+	    color: '#111111',
+	    intensity: 1
+	},
+	lights : [
+	    {
+		color:'#ffffff',
+		intensity: 2.5,
+		position: {
+		    x:2000,
+		    y:500,
+		    z:3000
+		}
+	    },
+	    {
+		color:'#ffffff',
+		intensity: 0.01,
+		position: {
+		    x:-1500,
+		    y:3500,
+		    z:1500
+		}
+	    },
+	    
+	    {
+		color:'#ffffff',
+		intensity: 25000000,
+		position: {
+		    x:-1500,
+		    y:-3500,
+		    z:1500
+		}
+	    },
+	    {
+		color:'#ffffff',
+		intensity: 0.01,
+		position: {
+		    x:1500,
+		    y:4500,
+		    z:-1500
+		}
+	    },
+	
+	]
+    }
+    const renderSceneData = ( scenedata ) => {
+	console.log('render scene data',scenedata);
+	ambientLight.color.set( scenedata.ambient.color );
+	ambientLight.intensity = scenedata.ambient.intensity;
+	const lights = [ light1, light2, light3, light4 ];
+	for ( let i=0; i<4; i++ ) {
+	    if ( lights[i] ) {
+//		console.log('render light',i,lights[i]);
+		lights[i].color.set(scenedata.lights[i].color);
+		lights[i].intensity=scenedata.lights[i].intensity;
+		lights[i].position.x=scenedata.lights[i].position.x;
+		lights[i].position.y=scenedata.lights[i].position.y;
+		lights[i].position.z=scenedata.lights[i].position.z;
+		if ( lights[i].userData.helper ) lights[i].userData.helper.update();
+	    }
+	}
+    }
     const renderDevice = ( devdata, isbasic ) => {
 	let target;
 	if ( isbasic ) target = new THREE.Object3D();
@@ -1380,6 +1450,9 @@ window.onload = ( loadev ) => {
 	    if ( devdata.links.length > 0 ) {
 //		console.log( 'render links', devdata.links );
 		links = devdata.links;
+	    }
+	    if ( devdata.scene ) {
+		renderSceneData( devdata.scene );
 	    }
 	}
 	devdata.parts.forEach( ( o, i ) => {
