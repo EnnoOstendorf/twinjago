@@ -3665,14 +3665,14 @@ window.onload = ( loadev ) => {
 //	    console.log('device',i,k,o);
 	    const devlabel = document.createElement( 'div' );
 	    devlabel.innerHTML = k;
-	    if ( devInUse( k ) ) {
-		devlabel.classList.add('inactive');
-	    }
-	    else {
+//	    if ( devInUse( k ) ) {
+//		devlabel.classList.add('inactive');
+//	    }
+//	    else {
 		devlabel.onclick = ( ev ) => {
 		    deviceIdClick( k );
 		}
-	    }
+//	    }
 	    selbox.appendChild(devlabel);
 //	    selbox.insertAdjacentHTML( 'beforeend',
 //				       '<div>'+k+'</div>' );
@@ -4449,6 +4449,3 @@ window.onload = ( loadev ) => {
 
     HTMLready = true;
 };
-
-
-// Teständerung zur Demonstration von github
