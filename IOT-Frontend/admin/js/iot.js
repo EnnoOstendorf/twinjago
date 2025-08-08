@@ -3332,6 +3332,11 @@ window.onload = ( loadev ) => {
 	xhr.onreadystatechange = function () {
 	    if (xhr.readyState === 4 && xhr.status === 200) {
 		var json = JSON.parse(xhr.responseText);
+		if ( !json ) {
+		    loadopencount--;
+		    CheckOpenCount();
+		    return;
+		}
 		basic.parts = json.parts;
 		const o3=renderDevice(json,basic);
 		const index = parts.length-1;
