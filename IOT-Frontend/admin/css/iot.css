@@ -1110,6 +1110,17 @@ input.error {
 .fileitem.deleted {
 	text-decoration: line-through;
 }
+#brandlogo {
+	max-width: 300px;
+	display: block;
+	margin: 0 60px 20px;
+}
+#branddlg b {
+	display: inline-block;
+	font-weight: bold;
+	font-size: 15px;
+	margin: 0 20px;
+}
 #dbmaintbtn {
 	display: block;
 	position: absolute;
