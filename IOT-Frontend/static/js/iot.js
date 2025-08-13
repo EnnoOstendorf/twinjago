@@ -1310,6 +1310,8 @@ window.onload = ( loadev ) => {
 	document.getElementById('sensorout').replaceChildren();
 	document.getElementById('dokLyr').replaceChildren();
 	document.getElementById('dokLyr').classList.remove('show');
+	document.getElementById('devicelogo').classList.remove('show');
+	document.getElementById('devicelogoimage').src='';
 	document.getElementById('partlist').replaceChildren();
 	document.getElementById('routelist').replaceChildren();
 	document.getElementById('dokDatLyr').classList.remove('show');
@@ -1453,6 +1455,10 @@ window.onload = ( loadev ) => {
 	    }
 	    if ( devdata.scene ) {
 		renderSceneData( devdata.scene );
+	    }
+	    if ( devdata.scene?.logo ) {
+		document.getElementById('devicelogoimage').src=devdata.scene.logo;
+		document.getElementById('devicelogo').classList.add('show');
 	    }
 	}
 	devdata.parts.forEach( ( o, i ) => {

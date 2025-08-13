@@ -64,7 +64,7 @@ body {
 	padding: 200px 10px 10px;
 	border-radius: 0 0 20px 0;
 	position: absolute;
-	z-index: 1;
+	z-index: 2;
 	top: 0;
 	left: calc(-25% - 20px);
 	max-width: 80%;
@@ -126,6 +126,22 @@ body {
 }
 .deviceNavi .tree li {
 	width: 81%;
+}
+#devicelogo {
+	position: fixed;
+	left: 0;
+	top: 80px;
+	z-index: 1;
+	width: 0;
+	overflow: hidden;
+	transition: all 0.5s ease-in-out;
+}
+#devicelogo.show {
+	width: auto;
+}
+#devicelogo img {
+	width: auto;
+	max-width: 200px;
 }
 .deviceStage {
 	margin: 0;

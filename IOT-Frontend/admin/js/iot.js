@@ -1878,14 +1878,20 @@ window.onload = ( loadev ) => {
 	addFiles( finput3.files );
 	finput3.value='';
     }
+    const logodeldom = document.getElementById('branddelete');
+    const logodom = document.getElementById('brandlogo');
+    logodeldom.onclick = () => {
+	logodom.removeAttribute('src');
+	logodeldom.classList.remove('show');
+    }
     const addLogo = ( files ) => {
 	console.log('addLogo',files);
-	const logodom = document.getElementById('brandlogo');
 	for ( let i=0; i<files.length; i++ ) {
 	    const reader = new FileReader();
 	    reader.onload = (e) => {		
 		const rawfile = e.target.result;
 		logodom.src = rawfile;
+		logodeldom.classList.add('show');
 		console.log('read logo file',e, files[i].name, files[i].size);
 	    };
 	    reader.readAsDataURL(files[i]);
@@ -2422,7 +2428,8 @@ window.onload = ( loadev ) => {
 	document.getElementById('munit').value = 'Meter';
 	
 	//	document.getElementById('deviceID').value = '';
-	document.getElementById('brandlogo').src = '';
+	document.getElementById('brandlogo').removeAttribute('src');
+	document.getElementById('branddelete').classList.remove('show');
 	document.getElementById('dok1txt').value = '';
 	document.getElementById('dok2txt').value = '';
 	document.getElementById('dok3txt').value = '';
@@ -2630,6 +2637,7 @@ window.onload = ( loadev ) => {
 		renderSceneData( devdata.scene );
 		if ( devdata.scene.logo ) {
 		    document.getElementById('brandlogo').src = devdata.scene.logo;
+		    document.getElementById('branddelete').classList.add('show');
 		}
 	    }
 	    if ( devdata.doks && devdata.doks.length === 3 ) {
@@ -3037,6 +3045,10 @@ window.onload = ( loadev ) => {
 	];
 	const devicelogo = document.getElementById('brandlogo').src;
 	if ( devicelogo && devicelogo != '' ) devicescene.logo = devicelogo;
+	else if ( devicescene.logo ) {
+	    delete devicescene.logo;
+	    console.log('deleting logo');
+	}
 	
 	setCamStart( camera );
 	let devdata = { 'name': devicename, 'category': devicecat, 'type': type, 'camstart' : camstart,
