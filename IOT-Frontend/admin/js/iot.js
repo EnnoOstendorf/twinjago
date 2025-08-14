@@ -1485,6 +1485,51 @@ window.onload = ( loadev ) => {
 	}
 //	console.log('New Color', event.detail.currentEl.id);
     });
+    const fillDisplayMeasures = ( dspBox, part, prefill ) => {
+	const dispmsrdiv = dspBox.querySelector('.dispsensmsr');
+	const id = dspBox.querySelector('.deviceID').value;
+	if ( !broker.devices[id] || !broker.devices[id].meta ) return;
+	dispmsrdiv.replaceChildren();
+	const msrs = broker.devices[id].meta.payloadStructure;
+	for ( let i=0; i<msrs.length; i++ ) {
+//	    console.log('fillDisplayMeasures',part,prefill,msrs[i]);
+	    const nc = document.createElement('input');
+	    nc.type = 'checkbox';
+	    nc.classList.add('dispmsrinp');
+	    if ( prefill ) for ( let j=0; j<prefill.length; j++ ) {
+		if ( prefill[j].name === msrs[i].name ) {
+//		    console.log('found measure',prefill[j].name, msrs[i].name);
+		    nc.checked = 'checked';
+		}
+	    };
+	    nc.onchange = ( ev ) => {
+		console.log('dispmeasure change',Displays,part);
+		if ( ev.target.checked ) {
+		    if ( ! part.displaymeasures ) part.displaymeasures = [];
+		    part.displaymeasures.push( msrs[i] );
+		    console.log('add measure',msrs[i],part.displaymeasures);
+		}
+		else {
+		    const ii = part.displaymeasures.indexOf(msrs[i])
+		    part.displaymeasures.splice(ii,1);
+		    console.log('remove measure',msrs[i],part.displaymeasures);
+		}
+	    }
+	    dispmsrdiv.appendChild( nc );
+	    dispmsrdiv.insertAdjacentHTML( 'beforeend',msrs[i].name );
+	}
+//	console.log('fill Display',id,dispmsrdiv,msrs,part.display);
+	//	selbox.replaceChildren();
+    }
+    const deleteDisplayMeasures = ( dspBox ) => {
+	const dispmsrdiv = dspBox.querySelector('.dispsensmsr');
+	dispmsrdiv.replaceChildren();
+	const dispchkdiv = dspBox.querySelector('.displaysensorcheck');
+	dispchkdiv.checked=false;
+	
+	console.log('delete Display',dspBox);
+//	selbox.replaceChildren();
+    }
     const shortenPartName = ( name ) => {
 	let shortname;
 	if ( name.length > 19 ) {
@@ -3545,10 +3590,6 @@ window.onload = ( loadev ) => {
 	    if ( ev.target.classList.contains('disabled') ) return;
 	    const basics = getBasics();
 	};
-	document.getElementById( 'display' ).onclick = ( ev ) => {
-	    if ( ev.target.classList.contains('disabled') ) return;
-	    showAddDisplay();
-	};
 	const importHandler = ( finput ) => {
 	    const fname = finput.files[0].name;
 	    const ext = fname.substr(fname.lastIndexOf('.')+1);
@@ -3610,51 +3651,6 @@ window.onload = ( loadev ) => {
 	    */
     };
     
-    const fillDisplayMeasures = ( dspBox, part, prefill ) => {
-	const dispmsrdiv = dspBox.querySelector('.dispsensmsr');
-	const id = dspBox.querySelector('.deviceID').value;
-	if ( !broker.devices[id] || !broker.devices[id].meta ) return;
-	dispmsrdiv.replaceChildren();
-	const msrs = broker.devices[id].meta.payloadStructure;
-	for ( let i=0; i<msrs.length; i++ ) {
-//	    console.log('fillDisplayMeasures',part,prefill,msrs[i]);
-	    const nc = document.createElement('input');
-	    nc.type = 'checkbox';
-	    nc.classList.add('dispmsrinp');
-	    if ( prefill ) for ( let j=0; j<prefill.length; j++ ) {
-		if ( prefill[j].name === msrs[i].name ) {
-//		    console.log('found measure',prefill[j].name, msrs[i].name);
-		    nc.checked = 'checked';
-		}
-	    };
-	    nc.onchange = ( ev ) => {
-		console.log('dispmeasure change',Displays,part);
-		if ( ev.target.checked ) {
-		    if ( ! part.displaymeasures ) part.displaymeasures = [];
-		    part.displaymeasures.push( msrs[i] );
-		    console.log('add measure',msrs[i],part.displaymeasures);
-		}
-		else {
-		    const ii = part.displaymeasures.indexOf(msrs[i])
-		    part.displaymeasures.splice(ii,1);
-		    console.log('remove measure',msrs[i],part.displaymeasures);
-		}
-	    }
-	    dispmsrdiv.appendChild( nc );
-	    dispmsrdiv.insertAdjacentHTML( 'beforeend',msrs[i].name );
-	}
-//	console.log('fill Display',id,dispmsrdiv,msrs,part.display);
-	//	selbox.replaceChildren();
-    }
-    const deleteDisplayMeasures = ( dspBox ) => {
-	const dispmsrdiv = dspBox.querySelector('.dispsensmsr');
-	dispmsrdiv.replaceChildren();
-	const dispchkdiv = dspBox.querySelector('.displaysensorcheck');
-	dispchkdiv.checked=false;
-	
-	console.log('delete Display',dspBox);
-//	selbox.replaceChildren();
-    }
     const deleteDisplay = ( id ) => {
 	for ( let i=0; i<Displays.length; i++ ) {
 	    console.log('delete Display',id,Displays[i].id);
