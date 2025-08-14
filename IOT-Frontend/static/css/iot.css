@@ -130,11 +130,12 @@ body {
 #devicelogo {
 	position: fixed;
 	left: 0;
-	top: 80px;
+	top: 90px;
 	z-index: 1;
 	width: 0;
 	overflow: hidden;
 	transition: all 0.5s ease-in-out;
+	border-radius: 0 10px 10px 0;
 }
 #devicelogo.show {
 	width: auto;
