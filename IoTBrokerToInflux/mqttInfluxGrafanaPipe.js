@@ -190,7 +190,7 @@ const parseMessage = ( id, msg ) => {
     [ type, id ] = id.split( /\// );
 //    console.log('got message',type,id);
     if ( ! devices[id] ) {
-	devices[id] = { 'meta' : '', 'datacount' : 0, 'beaconcount' : 0, 'lastdata' : [] };
+	devices[id] = { 'meta' : '', 'datacount' : 0, 'beaconcount' : 0, 'lastdata' : [], 'data' : { 'ignore':true } };
 	deviceids.push( id );	
 	console.log( 'new device', id );
     }
