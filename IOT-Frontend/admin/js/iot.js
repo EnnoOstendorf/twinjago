@@ -2259,11 +2259,17 @@ window.onload = ( loadev ) => {
 	buf.sclx = document.getElementById('sclx').value;
 	buf.scly = document.getElementById('scly').value;
 	buf.sclz = document.getElementById('sclz').value;
-	localStorage.setItem('twinjago.edit.buffer', JSON.stringify(buf));
+	buf.width = document.getElementById('width').value;
+	buf.height = document.getElementById('height').value;
+	let lsitem = 'twinjago.edit.buffer';
+	if ( document.getElementById('editDlg').classList.contains('sign') ) lsitem = 'twinjago.editsign.buffer';
+	localStorage.setItem(lsitem, JSON.stringify(buf));
 	console.log('editCopy',buf);
     }
     const editPaste = () => {
-	const buf=JSON.parse(localStorage.getItem('twinjago.edit.buffer'));
+	let lsitem = 'twinjago.edit.buffer';
+	if ( document.getElementById('editDlg').classList.contains('sign') ) lsitem = 'twinjago.editsign.buffer';
+	const buf=JSON.parse(localStorage.getItem(lsitem));
 	if ( !buf ) return;
 	document.getElementById('posx').value=buf.posx;
 	aktmesh.position.x = parseFloat(buf.posx.replace(',','.'));
@@ -2283,7 +2289,15 @@ window.onload = ( loadev ) => {
 	aktmesh.scale.y = parseFloat(buf.scly.replace(',','.'));
 	document.getElementById('sclz').value=buf.sclz;
 	aktmesh.scale.z = parseFloat(buf.sclz.replace(',','.'));
-	console.log('editPaste',buf);
+	if ( buf.width && !isNaN(parseFloat(buf.width.replace(',','.')))) {
+	    document.getElementById('width').value=buf.width;
+	    aktmesh.scale.x = parseFloat(buf.width.replace(',','.'));
+	}
+	if ( buf.height && !isNaN(parseFloat(buf.height.replace(',','.')))) {
+	    document.getElementById('height').value=buf.height;
+	    aktmesh.scale.x = parseFloat(buf.height.replace(',','.'));
+	}
+console.log('editPaste',buf);
     }
     const pinPaste = () => {
 	const buf=JSON.parse(localStorage.getItem('twinjago.pin.buffer'));
