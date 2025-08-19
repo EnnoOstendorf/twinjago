@@ -170,6 +170,7 @@ const backupDevices = () => {
     for ( let i=0; i<deviceids.length; i++ ) {
 //	console.log('backing up',deviceids[i]);
 	const devid = deviceids[i];
+	if ( devices[devid].ignore ) return;
 	const marr = devices[devid].meta.payloadStructure;
 	if ( marr )
 	    for( let j=0; j<marr.length; j++ ) {
@@ -214,8 +215,8 @@ const fileify = ( tname ) => {
 }
 
 const backupDaily = () => {
-// stderr is sent to stderr of parent process
-// you can set options.stdio if you want it to go elsewhere
+    // stderr is sent to stderr of parent process
+    // you can set options.stdio if you want it to go elsewhere
     const now = Date.now();
     const nowdaystart = tagify( now );    
     const nd=new Date((nowdaystart-1)*86400000);
@@ -224,30 +225,31 @@ const backupDaily = () => {
     writtenfiles.sort();
     for ( let i=0; i<deviceids.length; i++ ) {
 	const devid = deviceids[i];
-	if ( devices[deviceids[i]].meta.payloadStructure )
-	for ( let j=0; j<devices[deviceids[i]].meta.payloadStructure.length; j++ ) {
-	    const m=fileify(devices[deviceids[i]].meta.payloadStructure[j].name);
-	    const fnamepre = devid+'-'+m+'-'+datestr;
-	    let cmd = '';
-	    let found =0;
-	    for ( let k=0; k<writtenfiles.length; k++ ) {
-		const t = fileify( writtenfiles[k] );
-		if ( t.includes( fnamepre ) ) {
-		    //		    console.log(writtenfiles[k]);
-		    found++;
-		    cmd += 'static/archive/'+t+' ';
+	const aktdev = devices[deviceids[i]];
+	if ( !aktdev.ignore && aktdev.meta.payloadStructure )
+	    for ( let j=0; j<aktdev.meta.payloadStructure.length; j++ ) {
+		const m=fileify(aktdev.meta.payloadStructure[j].name);
+		const fnamepre = devid+'-'+m+'-'+datestr;
+		let cmd = '';
+		let found =0;
+		for ( let k=0; k<writtenfiles.length; k++ ) {
+		    const t = fileify( writtenfiles[k] );
+		    if ( t.includes( fnamepre ) ) {
+			//		    console.log(writtenfiles[k]);
+			found++;
+			cmd += 'static/archive/'+t+' ';
+		    }
 		}
+		if ( found > 0 ) {
+		    const tfnamepre = fnamepre.replace('\\ ','_');		    
+		    cmd = 'cat ' + cmd + '> static/archive/daily/' + tfnamepre + '.csv;';
+		    cmd += 'zip static/archive/daily/'+tfnamepre+'.csv.zip static/archive/daily/'+tfnamepre+'.csv;';
+		    cmd += 'rm static/archive/daily/'+tfnamepre+'.csv';
+		    let stdout = execSync(cmd);
+		    writtendaily.push( tfnamepre+'.csv.zip' );
+		}
+		console.log('backing up daily',fnamepre);
 	    }
-	    if ( found > 0 ) {
-		const tfnamepre = fnamepre.replace('\\ ','_');		    
-		cmd = 'cat ' + cmd + '> static/archive/daily/' + tfnamepre + '.csv;';
-		cmd += 'zip static/archive/daily/'+tfnamepre+'.csv.zip static/archive/daily/'+tfnamepre+'.csv;';
-		cmd += 'rm static/archive/daily/'+tfnamepre+'.csv';
-		let stdout = execSync(cmd);
-		writtendaily.push( tfnamepre+'.csv.zip' );
-	    }
-	    console.log('backing up daily',fnamepre);
-	}
     };
 
     removeOldFiles();
