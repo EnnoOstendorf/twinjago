@@ -372,7 +372,26 @@ can be restored after system boot
 pm2 save
 ```
 
+## artificial Devices
 
+### configure
+edit the html files in ``IOT-Frontend/static/artificial_pages`` and replace freetwin.de by your hostname.
+edit the python files ``artifical_Devices/dupli_Devices/dupli_mqtt_server_37.py``, ``artifical_Devices/simulation_Devices/simulation_server_42.py``, ``artifical_Devices/moving_Devices/Moving_server_43.py`` and replace freetwin.de by your hostname.
+
+### start all servers
+enter the directory ``/artificial_Devices`` in shell and run
+```
+./artificial_device_service_starter.sh
+```
+
+### stop all servers
+enter the directory ``/artificial_Devices`` in shell and run
+```
+./artificial_device_service_stopper.sh
+```
+
+### run on bootup
+take care on yourself to let the Start command be called on bootup
 
 
 ## Trivia
