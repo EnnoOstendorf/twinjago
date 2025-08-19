@@ -881,6 +881,10 @@ input.error {
 	right: 0;
 	top: calc(50% - 130px);
 }
+#dokumenteDlg {
+    top: auto;
+    bottom: -120px;
+}
 #editDisplayDlg {
 	top: auto;
 	bottom: 0;
@@ -1109,6 +1113,24 @@ input.error {
 }
 .fileitem.deleted {
 	text-decoration: line-through;
+}
+#brandlogo {
+	max-width: 300px;
+	display: block;
+	margin: 0 60px 10px;
+}
+#branddelete {
+    display: none;
+    margin: 10px auto 20px;
+}
+#branddelete.show {
+    display: block;
+}
+#branddlg b {
+	display: inline-block;
+	font-weight: bold;
+	font-size: 15px;
+	margin: 0 20px;
 }
 #dbmaintbtn {
 	display: block;

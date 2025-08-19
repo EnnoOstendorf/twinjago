@@ -91,7 +91,6 @@
 	<div id="signs"><h2>Beschilderung</h2>
 	  <div id="signsinner"></div>	    
 	  <div class="newsign" id="newsign"><label for="newsignfile">+ Schildbild <input type="file" id="newsignfile" autocomplete="off"></label></div>
-	  <div class="newsign" id="display">+ Display</div>
 	  <div class="modalovl"></div>
 	</div>
 	<div id="editDisplayDlg">
@@ -194,10 +193,17 @@
 	  <button id="sznDlgCls">Schließen</button>
 	</div>
 	<div id="dokumenteDlg">
+	  <h3>Branding</h3>
+	  <div id="branddlg">
+	    <img id="brandlogo" />
+	    <button id="branddelete">Löschen</button>
+	    <b>Logoupload</b>
+	    <input type="file" id="logouploadfile" autocomplete="off" />
+	    <div class="footnote">Das Logo wird max. mit 300px Breite angezeigt. <br />Das hochgeladene Bild sollte daher aus performance Gründen nicht breiter sein.</div>
+	  </div>
 	  <h3>Informationen</h3>
 	  <div class="dokrow">
-	    <b>Beschreibung 1</b>
-	    <textarea id="dok1txt" autocomplete="off" placeholder=""></textarea>
+	    <b>Beschreibung 1</b> <textarea id="dok1txt" autocomplete="off" placeholder=""></textarea>
 	  </div>
 	  <div class="dokrow">
 	    <b>Beschreibung 2</b>

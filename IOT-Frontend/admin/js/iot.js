@@ -1485,6 +1485,51 @@ window.onload = ( loadev ) => {
 	}
 //	console.log('New Color', event.detail.currentEl.id);
     });
+    const fillDisplayMeasures = ( dspBox, part, prefill ) => {
+	const dispmsrdiv = dspBox.querySelector('.dispsensmsr');
+	const id = dspBox.querySelector('.deviceID').value;
+	if ( !broker.devices[id] || !broker.devices[id].meta ) return;
+	dispmsrdiv.replaceChildren();
+	const msrs = broker.devices[id].meta.payloadStructure;
+	for ( let i=0; i<msrs.length; i++ ) {
+//	    console.log('fillDisplayMeasures',part,prefill,msrs[i]);
+	    const nc = document.createElement('input');
+	    nc.type = 'checkbox';
+	    nc.classList.add('dispmsrinp');
+	    if ( prefill ) for ( let j=0; j<prefill.length; j++ ) {
+		if ( prefill[j].name === msrs[i].name ) {
+//		    console.log('found measure',prefill[j].name, msrs[i].name);
+		    nc.checked = 'checked';
+		}
+	    };
+	    nc.onchange = ( ev ) => {
+		console.log('dispmeasure change',Displays,part);
+		if ( ev.target.checked ) {
+		    if ( ! part.displaymeasures ) part.displaymeasures = [];
+		    part.displaymeasures.push( msrs[i] );
+		    console.log('add measure',msrs[i],part.displaymeasures);
+		}
+		else {
+		    const ii = part.displaymeasures.indexOf(msrs[i])
+		    part.displaymeasures.splice(ii,1);
+		    console.log('remove measure',msrs[i],part.displaymeasures);
+		}
+	    }
+	    dispmsrdiv.appendChild( nc );
+	    dispmsrdiv.insertAdjacentHTML( 'beforeend',msrs[i].name );
+	}
+//	console.log('fill Display',id,dispmsrdiv,msrs,part.display);
+	//	selbox.replaceChildren();
+    }
+    const deleteDisplayMeasures = ( dspBox ) => {
+	const dispmsrdiv = dspBox.querySelector('.dispsensmsr');
+	dispmsrdiv.replaceChildren();
+	const dispchkdiv = dspBox.querySelector('.displaysensorcheck');
+	dispchkdiv.checked=false;
+	
+	console.log('delete Display',dspBox);
+//	selbox.replaceChildren();
+    }
     const shortenPartName = ( name ) => {
 	let shortname;
 	if ( name.length > 19 ) {
@@ -1877,7 +1922,31 @@ window.onload = ( loadev ) => {
     finput3.onchange = ( ev ) => {
 	addFiles( finput3.files );
 	finput3.value='';
-    }	
+    }
+    const logodeldom = document.getElementById('branddelete');
+    const logodom = document.getElementById('brandlogo');
+    logodeldom.onclick = () => {
+	logodom.removeAttribute('src');
+	logodeldom.classList.remove('show');
+    }
+    const addLogo = ( files ) => {
+	console.log('addLogo',files);
+	for ( let i=0; i<files.length; i++ ) {
+	    const reader = new FileReader();
+	    reader.onload = (e) => {		
+		const rawfile = e.target.result;
+		logodom.src = rawfile;
+		logodeldom.classList.add('show');
+		console.log('read logo file',e, files[i].name, files[i].size);
+	    };
+	    reader.readAsDataURL(files[i]);
+	}
+    }
+    const finput4 = document.getElementById('logouploadfile');
+    finput4.onchange = ( ev ) => {
+	addLogo( finput4.files );
+	finput4.value='';
+    }
 //    console.log('loaded threejs',THREE);
     scene.add(mainmesh);
     scene.add(signmesh);
@@ -2404,6 +2473,8 @@ window.onload = ( loadev ) => {
 	document.getElementById('munit').value = 'Meter';
 	
 	//	document.getElementById('deviceID').value = '';
+	document.getElementById('brandlogo').removeAttribute('src');
+	document.getElementById('branddelete').classList.remove('show');
 	document.getElementById('dok1txt').value = '';
 	document.getElementById('dok2txt').value = '';
 	document.getElementById('dok3txt').value = '';
@@ -2609,6 +2680,10 @@ window.onload = ( loadev ) => {
 	    }
 	    if ( devdata.scene ) {
 		renderSceneData( devdata.scene );
+		if ( devdata.scene.logo ) {
+		    document.getElementById('brandlogo').src = devdata.scene.logo;
+		    document.getElementById('branddelete').classList.add('show');
+		}
 	    }
 	    if ( devdata.doks && devdata.doks.length === 3 ) {
 		for ( let i=0; i<devdata.doks.length; i++ ) {
@@ -3013,6 +3088,13 @@ window.onload = ( loadev ) => {
 	    document.getElementById('dok2txt').value,
 	    document.getElementById('dok3txt').value
 	];
+	const devicelogo = document.getElementById('brandlogo').src;
+	if ( devicelogo && devicelogo != '' ) devicescene.logo = devicelogo;
+	else if ( devicescene.logo ) {
+	    delete devicescene.logo;
+	    console.log('deleting logo');
+	}
+	
 	setCamStart( camera );
 	let devdata = { 'name': devicename, 'category': devicecat, 'type': type, 'camstart' : camstart,
 			'scene': devicescene, 'doks': devicedoks, 'parts': [], 'signs': [],
@@ -3508,10 +3590,6 @@ window.onload = ( loadev ) => {
 	    if ( ev.target.classList.contains('disabled') ) return;
 	    const basics = getBasics();
 	};
-	document.getElementById( 'display' ).onclick = ( ev ) => {
-	    if ( ev.target.classList.contains('disabled') ) return;
-	    showAddDisplay();
-	};
 	const importHandler = ( finput ) => {
 	    const fname = finput.files[0].name;
 	    const ext = fname.substr(fname.lastIndexOf('.')+1);
@@ -3573,51 +3651,6 @@ window.onload = ( loadev ) => {
 	    */
     };
     
-    const fillDisplayMeasures = ( dspBox, part, prefill ) => {
-	const dispmsrdiv = dspBox.querySelector('.dispsensmsr');
-	const id = dspBox.querySelector('.deviceID').value;
-	if ( !broker.devices[id] || !broker.devices[id].meta ) return;
-	dispmsrdiv.replaceChildren();
-	const msrs = broker.devices[id].meta.payloadStructure;
-	for ( let i=0; i<msrs.length; i++ ) {
-//	    console.log('fillDisplayMeasures',part,prefill,msrs[i]);
-	    const nc = document.createElement('input');
-	    nc.type = 'checkbox';
-	    nc.classList.add('dispmsrinp');
-	    if ( prefill ) for ( let j=0; j<prefill.length; j++ ) {
-		if ( prefill[j].name === msrs[i].name ) {
-//		    console.log('found measure',prefill[j].name, msrs[i].name);
-		    nc.checked = 'checked';
-		}
-	    };
-	    nc.onchange = ( ev ) => {
-		console.log('dispmeasure change',Displays,part);
-		if ( ev.target.checked ) {
-		    if ( ! part.displaymeasures ) part.displaymeasures = [];
-		    part.displaymeasures.push( msrs[i] );
-		    console.log('add measure',msrs[i],part.displaymeasures);
-		}
-		else {
-		    const ii = part.displaymeasures.indexOf(msrs[i])
-		    part.displaymeasures.splice(ii,1);
-		    console.log('remove measure',msrs[i],part.displaymeasures);
-		}
-	    }
-	    dispmsrdiv.appendChild( nc );
-	    dispmsrdiv.insertAdjacentHTML( 'beforeend',msrs[i].name );
-	}
-//	console.log('fill Display',id,dispmsrdiv,msrs,part.display);
-	//	selbox.replaceChildren();
-    }
-    const deleteDisplayMeasures = ( dspBox ) => {
-	const dispmsrdiv = dspBox.querySelector('.dispsensmsr');
-	dispmsrdiv.replaceChildren();
-	const dispchkdiv = dspBox.querySelector('.displaysensorcheck');
-	dispchkdiv.checked=false;
-	
-	console.log('delete Display',dspBox);
-//	selbox.replaceChildren();
-    }
     const deleteDisplay = ( id ) => {
 	for ( let i=0; i<Displays.length; i++ ) {
 	    console.log('delete Display',id,Displays[i].id);
