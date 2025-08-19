@@ -3332,6 +3332,11 @@ window.onload = ( loadev ) => {
 	xhr.onreadystatechange = function () {
 	    if (xhr.readyState === 4 && xhr.status === 200) {
 		var json = JSON.parse(xhr.responseText);
+		if ( !json ) {
+		    loadopencount--;
+		    CheckOpenCount();
+		    return;
+		}
 		basic.parts = json.parts;
 		const o3=renderDevice(json,basic);
 		const index = parts.length-1;
@@ -3665,14 +3670,14 @@ window.onload = ( loadev ) => {
 //	    console.log('device',i,k,o);
 	    const devlabel = document.createElement( 'div' );
 	    devlabel.innerHTML = k;
-	    if ( devInUse( k ) ) {
-		devlabel.classList.add('inactive');
-	    }
-	    else {
+//	    if ( devInUse( k ) ) {
+//		devlabel.classList.add('inactive');
+//	    }
+//	    else {
 		devlabel.onclick = ( ev ) => {
 		    deviceIdClick( k );
 		}
-	    }
+//	    }
 	    selbox.appendChild(devlabel);
 //	    selbox.insertAdjacentHTML( 'beforeend',
 //				       '<div>'+k+'</div>' );
@@ -4449,6 +4454,3 @@ window.onload = ( loadev ) => {
 
     HTMLready = true;
 };
-
-
-// Teständerung zur Demonstration von github
