@@ -1,0 +1,22 @@
+{
+    "duplipanel1": {
+        "original_id": "",
+        "new_id": "_dupli"
+    },
+    "duplipanel2": {
+        "original_id": "18:00:01:02:03:02",
+        "new_id": "18:00:01:02:03:02_dupli"
+    },
+    "duplipanel3": {
+        "original_id": "",
+        "new_id": "_dupli"
+    },
+    "duplipanel4": {
+        "original_id": "",
+        "new_id": "_dupli"
+    },
+    "duplipanel5": {
+        "original_id": "",
+        "new_id": "_dupli"
+    }
+}

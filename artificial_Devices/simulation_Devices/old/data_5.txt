@@ -1,0 +1,203 @@
+{
+    "panel1": {
+        "id_object": {
+            "id": "T00001"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "m1",
+            "desc": "test d36",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "A",
+                    "unit": "°C"
+                },
+                {
+                    "name": "B",
+                    "unit": "°C"
+                },
+                {
+                    "name": "C",
+                    "unit": "L"
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "1"
+        },
+        "payload": {
+            "values": [
+                "52",
+                "16",
+                "110",
+                "3.8.2025, 22:41:49"
+            ]
+        }
+    },
+    "panel2": {
+        "id_object": {
+            "id": "T00002"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "m2",
+            "desc": "BK8",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "R32 Fluss",
+                    "unit": "m³/h"
+                },
+                {
+                    "name": "R32 Druck",
+                    "unit": "bar"
+                },
+                {
+                    "name": "Temp. Kesselvorlauf",
+                    "unit": "°C"
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "0.8"
+        },
+        "payload": {
+            "values": [
+                "0.22",
+                "40",
+                "over range",
+                "14.1.2025, 01:36:56"
+            ]
+        }
+    },
+    "panel3": {
+        "id_object": {
+            "id": "T00003"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "m3",
+            "desc": "List_test",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "Feuchte",
+                    "unit": "%"
+                },
+                {
+                    "name": "Temperatur",
+                    "unit": "°C"
+                },
+                {
+                    "name": "Personen",
+                    "unit": ""
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "0.6"
+        },
+        "payload": {
+            "values": [
+                "86",
+                "35 36 36 36 37 40.22 40.22 40.22 40.22 40.22 40.22",
+                "0.1",
+                "16.1.2025, 01:10:27"
+            ]
+        }
+    },
+    "panel4": {
+        "id_object": {
+            "id": "T00004"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "m4",
+            "desc": "Preis / Kugel",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "Vanille",
+                    "unit": "€/Kugel"
+                },
+                {
+                    "name": "Schoko",
+                    "unit": "€/Kugel"
+                },
+                {
+                    "name": "Schlumpf",
+                    "unit": "€/Kugel"
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "6"
+        },
+        "payload": {
+            "values": [
+                "0.80",
+                "1.4",
+                "4.2",
+                "14.1.2025, 01:36:59"
+            ]
+        }
+    },
+    "panel5": {
+        "id_object": {
+            "id": "T00005"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "m5",
+            "desc": "x",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "4",
+                    "unit": "44"
+                },
+                {
+                    "name": "4Maus",
+                    "unit": "ypsilon"
+                },
+                {
+                    "name": "777",
+                    "unit": "44"
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "2"
+        },
+        "payload": {
+            "values": [
+                "20",
+                "40",
+                "60",
+                "14.1.2025, 19:26:13"
+            ]
+        }
+    }
+
+}

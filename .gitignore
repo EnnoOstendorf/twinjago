@@ -3,6 +3,10 @@
 \#*\#
 .\#*
 
+# python cache
+__pycache__/
+*.py[cod]
+
 # certs and keys
 *.pem
 

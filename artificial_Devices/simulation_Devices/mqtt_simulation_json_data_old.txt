@@ -1,0 +1,162 @@
+{
+    "panel1": {
+        "id_object": {
+            "id": "T00001"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "m1",
+            "desc": "BK8",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "A",
+                    "unit": "m³/h"
+                },
+                {
+                    "name": "B",
+                    "unit": "bar"
+                },
+                {
+                    "name": "C",
+                    "unit": "°C"
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "0.8"
+        },
+        "payload": {
+            "values": [
+                "0.22",
+                "40",
+                "over range",
+                "18.8.2025, 01:05:29"
+            ]
+        }
+    },
+    "panel2": {
+        "id_object": {
+            "id": "T00002"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "m2",
+            "desc": "BK8",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "R32 Fluss",
+                    "unit": "m³/h"
+                },
+                {
+                    "name": "R32 Druck",
+                    "unit": "bar"
+                },
+                {
+                    "name": "Temp. Kesselvorlauf",
+                    "unit": "°C"
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "0.8"
+        },
+        "payload": {
+            "values": [
+                "0.22",
+                "40",
+                "over range",
+                "19.8.2025, 00:11:09"
+            ]
+        }
+    },
+    "panel3": {
+        "id_object": {
+            "id": "newdummy53835"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "dummy_sensor",
+            "desc": "simulation",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "A",
+                    "unit": ""
+                },
+                {
+                    "name": "B",
+                    "unit": ""
+                },
+                {
+                    "name": "C",
+                    "unit": ""
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "1.0"
+        },
+        "payload": {
+            "values": [
+                "0.0",
+                "0.0",
+                "0.0",
+                "18.8.2025, 03:10:25"
+            ]
+        }
+    },
+    "panel4": {
+        "id_object": {
+            "id": "newdummy48604"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "dummy_sensor",
+            "desc": "simulation",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "A",
+                    "unit": ""
+                },
+                {
+                    "name": "B",
+                    "unit": ""
+                },
+                {
+                    "name": "C",
+                    "unit": ""
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "1.0"
+        },
+        "payload": {
+            "values": [
+                "0.0",
+                "0.0",
+                "0.0",
+                "1.1.2000, 00:00:00"
+            ]
+        }
+    }
+}

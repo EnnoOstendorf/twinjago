@@ -1,0 +1,26 @@
+{
+    "duplipanel1": {
+        "original_id": "A4:CF:12:77:1E:04",
+        "new_id": "A4:CF:12:77:1E:04_dupli"
+    },
+    "duplipanel2": {
+        "original_id": "24:6F:28:02:12:38",
+        "new_id": "24:6F:28:02:12:38_dupli"
+    },
+    "duplipanel6": {
+        "original_id": "A4:CF:12:78:3C:8C",
+        "new_id": "A4:CF:12:78:3C:8C_dupli"
+    },
+    "duplipanel5": {
+        "original_id": "5",
+        "new_id": "55"
+    },
+    "duplipanel4": {
+        "original_id": "testid",
+        "new_id": "18:00:01:02:03:48"
+    },
+    "duplipanel3": {
+        "original_id": "hase",
+        "new_id": "hase22"
+    }
+}

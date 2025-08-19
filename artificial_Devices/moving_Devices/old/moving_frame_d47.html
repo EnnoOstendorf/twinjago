@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dummy Devices</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin: 0;
+            padding: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            background-color: #f4f4f9;
+            min-height: 50vh;
+            padding-bottom: 350px;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none; /* Initially hidden */
+        }
+
+        .loading-spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 10px;
+            margin-left: 10px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .panel-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 1300px;
+            margin: auto;
+        }
+
+        .device-panel {
+            background-color: #ced9a7;
+            padding: 14px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 700px;
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            box-sizing: border-box;
+            position: relative; /* Allow positioning of internal elements */
+        }
+
+        .panel-number {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: lightcoral;
+            color: white;
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+        }
+
+        form {
+            width: 35%;
+            box-sizing: border-box;
+            margin-right: 20px;
+            margin-top: 0px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            font-size: 10px;
+            padding: 3px;
+        }
+
+        input {
+            padding: 4px 8px;
+            margin-top: 2px;
+            font-size: 12px;
+            width: calc(100% - 20px);
+        }
+
+
+        .input-table-wrapper {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .input-table-header {
+            text-align: left;
+            margin-bottom: 3px;
+            font-size: 14px;
+        }
+
+        .input-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+
+        .input-table th, .input-table td {
+            padding: 4px;
+            text-align: left;
+            border: none;
+        }
+        
+        .button-group {
+            display: flex;
+            width: 200%;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        button {
+            margin-top: 2px;
+            padding: 4px 8px;
+            
+            font-size: 12px;
+            cursor: pointer;
+        } 
+        
+        .deletePanelbutton {
+            position: absolute;
+            bottom: 32px;
+            right: 25px;
+            width: 10px;
+            height: 10px;
+            border: none;
+            padding: 0px;
+            //background-color: grey;
+            color: grey;
+            text-align: center;
+            line-height: 10px;
+            font-size: 10px;
+            cursor: pointer;
+            margin-left: 3px;
+            margin-right: 3px;
+        } 
+
+        delbutton {
+            padding: 0px 0px;
+            font-size: 10px;
+        } 
+
+        .newPanelbutton {
+            Xposition: absolute;
+            Xtop: 32px;
+            Xleft: 25px;
+            width: 25px;
+            height: 8px;
+            border: none;
+            padding: 0px;
+            //background-color: grey;
+            color: grey;
+            text-align: center;
+            line-height: 8px;
+            font-size: 10px;
+            cursor: pointer;
+            margin-left: 32px;
+            margin-top: 0px;
+        } 
+
+
+    </style>
+    
+</head>
+<body>
+    <div id="loader" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div id="loadingText" class="loading-text"> Scanning Devices...</div>
+    </div>
+    <h1 style="text-align: center; font-style: italic; width: 100%;">dummy devices</h1>
+    <div id="panel-container" class="panel-container"></div>
+    
+    <script>
+        function updateTime(panelId) {
+            const currentDateTime = new Date().toLocaleString();
+            document.getElementById(`value4-panel${panelId}`).value = currentDateTime;
+        }
+
+        function checkDuplicateId(panelId) {
+            const currentIdValue = document.getElementById(`id-panel${panelId}`).value;
+            let isDuplicate = false;
+        // Check other ID fields for duplicates
+            for (let i = 1; i <= 6; i++) {
+                if (i === panelId) continue;
+                const otherIdValue = document.getElementById(`id-panel${i}`).value;
+                if (currentIdValue && currentIdValue === otherIdValue) {
+                    isDuplicate = true;
+                    break;
+                }
+            }
+            if (isDuplicate) {
+                alert("Dieser ID-Wert existiert bereits in einem anderen Panel. Bitte verwenden Sie einen anderen Wert.");
+                document.getElementById(`id-panel${panelId}`).value = '';
+            }
+        }
+
+        function senden(panelId) {
+            const name = document.getElementById(`name-panel${panelId}`).value;
+            const id = document.getElementById(`id-panel${panelId}`).value;
+            const sleep = document.getElementById(`sleep-panel${panelId}`).value;
+            const comment = document.getElementById(`comment-panel${panelId}`).value;
+
+            const inputTable = [];
+            for (let i = 1; i <= 4; i++) {
+                const itemName = document.getElementById(`item${i}-panel${panelId}`).value;
+                const value = document.getElementById(`value${i}-panel${panelId}`).value;
+                const unit = document.getElementById(`unit${i}-panel${panelId}`).value;
+                inputTable.push({ itemName, value, unit });
+            }
+            const daten = {
+                panelId,
+                name,
+                id,
+                sleep,
+                comment,
+                inputTable
+            };
+            fetch('http://localhost:3555/senden', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(daten)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(`Device Panel ${panelId}: ` + JSON.stringify(data));
+                // Update the MQTT status on success
+              // Update button label based on MQTT status
+                const erzeugenButton = document.querySelector(`#panel${panelId} .button-group button[type="submit"]`);
+                if (data.mqtt_status === "TRUE") {
+                    erzeugenButton.textContent = "... running";
+                    lockPanelInputs(panelId);
+                } else {
+                    erzeugenButton.textContent = "Erzeuge Device";
+                    unlockPanelInputs(panelId);
+                }
+            })
+            .catch((error) => {
+                console.error(`Fehler Panel ${panelId}:`, error);
+            });
+        }
+
+        function lockPanelInputs(panelId) {
+            const panel = document.querySelector(`#panel${panelId}`);
+            const inputs = panel.querySelectorAll('input');
+            const erzeugenButton = panel.querySelector('button[type="submit"]');
+            const killButton = panel.querySelector('button[type="delbutton"]');
+            const stopButton = panel.querySelector('button[type="button"]');
+            inputs.forEach(input => input.disabled = true);
+            erzeugenButton.disabled = true;
+            killButton.disabled = true;
+            stopButton.disabled = false;
+        }
+
+        function unlockPanelInputs(panelId) {
+            const panel = document.querySelector(`#panel${panelId}`);
+            const inputs = panel.querySelectorAll('input');
+            const erzeugenButton = panel.querySelector('button[type="submit"]');
+            const killButton = panel.querySelector('button[type="delbutton"]');
+            const stopButton = panel.querySelector('button[type="button"]');
+            inputs.forEach(input => input.disabled = false);
+            erzeugenButton.disabled = false;
+            killButton.disabled = false;
+            stopButton.disabled = true;
+        }
+
+        function stopDevice(panelId) {
+            console.log("stopping");
+            const id = document.getElementById(`id-panel${panelId}`).value;
+            const daten = {
+                panelId: panelId,
+            };            
+            fetch('http://localhost:3555/stop', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(daten)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Update button label based on the new MQTT status after stopping
+                const erzeugenButton = document.querySelector(`#panel${panelId} .button-group button[type="submit"]`);
+                if (data.mqtt_status === "TRUE") {
+                    erzeugenButton.textContent = "... running";
+                    lockPanelInputs(panelId);
+                } else {
+                    erzeugenButton.textContent = "Erzeuge Device";
+                    unlockPanelInputs(panelId);
+                }
+            })
+            .catch((error) => {
+                console.error(`Fehler bei Stop Device für Panel ${panelId}:`, error);
+            });
+        }
+
+
+        function deletePanel(panelId) {
+            console.log("deleting");
+            
+            const id = document.getElementById(`id-panel${panelId}`).value;
+            const daten = {
+                panelId: panelId,
+            };            
+            fetch('http://localhost:3555/delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(daten)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();  // Verarbeite die JSON-Antwort des Servers
+            })
+            .then(serverResponse => {
+                console.log("Delete response:", serverResponse);
+                //alert(`Panel ${panelId} wurde erfolgreich gelöscht.`);
+        
+                // Seite neu laden, um aktuelle Panels anzuzeigen
+                location.reload();  // Führt do_GET des Python-Servers erneut aus
+            })
+            .catch((error) => {
+                console.error(`Fehler bei delete Device für Panel ${panelId}:`, error);
+            });
+        }			
+
+
+        let panelsLoaded = 0; // Counter to track loaded panels
+        
+        async function prefillFormData(panelId) {
+            try {
+				let panelKeys = Object.keys(window.fetchedData).filter(key => key.startsWith("panel"));
+				let panelCount = panelKeys.length;
+				const panelData = window.fetchedData[`panel${panelId}`];
+				document.getElementById('loadingText').textContent = `Scanning Devices ${panelId}`;
+
+				if (panelData) {
+					document.getElementById(`name-panel${panelId}`).value = panelData.mqtt_meta.name || '';
+					document.getElementById(`id-panel${panelId}`).value = panelData.id_object.id || '';
+					document.getElementById(`sleep-panel${panelId}`).value = panelData.sleep_object.sleep || '';
+					document.getElementById(`comment-panel${panelId}`).value = panelData.mqtt_meta.desc || '';
+					//document.getElementById(`item11-panel${panelId}`).value = panelData.mqtt_meta.payloadStructure.name || '';
+					//document.getElementById('loadingText').textContent = ` Panel ${panelId}...Device ID: ${panelData.id_object.id}`;
+
+					panelData.mqtt_meta.payloadStructure.forEach((item, index) => {
+					    // Nur für Index 11 und 12 die Werte zuweisen
+					    if (index === 10 || index === 11) {
+					        document.getElementById(`item${index + 1}-panel${panelId}`).value = item.name || '';
+					        document.getElementById(`unit${index + 1}-panel${panelId}`).value = item.unit || '';
+					    }
+					});
+
+
+					panelData.payload.values.forEach((value, index) => {
+					    if (index <= 11) {
+					        document.getElementById(`value${index + 1}-panel${panelId}`).value = value || '';
+					    }
+					});
+									// Displaying the MQTT Status
+					const statusElement = document.getElementById(`status-panel${panelId}`);
+					if (statusElement) {
+						statusElement.textContent = `MQTT Status: ${panelData.mqtt_status}`;
+					}
+											// Update button label based on MQTT status during prefill
+					const erzeugenButton = document.querySelector(`#panel${panelId} .button-group button[type="submit"]`);
+					if (panelData.mqtt_status === "TRUE") {
+						erzeugenButton.textContent = "... running";
+						lockPanelInputs(panelId);
+					} else {
+						erzeugenButton.textContent = "Erzeuge Device";
+						unlockPanelInputs(panelId);
+					}
+				}
+            } catch (error) {
+                console.error(`Error loading initial data for Panel ${panelId}:`, error);
+            } finally {
+                panelsLoaded++;
+				let panelKeys = Object.keys(window.fetchedData).filter(key => key.startsWith("panel"));
+				let panelCount = panelKeys.length;
+                if (panelsLoaded === panelCount) { // All panels loaded
+                    setTimeout(() => {
+                        document.getElementById('loader').style.display = 'none';
+                    }, 50);
+                }
+            }
+        }
+
+
+        async function createDevicePanels() {
+            try {
+                let response = await fetch('http://localhost:3555');
+                if (response.ok) {
+                    let existingData = await response.json();
+                    window.fetchedData = existingData
+                    let panelKeys = Object.keys(existingData).filter(key => key.startsWith("panel"));
+                    let panelCount = panelKeys.length;
+                    window.panelIdCounter = panelCount;
+                    console.log("Anzahl der Panels:", panelCount);
+                    
+		            const panelContainer = document.getElementById('panel-container');
+		            for (let panelId = 1; panelId <= panelCount; panelId++) {
+		                const panelMarkup = `
+		                  <div class="device-panel" id="panel${panelId}">
+		                        <div class="panel-number">${panelId}</div>
+		                        <form onsubmit="event.preventDefault(); senden(${panelId});">
+		                            <label for="name">Name:</label>
+		                            <input type="text" id="name-panel${panelId}" required>
+		                            <label for="id">ID:</label>
+		                            <input type="text" id="id-panel${panelId}" required oninput="checkDuplicateId(${panelId})">
+		                            <label for="sleep">Sleep:</label>
+		                            <input type="text" id="sleep-panel${panelId}" required>
+		                            <label for="comment">Comment:</label>
+		                            <input type="text" id="comment-panel${panelId}" required>
+		                            <label for="mode">mode</label>
+		                            <input type="text" id="value10-panel${panelId}" required>
+		                            <div class="button-group">
+		                                <button type="submit">Erzeuge Device</button>
+		                                <button type="button" onclick="stopDevice(${panelId});">Stop Device</button>
+		                            </div>
+		                        </form>
+		                        <div class="input-table-wrapper">
+		                            <div class="input-table-header">Payload</div>
+		                            <table class="input-table">
+		                                <thead>
+		                                    <tr>
+		                                        <th>Name</th>
+		                                        <th>Unit</th>
+		                                        <th>Value</th>
+		                                    </tr>
+		                                </thead>
+		                                <tbody>
+		                                    <tr>
+		                                        <td class="no-label"><input type="text" id="value1-panel${panelId}"></td>
+		                                        <td class="no-label"><input type="text" id="value4-panel${panelId}"></td>
+		                                        <td class="no-label"><input type="text" id="value7-panel${panelId}" class="last-column-input"></td>
+		                                    </tr>
+		                                    <tr>
+		                                        <td class="no-label"><input type="text" id="value2-panel${panelId}"></td>
+		                                        <td class="no-label"><input type="text" id="value5-panel${panelId}"></td>
+		                                        <td class="no-label"><input type="text" id="value8-panel${panelId}" class="last-column-input"></td>
+		                                    </tr>
+		                                    <tr>
+		                                        <td class="no-label"><input type="text" id="value3-panel${panelId}"></td>
+		                                        <td class="no-label"><input type="text" id="value6-panel${panelId}"></td>
+		                                        <td class="no-label"><input type="text" id="value9-panel${panelId}" class="last-column-input"></td>
+		                                    </tr>
+		                                    <tr>
+		                                        <td class="no-label"><input type="text" id="item11-panel${panelId}"></td>
+		                                        <td class="no-label"><input type="text" id="unit11-panel${panelId}"></td>
+		                                        <td class="no-label"><input type="text" id="value11-panel${panelId}" class="last-column-input"></td>
+		                                    </tr>
+		                                    <tr>
+		                                        <td class="no-label"><input type="text" id="item12-panel${panelId}"></td>
+		                                        <td class="no-label"><input type="text" id="unit12-panel${panelId}"></td>
+		                                        <td class="no-label"><input type="text" id="value12-panel${panelId}" class="last-column-input"></td>
+		                                    </tr>
+		                                    <tr>
+		                                        <td class="no-label"><input type="text" id="item13-panel${panelId}"></td>
+		                                        <td class="no-label"><input type="text" id="unit13-panel${panelId}"></td>
+		                                        <td class="no-label"><input type="text" id="value13-panel${panelId}" class="last-column-input"></td>
+		                                    </tr>
+		                                </tbody>
+		                            </table>
+		                        </div>
+		                        <div class="deletePanelbutton"> <button type="delbutton" onclick="deletePanel(${panelId});">🔪️</button>
+		                        </div>
+		                    </div>
+		                `;
+		                panelContainer.insertAdjacentHTML('beforeend', panelMarkup);
+		                //document.getElementById(`item4-panel${panelId}`).value = "Timestamp";
+		                //document.getElementById(`unit4-panel${panelId}`).value = "datetime";
+		                //updateTime(panelId);
+		                //setInterval(() => updateTime(panelId), 1000);
+		                prefillFormData(panelId);
+		            };
+		            panelContainer.insertAdjacentHTML('beforeend', `<div class="newPanelbutton"><button onclick="addNewPanel()">neu 🪄</button></div>`);
+		            //document.getElementById('loader').style.display = 'none';
+		        }
+            } catch (error) {
+                console.error(`Error creating Panels`, error);
+            }
+		}
+        
+		
+		function addNewPanel() {
+            fetch('http://localhost:3555/newPanel', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();  // Verarbeite die JSON-Antwort des Servers
+            })
+            .then(serverResponse => {
+                console.log("add new response:", serverResponse);
+                location.reload();
+            })
+            .catch((error) => {
+                console.error(`Fehler bei new Device`, error);
+            });
+		    window.panelIdCounter += 1;
+		}
+
+
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('loader').style.display = 'flex'; // Show loader initially
+            createDevicePanels();
+        });
+    </script>
+</body>
+</html>

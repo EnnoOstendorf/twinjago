@@ -1,0 +1,122 @@
+{
+    "panel1": {
+        "id_object": {
+            "id": "T00001"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "m1",
+            "desc": "BK8",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "A",
+                    "unit": "m³/h"
+                },
+                {
+                    "name": "B",
+                    "unit": "bar"
+                },
+                {
+                    "name": "C",
+                    "unit": "°C"
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "0.8"
+        },
+        "payload": {
+            "values": [
+                "0.22",
+                "40",
+                "over range",
+                "9.8.2025, 16:39:41"
+            ]
+        }
+    },
+    "panel2": {
+        "id_object": {
+            "id": "T00002"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "m2",
+            "desc": "BK8",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "R32 Fluss",
+                    "unit": "m³/h"
+                },
+                {
+                    "name": "R32 Druck",
+                    "unit": "bar"
+                },
+                {
+                    "name": "Temp. Kesselvorlauf",
+                    "unit": "°C"
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "0.8"
+        },
+        "payload": {
+            "values": [
+                "0.22",
+                "40",
+                "over range",
+                "8.8.2025, 03:14:50"
+            ]
+        }
+    },
+    "panel3": {
+        "id_object": {
+            "id": "T00003"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "m3",
+            "desc": "List_test",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "Feuchte",
+                    "unit": "%"
+                },
+                {
+                    "name": "Temperatur",
+                    "unit": "°C"
+                },
+                {
+                    "name": "Personen",
+                    "unit": ""
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "0.6"
+        },
+        "payload": {
+            "values": [
+                "86",
+                "35 36 36 36 37 40.22 40.22 40.22 40.22 40.22 40.22",
+                "0.1",
+                "8.8.2025, 02:02:44"
+            ]
+        }
+    }
+}

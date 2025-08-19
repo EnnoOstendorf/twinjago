@@ -1,0 +1,242 @@
+{
+    "panel1": {
+        "id_object": {
+            "id": "18:00:01:02:03:01"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "Wasserspeicher",
+            "desc": "120L Max",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "Kessel",
+                    "unit": "°C"
+                },
+                {
+                    "name": "Temp. Kaltwasser",
+                    "unit": "°C"
+                },
+                {
+                    "name": "Füllstand",
+                    "unit": "L"
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "2"
+        },
+        "payload": {
+            "values": [
+                "52",
+                "16",
+                "110",
+                "19.8.2025, 03:06:09"
+            ]
+        }
+    },
+    "panel2": {
+        "id_object": {
+            "id": "18:00:01:02:03:02"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "Wärmepumpe",
+            "desc": "BK8",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "R32 Fluss",
+                    "unit": "m³/h"
+                },
+                {
+                    "name": "R32 Druck",
+                    "unit": "bar"
+                },
+                {
+                    "name": "Kessel Vorlauf",
+                    "unit": "°C"
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "0.5"
+        },
+        "payload": {
+            "values": [
+                "0.22",
+                "40",
+                "over range",
+                "19.8.2025, 03:06:12"
+            ]
+        }
+    },
+    "panel3": {
+        "id_object": {
+            "id": "18:00:01:02:03:03"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "Badewanne",
+            "desc": "strings",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "Temperatur",
+                    "unit": "°C"
+                },
+                {
+                    "name": "Fische",
+                    "unit": ""
+                },
+                {
+                    "name": "Personen",
+                    "unit": ""
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "0.6"
+        },
+        "payload": {
+            "values": [
+                "42",
+                "🐟⠀🐟⠀🐟 🐟⠀🐟⠀🐟⠀🐟 🐟⠀🐟⠀🐟⠀🐟⠀🐟 🐟⠀🐟",
+                "♥ ♥ ♥ ♥ ♥♥ ♥♥ ♥♥ ♥♥ ♥♥♥ ♥♥♥ ♥♥♥ ♥♥♥♥ ♥♥♥♥ ♥♥♥♥♥ ~overload~ ⠀ ~overload~ ⠀ ~overload~ ⠀ ~overload~ ⠀ ~overload~ ⠀",
+                "19.8.2025, 03:06:13"
+            ]
+        }
+    },
+    "panel4": {
+        "id_object": {
+            "id": "18:00:01:02:03:04"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "Eisdiele",
+            "desc": "Preis / Kugel",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "Vanille",
+                    "unit": "€/Kugel"
+                },
+                {
+                    "name": "Schoko",
+                    "unit": "€/Kugel"
+                },
+                {
+                    "name": "Schlumpf",
+                    "unit": ""
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "0.6"
+        },
+        "payload": {
+            "values": [
+                "0.80",
+                "1.4",
+                "♥ ♥ ♥♥ ♥♥ ♥♥ ♥♥ ♥♥♥ ♥♥♥ ♥♥♥ ♥♥♥♥ ♥♥♥♥  ~jetzt~ ⠀ ~im⠀Angebot~ ⠀ ~jetzt~ ⠀ ~im⠀Angebot~ ⠀ ~jetzt~ ⠀ ~im⠀Angebot~ ⠀ ~im⠀Angebot~",
+                "19.8.2025, 03:06:15"
+            ]
+        }
+    },
+    "panel5": {
+        "id_object": {
+            "id": "18:00:01:02:03:05"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "Bäckerei",
+            "desc": "Angebote",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "Mohnbrötchen",
+                    "unit": "ct"
+                },
+                {
+                    "name": "Laugenecke",
+                    "unit": ""
+                },
+                {
+                    "name": "Temperatur",
+                    "unit": "°C"
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "1"
+        },
+        "payload": {
+            "values": [
+                "70",
+                "nur ⠀ 80ct⠀😋 ⠀ ",
+                "10",
+                "19.8.2025, 03:15:23"
+            ]
+        }
+    },
+    "panel6": {
+        "id_object": {
+            "id": "Getriebe_MB"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "Getriebe",
+            "desc": "Wareneingang",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "Lagerbestand",
+                    "unit": "Stück"
+                },
+                {
+                    "name": "Verfügbar",
+                    "unit": "Stück"
+                },
+                {
+                    "name": "Reserviert",
+                    "unit": "Stück"
+                },
+                {
+                    "name": "timestamp",
+                    "unit": "datestring"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "0.5"
+        },
+        "payload": {
+            "values": [
+                "120 121 118",
+                "98 99 ",
+                "Yes Yes Yes No",
+                "19.8.2025, 03:15:26"
+            ]
+        }
+    }
+}

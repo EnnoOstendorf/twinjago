@@ -1,0 +1,257 @@
+{
+    "panel1": {
+        "id_object": {
+            "id": "19:00:01:02:03:03"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "Moving_Object03",
+            "desc": "relative coordinates/rotation/scaling & other",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "position.x",
+                    "unit": "mm"
+                },
+                {
+                    "name": "position.y",
+                    "unit": "mm"
+                },
+                {
+                    "name": "position.z",
+                    "unit": "mm"
+                },
+                {
+                    "name": "rotation.x",
+                    "unit": "mm"
+                },
+                {
+                    "name": "rotation.y",
+                    "unit": "mm"
+                },
+                {
+                    "name": "rotation.z",
+                    "unit": "mm"
+                },
+                {
+                    "name": "scale.x",
+                    "unit": "fc"
+                },
+                {
+                    "name": "scale.y",
+                    "unit": "fc"
+                },
+                {
+                    "name": "scale.z",
+                    "unit": "fc"
+                },
+                {
+                    "name": "mode",
+                    "unit": "int"
+                },
+                {
+                    "name": "value_A",
+                    "unit": " mm"
+                },
+                {
+                    "name": "value_B",
+                    "unit": " cm"
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "0.2"
+        },
+        "payload": {
+            "values": [
+                "0",
+                "0",
+                "0",
+                "0",
+                "1*(2*pi/32)*t",
+                "0",
+                "5",
+                "5",
+                "5",
+                "0",
+                "10",
+                "3.5",
+                "18.8.2025, 01:55:47"
+            ]
+        }
+    },
+    "panel2": {
+        "id_object": {
+            "id": "19:00:01:02:03:06"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "Moving_Dummy_Object06",
+            "desc": "relative coordinates/rotation/scaling & other",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "position.x",
+                    "unit": "mm"
+                },
+                {
+                    "name": "position.y",
+                    "unit": "mm"
+                },
+                {
+                    "name": "position.z",
+                    "unit": "mm"
+                },
+                {
+                    "name": "rotation.x",
+                    "unit": "mm"
+                },
+                {
+                    "name": "rotation.y",
+                    "unit": "mm"
+                },
+                {
+                    "name": "rotation.z",
+                    "unit": "mm"
+                },
+                {
+                    "name": "scale.x",
+                    "unit": "fc"
+                },
+                {
+                    "name": "scale.y",
+                    "unit": "fc"
+                },
+                {
+                    "name": "scale.z",
+                    "unit": "fc"
+                },
+                {
+                    "name": "mode",
+                    "unit": "int"
+                },
+                {
+                    "name": "value_A",
+                    "unit": " "
+                },
+                {
+                    "name": "value_B",
+                    "unit": " "
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "0.5"
+        },
+        "payload": {
+            "values": [
+                "0",
+                "0",
+                "0",
+                "0",
+                "1*(2*pi/32)*t",
+                "0",
+                "1",
+                "1",
+                "1",
+                "0",
+                "0.0",
+                "0.0",
+                "19.8.2025, 03:12:54"
+            ]
+        }
+    },
+    "panel3": {
+        "id_object": {
+            "id": "newdummy69243"
+        },
+        "mqtt_meta": {
+            "type": 1,
+            "name": "new_moving_object_6",
+            "desc": "simulation",
+            "payloadType": "json",
+            "payloadStructure": [
+                {
+                    "name": "position.x",
+                    "unit": "mm"
+                },
+                {
+                    "name": "position.y",
+                    "unit": "mm"
+                },
+                {
+                    "name": "position.z",
+                    "unit": "mm"
+                },
+                {
+                    "name": "rotation.x",
+                    "unit": "mm"
+                },
+                {
+                    "name": "rotation.y",
+                    "unit": "mm"
+                },
+                {
+                    "name": "rotation.z",
+                    "unit": "mm"
+                },
+                {
+                    "name": "scale.x",
+                    "unit": "fc"
+                },
+                {
+                    "name": "scale.y",
+                    "unit": "fc"
+                },
+                {
+                    "name": "scale.z",
+                    "unit": "fc"
+                },
+                {
+                    "name": "mode",
+                    "unit": "int"
+                },
+                {
+                    "name": "value_A",
+                    "unit": " "
+                },
+                {
+                    "name": "value_B",
+                    "unit": " "
+                },
+                {
+                    "name": "Timestamp",
+                    "unit": "datetime"
+                }
+            ]
+        },
+        "sleep_object": {
+            "sleep": "1.0"
+        },
+        "payload": {
+            "values": [
+                "0",
+                "0",
+                "0",
+                "0",
+                "1*(2*pi/32)*t",
+                "0",
+                "1",
+                "1",
+                "1",
+                "0",
+                "0.0",
+                "0.0",
+                "18.8.2025, 03:20:47"
+            ]
+        }
+    }
+}

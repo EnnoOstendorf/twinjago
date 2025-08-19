@@ -1,0 +1,585 @@
+127.0.0.1 - - [18/Aug/2025 02:50:30] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 02:50:42] "OPTIONS /senden HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 02:50:42] "POST /senden HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 02:50:53] "OPTIONS /stop HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 02:50:54] "POST /stop HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 02:51:23] "GET / HTTP/1.1" 200 -
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 37300)
+Traceback (most recent call last):
+  File "/usr/lib/python3.11/socketserver.py", line 317, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python3.11/socketserver.py", line 348, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.11/socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python3.11/socketserver.py", line 755, in __init__
+    self.handle()
+  File "/usr/lib/python3.11/http/server.py", line 432, in handle
+    self.handle_one_request()
+  File "/usr/lib/python3.11/http/server.py", line 420, in handle_one_request
+    method()
+  File "/home/mcg/Arbeit/IoT_Devices_Software/Dummy_Sender_and_Listener/moving_Devices/Movin_server_43.py", line 102, in do_GET
+    self.wfile.write(json.dumps(existing_data).encode('utf-8'))
+  File "/usr/lib/python3.11/socketserver.py", line 834, in write
+    self._sock.sendall(b)
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+127.0.0.1 - - [18/Aug/2025 02:51:24] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 02:51:34] "GET / HTTP/1.1" 200 -
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 46478)
+Traceback (most recent call last):
+  File "/usr/lib/python3.11/socketserver.py", line 317, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python3.11/socketserver.py", line 348, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.11/socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python3.11/socketserver.py", line 755, in __init__
+    self.handle()
+  File "/usr/lib/python3.11/http/server.py", line 432, in handle
+    self.handle_one_request()
+  File "/usr/lib/python3.11/http/server.py", line 420, in handle_one_request
+    method()
+  File "/home/mcg/Arbeit/IoT_Devices_Software/Dummy_Sender_and_Listener/moving_Devices/Movin_server_43.py", line 102, in do_GET
+    self.wfile.write(json.dumps(existing_data).encode('utf-8'))
+  File "/usr/lib/python3.11/socketserver.py", line 834, in write
+    self._sock.sendall(b)
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+127.0.0.1 - - [18/Aug/2025 02:51:35] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 02:51:41] "GET / HTTP/1.1" 200 -
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 46488)
+Traceback (most recent call last):
+  File "/usr/lib/python3.11/socketserver.py", line 317, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python3.11/socketserver.py", line 348, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.11/socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python3.11/socketserver.py", line 755, in __init__
+    self.handle()
+  File "/usr/lib/python3.11/http/server.py", line 432, in handle
+    self.handle_one_request()
+  File "/usr/lib/python3.11/http/server.py", line 420, in handle_one_request
+    method()
+  File "/home/mcg/Arbeit/IoT_Devices_Software/Dummy_Sender_and_Listener/moving_Devices/Movin_server_43.py", line 102, in do_GET
+    self.wfile.write(json.dumps(existing_data).encode('utf-8'))
+  File "/usr/lib/python3.11/socketserver.py", line 834, in write
+    self._sock.sendall(b)
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+127.0.0.1 - - [18/Aug/2025 02:51:42] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 02:52:30] "GET / HTTP/1.1" 200 -
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 51824)
+Traceback (most recent call last):
+  File "/usr/lib/python3.11/socketserver.py", line 317, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python3.11/socketserver.py", line 348, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.11/socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python3.11/socketserver.py", line 755, in __init__
+    self.handle()
+  File "/usr/lib/python3.11/http/server.py", line 432, in handle
+    self.handle_one_request()
+  File "/usr/lib/python3.11/http/server.py", line 420, in handle_one_request
+    method()
+  File "/home/mcg/Arbeit/IoT_Devices_Software/Dummy_Sender_and_Listener/moving_Devices/Movin_server_43.py", line 102, in do_GET
+    self.wfile.write(json.dumps(existing_data).encode('utf-8'))
+  File "/usr/lib/python3.11/socketserver.py", line 834, in write
+    self._sock.sendall(b)
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+127.0.0.1 - - [18/Aug/2025 02:52:31] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 02:54:15] "OPTIONS /senden HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 02:54:15] "POST /senden HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 02:54:31] "OPTIONS /stop HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 02:54:32] "POST /stop HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:09:44] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:10:10] "OPTIONS /senden HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:10:10] "POST /senden HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:10:19] "OPTIONS /stop HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:10:20] "POST /stop HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:10:52] "OPTIONS /senden HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:10:52] "POST /senden HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:11:13] "OPTIONS /stop HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:11:14] "POST /stop HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:19:28] "OPTIONS /newPanel HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:19:28] "POST /newPanel HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:19:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:19:31] "OPTIONS /senden HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:19:31] "POST /senden HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:19:39] "GET / HTTP/1.1" 200 -
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 54498)
+Traceback (most recent call last):
+  File "/usr/lib/python3.11/socketserver.py", line 317, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python3.11/socketserver.py", line 348, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.11/socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python3.11/socketserver.py", line 755, in __init__
+    self.handle()
+  File "/usr/lib/python3.11/http/server.py", line 432, in handle
+    self.handle_one_request()
+  File "/usr/lib/python3.11/http/server.py", line 420, in handle_one_request
+    method()
+  File "/home/mcg/Arbeit/IoT_Devices_Software/Dummy_Sender_and_Listener/moving_Devices/Movin_server_43.py", line 102, in do_GET
+    self.wfile.write(json.dumps(existing_data).encode('utf-8'))
+  File "/usr/lib/python3.11/socketserver.py", line 834, in write
+    self._sock.sendall(b)
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+127.0.0.1 - - [18/Aug/2025 03:19:40] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:19:48] "GET / HTTP/1.1" 200 -
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 44316)
+Traceback (most recent call last):
+  File "/usr/lib/python3.11/socketserver.py", line 317, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python3.11/socketserver.py", line 348, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.11/socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python3.11/socketserver.py", line 755, in __init__
+    self.handle()
+  File "/usr/lib/python3.11/http/server.py", line 432, in handle
+    self.handle_one_request()
+  File "/usr/lib/python3.11/http/server.py", line 420, in handle_one_request
+    method()
+  File "/home/mcg/Arbeit/IoT_Devices_Software/Dummy_Sender_and_Listener/moving_Devices/Movin_server_43.py", line 102, in do_GET
+    self.wfile.write(json.dumps(existing_data).encode('utf-8'))
+  File "/usr/lib/python3.11/socketserver.py", line 834, in write
+    self._sock.sendall(b)
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+127.0.0.1 - - [18/Aug/2025 03:19:49] "GET / HTTP/1.1" 200 -
+Starting httpd server on port 3557
+['18:00:01:02:03:01', '18:00:01:02:03:02', '18:00:01:02:03:03', '18:00:01:02:03:04', '18:00:01:02:03:05', '24:6F:28:02:12:14', '24:6F:28:03:02:64', 'A4:CF:12:77:1B:14', 'A4:CF:12:77:1E:04', 'A4:CF:12:78:3C:8C', 'A4:CF:12:78:3C:8C_dupli', 'Getriebe_MB', 'Listener_01', 'eui-10061c160ef4feff', 'eui-10061c169838feff', 'eui-10061c16c7b4feff', 'eui-10061c16d5d4feff', 'eui-64b708ab8620feff', 'eui-64b708ac9848feff', 'eui-64b708ac9880feff', 'eui-64b708ac988cfeff', 'eui-64b708ac98b0feff', 'eui-64b708ad0a60feff', 'eui-64b708ad0e84feff', 'eui-64b708bb7658feff', 'eui-70b3d57ed0061766', 'eui-70b3d57ed0061795', 'eui-d4d4da9777e8feff', 'eui-d4d4da97e83cfeff', 'eui-e86bea24f4b4feff', 'eui-e86bea2516c0feff', 'eui-e86bea252b24feff', 'eui-e86bea252c44feff', 'light-controller-01']
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:06
+device id  FALSE
+checklist
+device id  newdummy69243
+device id  FALSE
+Stop device action for panel panel2
+Process 10129 terminated.
+[]
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:06
+device id  FALSE
+checklist
+device id  newdummy69243
+device id  FALSE
+['18:00:01:02:03:01', '18:00:01:02:03:02', '18:00:01:02:03:02_dupli', '18:00:01:02:03:03', '18:00:01:02:03:04', '18:00:01:02:03:05', '24:6F:28:02:12:14', '24:6F:28:03:02:64', 'A4:CF:12:77:1B:14', 'A4:CF:12:77:1E:04', 'A4:CF:12:78:3C:8C', 'A4:CF:12:78:3C:8C_dupli', 'Getriebe_MB', 'Listener_01', 'T00002', 'eui-10061c160ef4feff', 'eui-10061c169838feff', 'eui-10061c16c7b4feff', 'eui-10061c16d5d4feff', 'eui-64b708ab8620feff', 'eui-64b708ac9848feff', 'eui-64b708ac9880feff', 'eui-64b708ac988cfeff', 'eui-64b708ac98b0feff', 'eui-64b708ad0a60feff', 'eui-64b708ad0e84feff', 'eui-64b708bb7658feff', 'eui-70b3d57ed0061766', 'eui-70b3d57ed0061795', 'eui-d4d4da9777e8feff', 'eui-d4d4da97e83cfeff', 'eui-e86bea24f4b4feff', 'eui-e86bea2516c0feff', 'eui-e86bea252b24feff', 'eui-e86bea252c44feff', 'light-controller-01']
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:06
+device id  FALSE
+checklist
+device id  newdummy69243
+device id  FALSE
+[]
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:06
+device id  FALSE
+checklist
+device id  newdummy69243
+device id  FALSE
+[]
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:06
+device id  FALSE
+checklist
+device id  newdummy69243
+device id  FALSE
+[]
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:06
+device id  FALSE
+checklist
+device id  newdummy69243
+device id  FALSE
+['18:00:01:02:03:01', '18:00:01:02:03:02', '18:00:01:02:03:02_dupli', '18:00:01:02:03:03', '18:00:01:02:03:04', '18:00:01:02:03:05', '24:6F:28:02:12:14', '24:6F:28:03:02:64', 'A4:CF:12:77:1B:14', 'A4:CF:12:77:1E:04', 'A4:CF:12:78:3C:8C', 'A4:CF:12:78:3C:8C_dupli', 'Getriebe_MB', 'Listener_01', 'T00002', 'eui-10061c160ef4feff', 'eui-10061c169838feff', 'eui-10061c16c7b4feff', 'eui-10061c16d5d4feff', 'eui-64b708ab8620feff', 'eui-64b708ac9848feff', 'eui-64b708ac9880feff', 'eui-64b708ac988cfeff', 'eui-64b708ac98b0feff', 'eui-64b708ad0a60feff', 'eui-64b708ad0e84feff', 'eui-64b708bb7658feff', 'eui-70b3d57ed0061766', 'eui-70b3d57ed0061795', 'eui-d4d4da9777e8feff', 'eui-d4d4da97e83cfeff', 'eui-e86bea24f4b4feff', 'eui-e86bea2516c0feff', 'eui-e86bea252b24feff', 'eui-e86bea252c44feff', 'light-controller-01']
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:06
+device id  FALSE
+checklist
+device id  newdummy69243
+device id  FALSE
+[]
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:06
+device id  FALSE
+checklist
+device id  newdummy69243
+device id  FALSE
+['18:00:01:02:03:01', '18:00:01:02:03:02', '18:00:01:02:03:02_dupli', '18:00:01:02:03:03', '18:00:01:02:03:04', '18:00:01:02:03:05', '24:6F:28:02:12:14', '24:6F:28:03:02:64', 'A4:CF:12:77:1B:14', 'A4:CF:12:77:1E:04', 'A4:CF:12:78:3C:8C', 'A4:CF:12:78:3C:8C_dupli', 'Getriebe_MB', 'Listener_01', 'eui-10061c160ef4feff', 'eui-10061c169838feff', 'eui-10061c16c7b4feff', 'eui-10061c16d5d4feff', 'eui-64b708ab8620feff', 'eui-64b708ac9848feff', 'eui-64b708ac9880feff', 'eui-64b708ac988cfeff', 'eui-64b708ac98b0feff', 'eui-64b708ad0a60feff', 'eui-64b708ad0e84feff', 'eui-64b708bb7658feff', 'eui-70b3d57ed0061766', 'eui-70b3d57ed0061795', 'eui-d4d4da9777e8feff', 'eui-d4d4da97e83cfeff', 'eui-e86bea24f4b4feff', 'eui-e86bea2516c0feff', 'eui-e86bea252b24feff', 'eui-e86bea252c44feff', 'light-controller-01']
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:06
+device id  FALSE
+checklist
+device id  newdummy69243
+device id  FALSE
+Stop device action for panel panel2
+Process 10231 terminated.
+['18:00:01:02:03:01', '18:00:01:02:03:02', '18:00:01:02:03:03', '18:00:01:02:03:04', '18:00:01:02:03:05', '24:6F:28:02:12:14', '24:6F:28:03:02:64', 'A4:CF:12:77:1B:14', 'A4:CF:12:77:1E:04', 'A4:CF:12:78:3C:8C', 'A4:CF:12:78:3C:8C_dupli', 'Getriebe_MB', 'Listener_01', 'eui-10061c160ef4feff', 'eui-10061c169838feff', 'eui-10061c16c7b4feff', 'eui-10061c16d5d4feff', 'eui-64b708ab8620feff', 'eui-64b708ac9848feff', 'eui-64b708ac9880feff', 'eui-64b708ac988cfeff', 'eui-64b708ac98b0feff', 'eui-64b708ad0a60feff', 'eui-64b708ad0e84feff', 'eui-64b708bb7658feff', 'eui-70b3d57ed0061766', 'eui-70b3d57ed0061795', 'eui-d4d4da9777e8feff', 'eui-d4d4da97e83cfeff', 'eui-e86bea24f4b4feff', 'eui-e86bea2516c0feff', 'eui-e86bea252b24feff', 'eui-e86bea252c44feff', 'light-controller-01']
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:06
+device id  FALSE
+checklist
+device id  newdummy69243
+device id  FALSE
+Stop device action for panel panel3
+Process 10761 terminated.
+Stop device action for panel panel2
+Process 10779 terminated.
+new panel?
+Neues Panel panel4 hinzugefügt.
+['18:00:01:02:03:01', '18:00:01:02:03:02', '18:00:01:02:03:03', '18:00:01:02:03:04', '18:00:01:02:03:05', '24:6F:28:02:12:14', '24:6F:28:03:02:64', 'A4:CF:12:77:1B:14', 'A4:CF:12:77:1E:04', 'A4:CF:12:78:3C:8C', 'A4:CF:12:78:3C:8C_dupli', 'Getriebe_MB', 'Listener_01', 'eui-10061c160ef4feff', 'eui-10061c169838feff', 'eui-10061c16c7b4feff', 'eui-10061c16d5d4feff', 'eui-64b708ab8620feff', 'eui-64b708ac9848feff', 'eui-64b708ac9880feff', 'eui-64b708ac988cfeff', 'eui-64b708ac98b0feff', 'eui-64b708ad0a60feff', 'eui-64b708ad0e84feff', 'eui-64b708bb7658feff', 'eui-70b3d57ed0061766', 'eui-70b3d57ed0061795', 'eui-d4d4da9777e8feff', 'eui-d4d4da97e83cfeff', 'eui-e86bea24f4b4feff', 'eui-e86bea2516c0feff', 'eui-e86bea252b24feff', 'eui-e86bea252c44feff', 'light-controller-01']
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:06
+device id  FALSE
+checklist
+device id  newdummy69243
+device id  FALSE
+checklist
+device id  newdummy41428
+device id  FALSE
+[]
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:06
+device id  FALSE
+checklist
+device id  newdummy69243
+device id  FALSE
+checklist
+device id  newdummy41428
+device id  FALSE
+[]
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:06
+device id  FALSE
+checklist
+device id  newdummy69243
+device id  FALSE
+checklist
+device id  newdummy41428
+device id  FALSE
+[]
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:06
+device id  FALSE
+checklist
+device id  newdummy69243
+device id  FALSE
+checklist
+device id  newdummy41428
+device id  FALSE
+[]
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:06
+device id  FALSE
+checklist
+device id  newdummy69243
+device id  FALSE
+checklist
+device id  newdummy41428
+device id  FALSE
+127.0.0.1 - - [18/Aug/2025 03:20:15] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:20:22] "OPTIONS /stop HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:20:23] "POST /stop HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:20:47] "OPTIONS /senden HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:20:47] "POST /senden HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:21:01] "GET / HTTP/1.1" 200 -
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 57064)
+Traceback (most recent call last):
+  File "/usr/lib/python3.11/socketserver.py", line 317, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python3.11/socketserver.py", line 348, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.11/socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python3.11/socketserver.py", line 755, in __init__
+    self.handle()
+  File "/usr/lib/python3.11/http/server.py", line 432, in handle
+    self.handle_one_request()
+  File "/usr/lib/python3.11/http/server.py", line 420, in handle_one_request
+    method()
+  File "/home/mcg/Arbeit/IoT_Devices_Software/Dummy_Sender_and_Listener/moving_Devices/Movin_server_43.py", line 102, in do_GET
+    self.wfile.write(json.dumps(existing_data).encode('utf-8'))
+  File "/usr/lib/python3.11/socketserver.py", line 834, in write
+    self._sock.sendall(b)
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+127.0.0.1 - - [18/Aug/2025 03:21:02] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:21:12] "OPTIONS /stop HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:21:13] "POST /stop HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:21:22] "GET / HTTP/1.1" 200 -
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 39938)
+Traceback (most recent call last):
+  File "/usr/lib/python3.11/socketserver.py", line 317, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python3.11/socketserver.py", line 348, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.11/socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python3.11/socketserver.py", line 755, in __init__
+    self.handle()
+  File "/usr/lib/python3.11/http/server.py", line 432, in handle
+    self.handle_one_request()
+  File "/usr/lib/python3.11/http/server.py", line 420, in handle_one_request
+    method()
+  File "/home/mcg/Arbeit/IoT_Devices_Software/Dummy_Sender_and_Listener/moving_Devices/Movin_server_43.py", line 102, in do_GET
+    self.wfile.write(json.dumps(existing_data).encode('utf-8'))
+  File "/usr/lib/python3.11/socketserver.py", line 834, in write
+    self._sock.sendall(b)
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+127.0.0.1 - - [18/Aug/2025 03:21:23] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:21:27] "OPTIONS /senden HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:21:27] "POST /senden HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:21:39] "GET / HTTP/1.1" 200 -
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 57512)
+Traceback (most recent call last):
+  File "/usr/lib/python3.11/socketserver.py", line 317, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python3.11/socketserver.py", line 348, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.11/socketserver.py", line 361, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python3.11/socketserver.py", line 755, in __init__
+    self.handle()
+  File "/usr/lib/python3.11/http/server.py", line 432, in handle
+    self.handle_one_request()
+  File "/usr/lib/python3.11/http/server.py", line 420, in handle_one_request
+    method()
+  File "/home/mcg/Arbeit/IoT_Devices_Software/Dummy_Sender_and_Listener/moving_Devices/Movin_server_43.py", line 102, in do_GET
+    self.wfile.write(json.dumps(existing_data).encode('utf-8'))
+  File "/usr/lib/python3.11/socketserver.py", line 834, in write
+    self._sock.sendall(b)
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+127.0.0.1 - - [18/Aug/2025 03:21:40] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:21:44] "OPTIONS /stop HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 03:21:45] "POST /stop HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 14:31:52] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 14:34:34] "OPTIONS /delete HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 14:34:34] "POST /delete HTTP/1.1" 200 -
+127.0.0.1 - - [18/Aug/2025 14:34:35] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2025 00:04:48] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2025 00:05:28] "OPTIONS /senden HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2025 00:05:28] "POST /senden HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2025 00:05:41] "OPTIONS /senden HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2025 00:05:41] "POST /senden HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2025 00:07:55] "GET / HTTP/1.1" 200 -
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 34142)
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/socketserver.py", line 318, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python3.12/socketserver.py", line 349, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.12/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python3.12/socketserver.py", line 761, in __init__
+    self.handle()
+  File "/usr/lib/python3.12/http/server.py", line 436, in handle
+    self.handle_one_request()
+  File "/usr/lib/python3.12/http/server.py", line 424, in handle_one_request
+    method()
+  File "/home/mcg/Schreibtisch/Z_Data_Backup/Dummy_Sender_and_Listener/moving_Devices/Movin_server_43.py", line 102, in do_GET
+    self.wfile.write(json.dumps(existing_data).encode('utf-8'))
+  File "/usr/lib/python3.12/socketserver.py", line 840, in write
+    self._sock.sendall(b)
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+127.0.0.1 - - [19/Aug/2025 00:07:56] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2025 00:08:00] "GET / HTTP/1.1" 200 -
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 34156)
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/socketserver.py", line 318, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python3.12/socketserver.py", line 349, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.12/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python3.12/socketserver.py", line 761, in __init__
+    self.handle()
+  File "/usr/lib/python3.12/http/server.py", line 436, in handle
+    self.handle_one_request()
+  File "/usr/lib/python3.12/http/server.py", line 424, in handle_one_request
+    method()
+  File "/home/mcg/Schreibtisch/Z_Data_Backup/Dummy_Sender_and_Listener/moving_Devices/Movin_server_43.py", line 102, in do_GET
+    self.wfile.write(json.dumps(existing_data).encode('utf-8'))
+  File "/usr/lib/python3.12/socketserver.py", line 840, in write
+    self._sock.sendall(b)
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+127.0.0.1 - - [19/Aug/2025 00:08:01] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2025 00:08:12] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2025 00:08:27] "OPTIONS /stop HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2025 00:08:28] "POST /stop HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2025 00:11:18] "GET / HTTP/1.1" 200 -
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 58692)
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/socketserver.py", line 318, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python3.12/socketserver.py", line 349, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.12/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python3.12/socketserver.py", line 761, in __init__
+    self.handle()
+  File "/usr/lib/python3.12/http/server.py", line 436, in handle
+    self.handle_one_request()
+  File "/usr/lib/python3.12/http/server.py", line 424, in handle_one_request
+    method()
+  File "/home/mcg/Schreibtisch/Z_Data_Backup/Dummy_Sender_and_Listener/moving_Devices/Movin_server_43.py", line 102, in do_GET
+    self.wfile.write(json.dumps(existing_data).encode('utf-8'))
+  File "/usr/lib/python3.12/socketserver.py", line 840, in write
+    self._sock.sendall(b)
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+127.0.0.1 - - [19/Aug/2025 00:11:19] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2025 00:11:25] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2025 00:12:41] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2025 00:41:44] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2025 01:15:34] "GET / HTTP/1.1" 200 -
+  File "/root/artificial_Devices/moving_Devices/Movin_server_43.py", line 374
+    server_address = (''host, port)
+                        ^
+SyntaxError: invalid syntax
+  File "/root/artificial_Devices/moving_Devices/Movin_server_43.py", line 374
+    server_address = (''host, port)
+                        ^
+SyntaxError: invalid syntax
+84.160.50.191 - - [19/Aug/2025 03:04:59] "GET / HTTP/1.1" 200 -
+84.160.50.191 - - [19/Aug/2025 03:05:08] "GET / HTTP/1.1" 200 -
+84.160.50.191 - - [19/Aug/2025 03:05:18] "GET / HTTP/1.1" 200 -
+84.160.50.191 - - [19/Aug/2025 03:05:19] "GET / HTTP/1.1" 200 -
+84.160.50.191 - - [19/Aug/2025 03:06:01] "GET / HTTP/1.1" 200 -
+Starting httpd server on port 3557
+['24:6F:28:02:12:14', '24:6F:28:03:02:64', 'A4:CF:12:77:1B:14', 'A4:CF:12:77:1E:04', 'A4:CF:12:78:3C:8C', 'A4:CF:12:78:3C:8C_dupli', 'Listener_01', 'eui-10061c160ef4feff', 'eui-10061c169838feff', 'eui-10061c16c7b4feff', 'eui-10061c16d5d4feff', 'eui-64b708ab8620feff', 'eui-64b708ac9848feff', 'eui-64b708ac9880feff', 'eui-64b708ac988cfeff', 'eui-64b708ac98b0feff', 'eui-64b708ad0a60feff', 'eui-64b708ad0e84feff', 'eui-64b708bb7658feff', 'eui-70b3d57ed0061766', 'eui-70b3d57ed0061795', 'eui-d4d4da9777e8feff', 'eui-d4d4da97e83cfeff', 'eui-e86bea24f4b4feff', 'eui-e86bea2516c0feff', 'eui-e86bea252b24feff', 'eui-e86bea252c44feff', 'light-controller-01']
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:06
+device id  FALSE
+checklist
+device id  newdummy69243
+device id  FALSE
+['24:6F:28:02:12:14', '24:6F:28:03:02:64', 'A4:CF:12:77:1B:14', 'A4:CF:12:77:1E:04', 'A4:CF:12:78:3C:8C', 'A4:CF:12:78:3C:8C_dupli', 'Listener_01', 'eui-10061c160ef4feff', 'eui-10061c169838feff', 'eui-10061c16c7b4feff', 'eui-10061c16d5d4feff', 'eui-64b708ab8620feff', 'eui-64b708ac9848feff', 'eui-64b708ac9880feff', 'eui-64b708ac988cfeff', 'eui-64b708ac98b0feff', 'eui-64b708ad0a60feff', 'eui-64b708ad0e84feff', 'eui-64b708bb7658feff', 'eui-70b3d57ed0061766', 'eui-70b3d57ed0061795', 'eui-d4d4da9777e8feff', 'eui-d4d4da97e83cfeff', 'eui-e86bea24f4b4feff', 'eui-e86bea2516c0feff', 'eui-e86bea252b24feff', 'eui-e86bea252c44feff', 'light-controller-01']
+['24:6F:28:02:12:14', '24:6F:28:03:02:64', 'A4:CF:12:77:1B:14', 'A4:CF:12:77:1E:04', 'A4:CF:12:78:3C:8C', 'A4:CF:12:78:3C:8C_dupli', 'Listener_01', 'eui-10061c160ef4feff', 'eui-10061c169838feff', 'eui-10061c16c7b4feff', 'eui-10061c16d5d4feff', 'eui-64b708ab8620feff', 'eui-64b708ac9848feff', 'eui-64b708ac9880feff', 'eui-64b708ac988cfeff', 'eui-64b708ac98b0feff', 'eui-64b708ad0a60feff', 'eui-64b708ad0e84feff', 'eui-64b708bb7658feff', 'eui-70b3d57ed0061766', 'eui-70b3d57ed0061795', 'eui-d4d4da9777e8feff', 'eui-d4d4da97e83cfeff', 'eui-e86bea24f4b4feff', 'eui-e86bea2516c0feff', 'eui-e86bea252b24feff', 'eui-e86bea252c44feff', 'light-controller-01']
+['24:6F:28:02:12:14', '24:6F:28:03:02:64', 'A4:CF:12:77:1B:14', 'A4:CF:12:77:1E:04', 'A4:CF:12:78:3C:8C', 'A4:CF:12:78:3C:8C_dupli', 'Listener_01', 'eui-10061c160ef4feff', 'eui-10061c169838feff', 'eui-10061c16c7b4feff', 'eui-10061c16d5d4feff', 'eui-64b708ab8620feff', 'eui-64b708ac9848feff', 'eui-64b708ac9880feff', 'eui-64b708ac988cfeff', 'eui-64b708ac98b0feff', 'eui-64b708ad0a60feff', 'eui-64b708ad0e84feff', 'eui-64b708bb7658feff', 'eui-70b3d57ed0061766', 'eui-70b3d57ed0061795', 'eui-d4d4da9777e8feff', 'eui-d4d4da97e83cfeff', 'eui-e86bea24f4b4feff', 'eui-e86bea2516c0feff', 'eui-e86bea252b24feff', 'eui-e86bea252c44feff', 'light-controller-01']
+['24:6F:28:02:12:14', '24:6F:28:03:02:64', 'A4:CF:12:77:1B:14', 'A4:CF:12:77:1E:04', 'A4:CF:12:78:3C:8C', 'A4:CF:12:78:3C:8C_dupli', 'Listener_01', 'eui-10061c160ef4feff', 'eui-10061c169838feff', 'eui-10061c16c7b4feff', 'eui-10061c16d5d4feff', 'eui-64b708ab8620feff', 'eui-64b708ac9848feff', 'eui-64b708ac9880feff', 'eui-64b708ac988cfeff', 'eui-64b708ac98b0feff', 'eui-64b708ad0a60feff', 'eui-64b708ad0e84feff', 'eui-64b708bb7658feff', 'eui-70b3d57ed0061766', 'eui-70b3d57ed0061795', 'eui-d4d4da9777e8feff', 'eui-d4d4da97e83cfeff', 'eui-e86bea24f4b4feff', 'eui-e86bea2516c0feff', 'eui-e86bea252b24feff', 'eui-e86bea252c44feff', 'light-controller-01']
+['24:6F:28:02:12:14', '24:6F:28:03:02:64', 'A4:CF:12:77:1B:14', 'A4:CF:12:77:1E:04', 'A4:CF:12:78:3C:8C', 'A4:CF:12:78:3C:8C_dupli', 'Listener_01', 'eui-10061c160ef4feff', 'eui-10061c169838feff', 'eui-10061c16c7b4feff', 'eui-10061c16d5d4feff', 'eui-64b708ab8620feff', 'eui-64b708ac9848feff', 'eui-64b708ac9880feff', 'eui-64b708ac988cfeff', 'eui-64b708ac98b0feff', 'eui-64b708ad0a60feff', 'eui-64b708ad0e84feff', 'eui-64b708bb7658feff', 'eui-70b3d57ed0061766', 'eui-70b3d57ed0061795', 'eui-d4d4da9777e8feff', 'eui-d4d4da97e83cfeff', 'eui-e86bea24f4b4feff', 'eui-e86bea2516c0feff', 'eui-e86bea252b24feff', 'eui-e86bea252c44feff', 'light-controller-01']
+['24:6F:28:02:12:14', '24:6F:28:03:02:64', 'A4:CF:12:77:1B:14', 'A4:CF:12:77:1E:04', 'A4:CF:12:78:3C:8C', 'A4:CF:12:78:3C:8C_dupli', 'Listener_01', 'eui-10061c160ef4feff', 'eui-10061c169838feff', 'eui-10061c16c7b4feff', 'eui-10061c16d5d4feff', 'eui-64b708ab8620feff', 'eui-64b708ac9848feff', 'eui-64b708ac9880feff', 'eui-64b708ac988cfeff', 'eui-64b708ac98b0feff', 'eui-64b708ad0a60feff', 'eui-64b708ad0e84feff', 'eui-64b708bb7658feff', 'eui-70b3d57ed0061766', 'eui-70b3d57ed0061795', 'eui-d4d4da9777e8feff', 'eui-d4d4da97e83cfeff', 'eui-e86bea24f4b4feff', 'eui-e86bea2516c0feff', 'eui-e86bea252b24feff', 'eui-e86bea252c44feff', 'light-controller-01']
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:06
+device id  FALSE
+checklist
+device id  newdummy69243
+device id  FALSE
+['24:6F:28:02:12:14', '24:6F:28:03:02:64', 'A4:CF:12:77:1B:14', 'A4:CF:12:77:1E:04', 'A4:CF:12:78:3C:8C', 'A4:CF:12:78:3C:8C_dupli', 'Listener_01', 'eui-10061c160ef4feff', 'eui-10061c169838feff', 'eui-10061c16c7b4feff', 'eui-10061c16d5d4feff', 'eui-64b708ab8620feff', 'eui-64b708ac9848feff', 'eui-64b708ac9880feff', 'eui-64b708ac988cfeff', 'eui-64b708ac98b0feff', 'eui-64b708ad0a60feff', 'eui-64b708ad0e84feff', 'eui-64b708bb7658feff', 'eui-70b3d57ed0061766', 'eui-70b3d57ed0061795', 'eui-d4d4da9777e8feff', 'eui-d4d4da97e83cfeff', 'eui-e86bea24f4b4feff', 'eui-e86bea2516c0feff', 'eui-e86bea252b24feff', 'eui-e86bea252c44feff', 'light-controller-01']
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:06
+device id  FALSE
+checklist
+device id  newdummy69243
+device id  FALSE
+['24:6F:28:02:12:14', '24:6F:28:03:02:64', 'A4:CF:12:77:1B:14', 'A4:CF:12:77:1E:04', 'A4:CF:12:78:3C:8C', 'A4:CF:12:78:3C:8C_dupli', 'Listener_01', 'eui-10061c160ef4feff', 'eui-10061c169838feff', 'eui-10061c16c7b4feff', 'eui-10061c16d5d4feff', 'eui-64b708ab8620feff', 'eui-64b708ac9848feff', 'eui-64b708ac9880feff', 'eui-64b708ac988cfeff', 'eui-64b708ac98b0feff', 'eui-64b708ad0a60feff', 'eui-64b708ad0e84feff', 'eui-64b708bb7658feff', 'eui-70b3d57ed0061766', 'eui-70b3d57ed0061795', 'eui-d4d4da9777e8feff', 'eui-d4d4da97e83cfeff', 'eui-e86bea24f4b4feff', 'eui-e86bea2516c0feff', 'eui-e86bea252b24feff', 'eui-e86bea252c44feff', 'light-controller-01']
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:06
+device id  FALSE
+checklist
+device id  newdummy69243
+device id  FALSE
+['24:6F:28:02:12:14', '24:6F:28:03:02:64', 'A4:CF:12:77:1B:14', 'A4:CF:12:77:1E:04', 'A4:CF:12:78:3C:8C', 'A4:CF:12:78:3C:8C_dupli', 'Listener_01', 'eui-10061c160ef4feff', 'eui-10061c169838feff', 'eui-10061c16c7b4feff', 'eui-10061c16d5d4feff', 'eui-64b708ab8620feff', 'eui-64b708ac9848feff', 'eui-64b708ac9880feff', 'eui-64b708ac988cfeff', 'eui-64b708ac98b0feff', 'eui-64b708ad0a60feff', 'eui-64b708ad0e84feff', 'eui-64b708bb7658feff', 'eui-70b3d57ed0061766', 'eui-70b3d57ed0061795', 'eui-d4d4da9777e8feff', 'eui-d4d4da97e83cfeff', 'eui-e86bea24f4b4feff', 'eui-e86bea2516c0feff', 'eui-e86bea252b24feff', 'eui-e86bea252c44feff', 'light-controller-01']
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:06
+device id  FALSE
+checklist
+device id  newdummy69243
+device id  FALSE
+['18:00:01:02:03:01', '18:00:01:02:03:02', '18:00:01:02:03:03', '18:00:01:02:03:04', '24:6F:28:02:12:14', '24:6F:28:03:02:64', 'A4:CF:12:77:1B:14', 'A4:CF:12:77:1E:04', 'A4:CF:12:78:3C:8C', 'A4:CF:12:78:3C:8C_dupli', 'Listener_01', 'eui-10061c160ef4feff', 'eui-10061c169838feff', 'eui-10061c16c7b4feff', 'eui-10061c16d5d4feff', 'eui-64b708ab8620feff', 'eui-64b708ac9848feff', 'eui-64b708ac9880feff', 'eui-64b708ac988cfeff', 'eui-64b708ac98b0feff', 'eui-64b708ad0a60feff', 'eui-64b708ad0e84feff', 'eui-64b708bb7658feff', 'eui-70b3d57ed0061766', 'eui-70b3d57ed0061795', 'eui-d4d4da9777e8feff', 'eui-d4d4da97e83cfeff', 'eui-e86bea24f4b4feff', 'eui-e86bea2516c0feff', 'eui-e86bea252b24feff', 'eui-e86bea252c44feff', 'light-controller-01']
+checklist
+device id  19:00:01:02:03:03
+device id  FALSE
+checklist
+device id  19:00:01:02:03:0684.160.50.191 - - [19/Aug/2025 03:07:16] "GET / HTTP/1.1" 200 -
+84.160.50.191 - - [19/Aug/2025 03:10:59] "GET / HTTP/1.1" 200 -
+84.160.50.191 - - [19/Aug/2025 03:11:12] "GET / HTTP/1.1" 200 -
+84.160.50.191 - - [19/Aug/2025 03:12:54] "OPTIONS /senden HTTP/1.1" 200 -
+84.160.50.191 - - [19/Aug/2025 03:12:54] "POST /senden HTTP/1.1" 200 -
+84.160.50.191 - - [19/Aug/2025 03:13:15] "OPTIONS /stop HTTP/1.1" 200 -
+84.160.50.191 - - [19/Aug/2025 03:13:16] "POST /stop HTTP/1.1" 200 -
+84.160.50.191 - - [19/Aug/2025 03:13:28] "GET / HTTP/1.1" 200 -
+84.160.50.191 - - [19/Aug/2025 03:21:18] "GET / HTTP/1.1" 200 -
