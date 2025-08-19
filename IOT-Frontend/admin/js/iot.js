@@ -16,7 +16,7 @@ const Displays = [];
 const DISPWIDTH = 120;
 const hostname = location.hostname;
 
-const DUMMYSENDERURL = 'https://'+hostname+':3457/Dummy_Sender.html';
+const DUMMYSENDERURL = 'https://'+hostname+':3457/artificial_Devices.html';
 
 const url = 'wss://iot.fh-muenster.de/mqtt'
 
