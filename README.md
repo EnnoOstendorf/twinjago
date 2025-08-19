@@ -16,11 +16,11 @@ A doc describing installation of each part and a dockerfile for running all on o
 
 ## Components
 
-- **IoTBrokerToInflux** - a demon, that fetches sensordata from a MQTT broker and injects it into an influx DB to make it accessible to grafana
+- **IoTBrokerToInflux** - a demon, that fetches sensordata from a MQTT broker and injects it into an influx DB to make it accessible to grafana, we call him **pipeguy**
 - **IoTFrontend** - the frontend, served on a specified port accesible by Browsers, has an admin and a showroom part
   + **admin part** - let's you upload your 3D Files which are displayed in 3D where you can position and configure it, add Tooltip Infos, add pins and route them, add some documentation files, connect reallife devices from a MQTT broker and more
   + **showroom** - shows the 3D Model and let the user explore it, displays data from the connected reallife devices - realtime and historic with grafana, gives the user access to the documentational files. The showroom part is responsive, works with mouse or touch devices
-
+- **artificial devices** - lets you simulate IOT-devices that can be attached to your twins and affect the scene in showroom.
 
 ## Install
 
