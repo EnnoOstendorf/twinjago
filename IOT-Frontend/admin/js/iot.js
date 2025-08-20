@@ -116,9 +116,9 @@ const control3DObj = ( id, msg ) => {
     const mmesh = broker.devices[id].control3D;
     const ud = mmesh.userData;
     const changed = {
-	position : { x : ud.opos.x, y : ud.opos.y, z : ud.opos.z, changed: false },
-	rotation : { x : ud.orot.x, y : ud.orot.y, z : ud.orot.z, changed: false },
-	scale : { x : ud.oscl.x, y : ud.oscl.y, z : ud.oscl.z, changed: false }
+	position : { x : parseFloat(ud.opos.x), y : parseFloat(ud.opos.y), z : parseFloat(ud.opos.z), changed: false },
+	rotation : { x : parseFloat(ud.orot.x), y : parseFloat(ud.orot.y), z : parseFloat(ud.orot.z), changed: false },
+	scale : { x : parseFloat(ud.oscl.x), y : parseFloat(ud.oscl.y), z : parseFloat(ud.oscl.z), changed: false }
     }
     for( let i=0; i<broker.devices[id].meta.payloadStructure.length; i++ ) {
 	const o=broker.devices[id].meta.payloadStructure[i];
@@ -141,6 +141,7 @@ const control3DObj = ( id, msg ) => {
 	    changed.scale.y *= parseFloat(msg[i]); changed.scale.changed=true; }
 	if ( o.name == 'scale.z' ) {
 	    changed.scale.z *= parseFloat(msg[i]); changed.scale.changed=true; }
+//	console.log('device mover meta',o.name);
     };
     if ( changed.position.changed ) {
 	//	mmesh.position.set( changed.position.x, changed.position.y, changed.position.z );
@@ -163,6 +164,7 @@ const control3DObj = ( id, msg ) => {
 //	mmesh.scale.set( changed.scale.x, changed.scale.y, changed.scale.z );
 //	console.log('control3d scale',ud.oscl,changed);
     }
+//    console.log('3D Device Move',msg);
 }
 
 const parseMessage = ( idp, msg ) => {
@@ -3124,6 +3126,23 @@ console.log('editPaste',buf);
 	    const col = document.querySelector( '#part'+i+' .partcolor' )?.value;
 	    if ( apa.origdata?.color ) apa.origdata.color = col;
 //	    console.log('save part col',i,col);
+	    const mods = {
+		position: {
+		    x: apa.mesh.userData.opos ? apa.mesh.userData.opos.x : apa.mesh.position.x,
+		    y: apa.mesh.userData.opos ? apa.mesh.userData.opos.y : apa.mesh.position.y,
+		    z: apa.mesh.userData.opos ? apa.mesh.userData.opos.z : apa.mesh.position.z
+		},
+		rotation: {
+		    x: apa.mesh.userData.orot ? apa.mesh.userData.orot.x : apa.mesh.rotation.x,
+		    y: apa.mesh.userData.orot ? apa.mesh.userData.orot.y : apa.mesh.rotation.y,
+		    z: apa.mesh.userData.orot ? apa.mesh.userData.orot.z : apa.mesh.rotation.z
+		},
+		scale: {
+		    x: apa.mesh.userData.oscl ? apa.mesh.userData.oscl.x : apa.mesh.scale.x,
+		    y: apa.mesh.userData.oscl ? apa.mesh.userData.oscl.y : apa.mesh.scale.y,
+		    z: apa.mesh.userData.oscl ? apa.mesh.userData.oscl.z : apa.mesh.scale.z
+		}
+	    }
 	    if ( apa.type === 'basic' ) {
 		partdata = {
 		    'name' : apa.name,
@@ -3135,9 +3154,9 @@ console.log('editPaste',buf);
 		    'displaymeasures' : apa.displaymeasures,
 		    'control3D' : apa.control3D,
 		    'modifications' : {
-			'position' : { 'x' : apa.mesh.position.x, 'y' : apa.mesh.position.y, 'z' : apa.mesh.position.z },
-			'rotation' : { 'x' : apa.mesh.rotation.x, 'y' : apa.mesh.rotation.y, 'z' : apa.mesh.rotation.z },
-			'scale' : {	'x' : apa.mesh.scale.x, 'y' : apa.mesh.scale.y, 'z' : apa.mesh.scale.z },
+			'position' : { 'x' : mods.position.x, 'y' : mods.position.y, 'z' : mods.position.z },
+			'rotation' : { 'x' : mods.rotation.x, 'y' : mods.rotation.y, 'z' : mods.rotation.z },
+			'scale' : {	'x' : mods.scale.x, 'y' : mods.scale.y, 'z' : mods.scale.z },
 			'ghost' : apa.mesh.material?.opacity<1,
 			'depthWrite' : apa.mesh.material?.depthWrite,
 			'side' : apa.mesh.material?.side
@@ -3157,9 +3176,9 @@ console.log('editPaste',buf);
 		    'displaymeasures' : apa.displaymeasures,
 		    'control3D' : apa.control3D,
 		    'modifications' : {
-			'position' : { 'x' : apa.mesh.position.x, 'y' : apa.mesh.position.y, 'z' : apa.mesh.position.z },
-			'rotation' : { 'x' : apa.mesh.rotation.x, 'y' : apa.mesh.rotation.y, 'z' : apa.mesh.rotation.z },
-			'scale' : {	'x' : apa.mesh.scale.x, 'y' : apa.mesh.scale.y, 'z' : apa.mesh.scale.z },
+			'position' : { 'x' : mods.position.x, 'y' : mods.position.y, 'z' : mods.position.z },
+			'rotation' : { 'x' : mods.rotation.x, 'y' : mods.rotation.y, 'z' : mods.rotation.z },
+			'scale' : {	'x' : mods.scale.x, 'y' : mods.scale.y, 'z' : mods.scale.z },
 			'ghost' : apa.mesh.material?.opacity<1,
 			'depthWrite' : apa.mesh.material?.depthWrite,
 			'side' : apa.mesh.material?.side
@@ -4326,8 +4345,9 @@ console.log('editPaste',buf);
 		if ( ev.target.value && ev.target.value.indexOf(',')>-1) {
 		    ev.target.value = ev.target.value.replace( ',', '.' );
 		}
-		let v = parseFloat(ev.target.value).toFixed(4);
-		o.value=v;
+		let v = parseFloat(ev.target.value);
+		const v4=v.toFixed(4);
+		o.value=v4;
 		console.log( 'value', ev.target.value,v,o,o.value );
 		if ( ev.target.id === 'posx' ) aktmesh.position.x = v;
 		else if ( ev.target.id === 'posy' ) aktmesh.position.y = v;
