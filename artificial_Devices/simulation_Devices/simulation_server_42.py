@@ -288,7 +288,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 json.dump(existing_data, f, indent=4, ensure_ascii=False)
 
             # Starten des Scripts
-            process = subprocess.Popen(['python3', 'simulation_mqtt_publisher_002.py', device_id])
+            process = subprocess.Popen(['python3', 'simulation_mqtt_publisher_003.py', device_id])
             pid = process.pid
             # Schreiben der PID-Daten
             with open('simulation-PIDs.txt', 'a') as f:
