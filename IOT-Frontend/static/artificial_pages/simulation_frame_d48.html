@@ -289,8 +289,12 @@
                     <tr><td>ID</td><td>Device-Id, mit der sich der client am Broker anmeldet, unique.</td></tr>
                     <tr><td>Sleep</td><td>Zeitintervall der erzeugten Daten, bzw. Schrittvariable für zeitabhängige Funktionen.</td></tr>
                     <tr><td>Payload-Value</td>
-                        <td>Fall A: Ein numerischer Wert (Nachkommastellen mit Punkt getrennt.):<br>
-                            Es wird ein Simulationssignal erzeugt, welches um den eingegebenen Wert oszilliert und das zusätzlich mit Rauschen (Gauss) behaftet ist.<br><br>
+                        <td>Fall A: Ein numerischer Wert oder mathematischer Ausdruck ohne Leerzeichen. (Nachkommastellen mit Punkt getrennt.)<br>
+                            Ist der Ausdruck eine Funktion der Variable "t", wird der entprechnede Funktionswert berechnet und an den Broker versendet, 
+                            wobei die Variable "t" bei jedem Zeitschritt um die "Sleep-time" erhöht wird.<br>
+                            Gültig sind die trigonometrischen und algebraischen Funktionen, Logarithmus- und e-Funktion.
+                            pi, und e werden als Konstanten erkannt, Potenzieren mit pow(a,b). <br>Erlaubt sind auch normal-, bzw. gleichverteilte Zufallszahlen: randN(a,b) und randU(a,b).
+                            Die Parameter a und b sind Mitttelwert und Standardabweichung bzw. unteres und oberes Limit der Verteilungen. a und b sind hier immer numerisch.<br><br>
                             Fall B: Eine Liste von Strings mit Leerzeichen getrennt:<br>
                             Die Liste wird entsprechend der Sleep-Time abgearbeitet und am Ende wiederholt.</td></tr>
                 </tbody>
