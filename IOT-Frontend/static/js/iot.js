@@ -261,69 +261,85 @@ const attachSensor3D = ( id, mesh ) => {
 	console.log('attachSensor3D: no mesh', mesh);
 	return;
     }
-    broker.devices[id].control3D = mesh;
+    if ( !broker.devices[id].control3D ) broker.devices[id].control3D = [];
+    broker.devices[id].control3D.push( mesh );
 }
 
-const detachSensor3D = ( id ) => {
-    if ( ! broker.devices[id] ) {
+const detachSensor3D = ( id, mesh ) => {
+    if ( ! broker.devices[id] || ! broker.devices[id].control3D ) {
 	console.log('detachSensor3D: no such Device', id);
 	return;
     }    
-    broker.devices[id].control3D = false;
+
+    const btc3d = broker.devices[id].control3D;
+    for ( let i=btc3d.length; i>=0; i-- ) {
+	if ( btc3d[i].id === mesh.id ) {
+	    btc3d.splice( i, 1 );
+	    break;
+	}
+    }
 }
 
 const control3DObj = ( id, msg ) => {
-    const mmesh = broker.devices[id].control3D;
-    const ud = mmesh.userData;
-    const changed = {
-	position : { x : ud.opos.x, y : ud.opos.y, z : ud.opos.z, changed: false },
-	rotation : { x : ud.orot.x, y : ud.orot.y, z : ud.orot.z, changed: false },
-	scale : { x : ud.oscl.x, y : ud.oscl.y, z : ud.oscl.z, changed: false }
-    }
-    for( let i=0; i<broker.devices[id].meta.payloadStructure.length; i++ ) {
-	const o=broker.devices[id].meta.payloadStructure[i];
-	
-	if ( o.name == 'position.x' ) {
-	    changed.position.x += parseFloat(msg[i]); changed.position.changed=true; }
-	if ( o.name == 'position.y' ) {
-	    changed.position.y += parseFloat(msg[i]); changed.position.changed=true; }
-	if ( o.name == 'position.z' ) {
-	    changed.position.z += parseFloat(msg[i]); changed.position.changed=true; }
-	if ( o.name == 'rotation.x' ) {
-	    changed.rotation.x += parseFloat(msg[i]); changed.rotation.changed=true; }
-	if ( o.name == 'rotation.y' ) {
-	    changed.rotation.y += parseFloat(msg[i]); changed.rotation.changed=true; }
-	if ( o.name == 'rotation.z' ) {
-	    changed.rotation.z += parseFloat(msg[i]); changed.rotation.changed=true; }
-	if ( o.name == 'scale.x' ) {
-	    changed.scale.x *= parseFloat(msg[i]); changed.scale.changed=true; }
-	if ( o.name == 'scale.y' ) {
-	    changed.scale.y *= parseFloat(msg[i]); changed.scale.changed=true; }
-	if ( o.name == 'scale.z' ) {
-	    changed.scale.z *= parseFloat(msg[i]); changed.scale.changed=true; }
-    };
-    if ( changed.position.changed ) {
+    if ( editmode ) return;
+    if ( broker.devices[id].control3D.length === 0 ) return;
+    
+    broker.devices[id].control3D.forEach( ( ob, i ) => {
+	const mmesh = ob;
+	const ud = mmesh.userData;
+	const changed = {
+	    position : { x : parseFloat(ud.opos.x), y : parseFloat(ud.opos.y), z : parseFloat(ud.opos.z), changed: false },
+	    rotation : { x : parseFloat(ud.orot.x), y : parseFloat(ud.orot.y), z : parseFloat(ud.orot.z), changed: false },
+	    scale : { x : parseFloat(ud.oscl.x), y : parseFloat(ud.oscl.y), z : parseFloat(ud.oscl.z), changed: false }
+	}
+	for( let i=0; i<broker.devices[id].meta.payloadStructure.length; i++ ) {
+	    const o=broker.devices[id].meta.payloadStructure[i];
+	    
+	    if ( o.name == 'position.x' ) {
+		changed.position.x += parseFloat(msg[i]); changed.position.changed=true; }
+	    if ( o.name == 'position.y' ) {
+		changed.position.y += parseFloat(msg[i]); changed.position.changed=true; }
+	    if ( o.name == 'position.z' ) {
+		changed.position.z += parseFloat(msg[i]); changed.position.changed=true; }
+	    if ( o.name == 'rotation.x' ) {
+		changed.rotation.x += parseFloat(msg[i]); changed.rotation.changed=true; }
+	    if ( o.name == 'rotation.y' ) {
+		changed.rotation.y += parseFloat(msg[i]); changed.rotation.changed=true; }
+	    if ( o.name == 'rotation.z' ) {
+		changed.rotation.z += parseFloat(msg[i]); changed.rotation.changed=true; }
+	    if ( o.name == 'scale.x' ) {
+		changed.scale.x *= parseFloat(msg[i]); changed.scale.changed=true; }
+	    if ( o.name == 'scale.y' ) {
+		changed.scale.y *= parseFloat(msg[i]); changed.scale.changed=true; }
+	    if ( o.name == 'scale.z' ) {
+		changed.scale.z *= parseFloat(msg[i]); changed.scale.changed=true; }
+	    //	console.log('device mover meta',o.name);
+	};
+	if ( changed.position.changed ) {
 	//	mmesh.position.set( changed.position.x, changed.position.y, changed.position.z );
-	new TWEEN.Tween(mmesh.position)
-	    .to( { x : changed.position.x, y : changed.position.y, z : changed.position.z }, 500 )
-	    .start();
-	console.log('control3d position',ud.opos,changed);
-    }
-    if ( changed.rotation.changed ) {
-	new TWEEN.Tween(mmesh.rotation)
-	    .to( { x : changed.rotation.x, y : changed.rotation.y, z : changed.rotation.z }, 500 )
-	    .start();
-//	mmesh.rotation.set( changed.rotation.x, changed.rotation.y, changed.rotation.z );
-	console.log('control3d rotation',ud.orot,changed);
-    }
-    if ( changed.scale.changed ) {
-	new TWEEN.Tween(mmesh.scale)
-	    .to( { x : changed.scale.x, y : changed.scale.y, z : changed.scale.z }, 500 )
-	    .start();
-//	mmesh.scale.set( changed.scale.x, changed.scale.y, changed.scale.z );
-	console.log('control3d scale',ud.oscl,changed);
-    }
+	    new TWEEN.Tween(mmesh.position)
+		.to( { x : changed.position.x, y : changed.position.y, z : changed.position.z }, 500 )
+		.start();
+	    //	console.log('control3d position',ud.opos,changed);
+	}
+	if ( changed.rotation.changed ) {
+	    new TWEEN.Tween(mmesh.rotation)
+		.to( { x : changed.rotation.x, y : changed.rotation.y, z : changed.rotation.z }, 500 )
+		.start();
+	    //	mmesh.rotation.set( changed.rotation.x, changed.rotation.y, changed.rotation.z );
+	    //	console.log('control3d rotation',ud.orot,changed);
+	}
+	if ( changed.scale.changed ) {
+	    new TWEEN.Tween(mmesh.scale)
+		.to( { x : changed.scale.x, y : changed.scale.y, z : changed.scale.z }, 500 )
+		.start();
+	    //	mmesh.scale.set( changed.scale.x, changed.scale.y, changed.scale.z );
+	    //	console.log('control3d scale',ud.oscl,changed);
+	}
+    });
+//    console.log('3D Device Move',msg);
 }
+
 
 const parseMessage = ( idp, msg ) => {
 
@@ -396,7 +412,6 @@ const parseMessage = ( idp, msg ) => {
 	    for ( let i=0; i<Displays.length; i++ ) {
 		if ( Displays[i].id === id ) {
 		    aktDisplay( Displays[i], msg );
-		    break;
 		}
 	    }
 	}
