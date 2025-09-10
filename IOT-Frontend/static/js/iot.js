@@ -281,7 +281,6 @@ const detachSensor3D = ( id, mesh ) => {
 }
 
 const control3DObj = ( id, msg ) => {
-    if ( editmode ) return;
     if ( broker.devices[id].control3D.length === 0 ) return;
     
     broker.devices[id].control3D.forEach( ( ob, i ) => {
