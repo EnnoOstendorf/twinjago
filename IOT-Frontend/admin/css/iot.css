@@ -644,7 +644,7 @@ input.error {
 	background: #eee;
 	margin: 10px;
 }
-#DokumenteBtn,#RoutingBtn,#liveBtn,#SzeneBtn {
+#DokumenteBtn,#RoutingBtn,#liveBtn,#SzeneBtn,#StoriesBtn {
 	display: inline-block;
 }
 #liveBtn.hidden {
@@ -688,7 +688,7 @@ input.error {
     box-shadow: none;
     background: #ccc;
 }
-#DokumenteBtn.disabled,#SzeneBtn.disabled,#newpart.disabled, #RoutingBtn.disabled {
+#DokumenteBtn.disabled,#SzeneBtn.disabled,#newpart.disabled, #RoutingBtn.disabled, #StoriesBtn.disabled {
     display:none;
 }
 .newpart input,.newsign input {
@@ -870,7 +870,7 @@ input.error {
 .pin:last-child > s {
 	display: inline-block;
 }
-#editDlg,#pinDlg,#dokumenteDlg,#szeneDlg,#routingDlg,#editDisplayDlg {
+#editDlg,#pinDlg,#dokumenteDlg,#szeneDlg,#storiesDlg,#routingDlg,#editDisplayDlg {
 	position: absolute;
 	visibility: hidden;
 	background: rgba(230,230,230,0.95);
@@ -1067,10 +1067,10 @@ input.error {
 .selpin:hover {
 	background: #ddd;
 }
-#editDlg.vis,#pinDlg.vis,#dokumenteDlg.vis,#szeneDlg.vis,#editDisplayDlg.vis {
+#editDlg.vis,#pinDlg.vis,#dokumenteDlg.vis,#szeneDlg.vis,#storiesDlg.vis,#editDisplayDlg.vis {
     visibility: visible;
 }
-#dokumenteDlg,#szeneDlg {
+#dokumenteDlg,#szeneDlg,#storiesDlg {
 	right: auto;
 	padding-bottom: 10px;
 }
@@ -1144,7 +1144,7 @@ input.error {
 #dokdbmaint.active {
 	display: block;
 }
-#dokDlgCls,#dokDlgSave,#sznDlgCls,#sznDlgSave {
+#dokDlgCls,#dokDlgSave,#sznDlgCls,#strDlgCls,#sznDlgSave {
 	font-size: 20px;
 	padding: 10px 20px;
 	margin: 10px 0 0;
