@@ -1118,6 +1118,7 @@ input.error {
 	max-width: 300px;
 	display: block;
 	margin: 0 60px 10px;
+	max-height: 200px;
 }
 #branddelete {
     display: none;

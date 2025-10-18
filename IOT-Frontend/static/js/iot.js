@@ -1708,7 +1708,7 @@ window.onload = ( loadev ) => {
 	}
     }
     const raiseDok = () => {
-//	console.log('raise Dok Layer');
+	console.log('raise Dok Layer');
 	const doklyr = document.getElementById( 'dokLyr' );
 	const dokdatlyr = document.getElementById( 'dokDatLyr' );
 	if ( doklyr ) {
