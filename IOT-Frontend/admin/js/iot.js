@@ -552,6 +552,21 @@ window.onload = ( loadev ) => {
 	sznDlg.classList.remove('vis');
 //	console.log( 'clicked dokumente button' );
     }   
+    const showStoriesDlg = () => {
+	const sznDlg = document.getElementById('storiesDlg');
+	document.body.classList.add('modalmode');
+//	showSceneHelpers();
+	sznDlg.classList.add('vis');
+//	console.log( 'clicked dokumente button' );
+    }
+    const hideStoriesDlg = () => {
+	const sznDlg = document.getElementById('storiesDlg');
+	document.body.classList.remove('modalmode');
+//	hideSceneHelpers();
+
+	sznDlg.classList.remove('vis');
+//	console.log( 'clicked dokumente button' );
+    }   
     const fillCatSelect = () => {
 	const devcatseldom = document.getElementById('devCatSelect');
 	const bascatseldom = document.getElementById('basCatSelect');
@@ -2460,6 +2475,7 @@ console.log('editPaste',buf);
 	    document.getElementById('newgroup').classList.add('disabled');
 	    document.getElementById( 'DokumenteBtn' ).classList.add('disabled');
 	    document.getElementById( 'SzeneBtn' ).classList.add('disabled');
+	    document.getElementById( 'StoriesBtn' ).classList.add('disabled');
 	    document.getElementById( 'RoutingBtn' ).classList.add('disabled');
 	    document.getElementById( 'devType' ).innerHTML = 'Basic';
 	}
@@ -2472,6 +2488,7 @@ console.log('editPaste',buf);
 	    document.getElementById( 'DokumenteBtn' ).classList.remove('disabled');
 	    document.getElementById( 'RoutingBtn' ).classList.remove('disabled');
 	    document.getElementById( 'SzeneBtn' ).classList.remove('disabled');
+	    document.getElementById( 'StoriesBtn' ).classList.remove('disabled');
 	    document.getElementById('filelist').replaceChildren();
 	    document.getElementById('linklist').replaceChildren();
 	    document.getElementById('newfilelist').replaceChildren();
@@ -2698,6 +2715,7 @@ console.log('editPaste',buf);
 		document.getElementById( 'newgroup' ).classList.add('disabled');
 		document.getElementById( 'DokumenteBtn' ).classList.add('disabled');
 		document.getElementById( 'SzeneBtn' ).classList.add('disabled');
+		document.getElementById( 'StoriesBtn' ).classList.add('disabled');
 		document.getElementById('newpart').classList.remove('disabled');
 	    }
 	    else {
@@ -2705,6 +2723,7 @@ console.log('editPaste',buf);
 		document.getElementById( 'newgroup' ).classList.remove('disabled');
 		document.getElementById( 'DokumenteBtn' ).classList.remove('disabled');
 		document.getElementById( 'SzeneBtn' ).classList.remove('disabled');
+		document.getElementById( 'StoriesBtn' ).classList.remove('disabled');
 	    }
 	    if ( devdata.scene ) {
 		renderSceneData( devdata.scene );
@@ -2897,6 +2916,7 @@ console.log('editPaste',buf);
 	    document.getElementById('saveBasicBtn').classList.remove('disabled');
 	    document.getElementById( 'DokumenteBtn' ).classList.add('disabled');
 	    document.getElementById( 'SzeneBtn' ).classList.add('disabled');
+	    document.getElementById( 'StoriesBtn' ).classList.add('disabled');
 	    document.getElementById( 'RoutingBtn' ).classList.add('disabled');
 	    document.getElementById( 'devType' ).innerHTML = 'Basic';
 	    document.getElementById( 'devStgHead' ).classList.add('basic');
@@ -2915,6 +2935,7 @@ console.log('editPaste',buf);
 	    document.getElementById('saveDeviceBtn').classList.remove('disabled');
 	    document.getElementById( 'DokumenteBtn' ).classList.remove('disabled');
 	    document.getElementById( 'SzeneBtn' ).classList.remove('disabled');
+	    document.getElementById( 'StoriesBtn' ).classList.remove('disabled');
 	    document.getElementById( 'devType' ).innerHTML = 'Twin';
 	    document.getElementById( 'devStgHead' ).classList.remove('basic');
 	}
@@ -3961,6 +3982,10 @@ console.log('editPaste',buf);
 	    if ( ev.target.classList.contains('disabled') ) return;
 	    showSzeneDlg();
 	}
+	document.getElementById('StoriesBtn').onclick = ( ev ) => {
+	    if ( ev.target.classList.contains('disabled') ) return;
+	    showStoriesDlg();
+	}
 	document.getElementById('RoutingBtn').onclick = ( ev ) => {
 	    if ( ev.target.classList.contains('disabled') ) return;
 	    const routinglyr = document.getElementById('routingDlg');
@@ -3983,6 +4008,9 @@ console.log('editPaste',buf);
 	}
 	document.getElementById('sznDlgCls').onclick = ( ev ) => {
 	    hideSzeneDlg();
+	}
+	document.getElementById('strDlgCls').onclick = ( ev ) => {
+	    hideStoriesDlg();
 	}
 	document.getElementById('deldokdo').onclick = ( ev ) => {
 	    const maintlyr = document.getElementById('dokdbmaint');

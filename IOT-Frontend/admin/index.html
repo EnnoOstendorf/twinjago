@@ -59,8 +59,9 @@
 	    <p>1 Einheit = <input id="mscale" title="Geben sie eine Zahl an, die einer Einheit in ihrer 3D-Datei entspricht" autocomplete="off" /> <input id="munit" value="Meter" autocomplete="off" title="Bitte geben Sie eine Einheit ein, z.b. mm oder Meter"></p>
 	  </div>
 	  <div id="TwinCnfBtns">
+	    <button id="StoriesBtn" class="disabled" title="Stories des Twins (für Basics nicht verfügbar)">Stories</button>
 	    <button id="SzeneBtn" class="disabled" title="Szeneneinstellungen des Twins (für Basics nicht verfügbar)">Szene</button>
-	    <button id="DokumenteBtn" class="disabled" title="Informationen zum Twin (für Basics nicht verfügbar)">Informationen</button>
+	    <button id="DokumenteBtn" class="disabled" title="Informationen zum Twin (für Basics nicht verfügbar)">Dok</button>
 	    <button id="RoutingBtn" class="disabled" title="Routing Editor">Routing</button>
 	    <button id="liveBtn" title="zur Live-Ansicht"><img src="imgs/augen.png" /> &nbsp;</button>
 	  </div>
@@ -152,6 +153,14 @@
 	    <div id="editCopy" class="copybtn">Kopieren</div>
 	    <div id="editPaste" class="pastebtn">Einfügen</div>
 	  </form>
+	</div>
+	<div id="storiesDlg">
+	  <h3>Stories <button id="StoriesAddBtn">+</button></h3>
+	  <div id="StoriesList">
+	  </div>
+	  <div id="StoryDetail">
+	  </div>
+	  <button id="strDlgCls">Schließen</button>
 	</div>
 	<div id="szeneDlg">
 	  <h3>Beleuchtung</h3>
