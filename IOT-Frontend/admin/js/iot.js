@@ -3,7 +3,11 @@ import { ArcballControls } from 'three/addons/controls/ArcballControls.js';
 import { TWEEN } from 'three/addons/libs/tween.module.min.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { Stories } from './stories.js';
+
 console.log('Welcome to the IOT-System-Frontend of FH Münster', location.search.substr(1).split('='));
+console.log('loaded stories',Stories);
+
 const scene = new THREE.Scene();
 const config = [];
 let playground = null;
@@ -357,7 +361,7 @@ const pipeGuyDeIgnore = ( id, succ ) => {
 
 window.onload = ( loadev ) => {
     Coloris({ alpha: false });
-    
+    const stories = new Stories();
     const palette = ['#202020','#808080','#800000','#FF0000','#008000','#00FF00','#808000','#FFFF00','#000080','#0000FF','#800080','#FF00FF','#008080','#00FFFF','#C0C0C0','#FFFFFF'];
     
     const devcats = [];
@@ -548,21 +552,6 @@ window.onload = ( loadev ) => {
 	const sznDlg = document.getElementById('szeneDlg');
 	document.body.classList.remove('modalmode');
 	hideSceneHelpers();
-
-	sznDlg.classList.remove('vis');
-//	console.log( 'clicked dokumente button' );
-    }   
-    const showStoriesDlg = () => {
-	const sznDlg = document.getElementById('storiesDlg');
-	document.body.classList.add('modalmode');
-//	showSceneHelpers();
-	sznDlg.classList.add('vis');
-//	console.log( 'clicked dokumente button' );
-    }
-    const hideStoriesDlg = () => {
-	const sznDlg = document.getElementById('storiesDlg');
-	document.body.classList.remove('modalmode');
-//	hideSceneHelpers();
 
 	sznDlg.classList.remove('vis');
 //	console.log( 'clicked dokumente button' );
@@ -3982,10 +3971,6 @@ console.log('editPaste',buf);
 	    if ( ev.target.classList.contains('disabled') ) return;
 	    showSzeneDlg();
 	}
-	document.getElementById('StoriesBtn').onclick = ( ev ) => {
-	    if ( ev.target.classList.contains('disabled') ) return;
-	    showStoriesDlg();
-	}
 	document.getElementById('RoutingBtn').onclick = ( ev ) => {
 	    if ( ev.target.classList.contains('disabled') ) return;
 	    const routinglyr = document.getElementById('routingDlg');
@@ -4008,9 +3993,6 @@ console.log('editPaste',buf);
 	}
 	document.getElementById('sznDlgCls').onclick = ( ev ) => {
 	    hideSzeneDlg();
-	}
-	document.getElementById('strDlgCls').onclick = ( ev ) => {
-	    hideStoriesDlg();
 	}
 	document.getElementById('deldokdo').onclick = ( ev ) => {
 	    const maintlyr = document.getElementById('dokdbmaint');

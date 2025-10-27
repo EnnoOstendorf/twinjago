@@ -1681,6 +1681,63 @@ input.error {
 	background: rgba(0,0,0,0.2);
 }
 
+/* Stories */
+#storiesDlg {
+	left: -23%;
+	top: 0;
+	height: 100%;
+	width: 21%;
+}
+#storiesDlg h3 {
+	font-size: 24px;
+	margin: 10px;
+	position: relative;
+}
+#storiesDlg h3 button {
+	position: absolute;
+	right: 20px;
+	top: 0px;
+	font-size: 17px;
+}
+#storiesDlg > button {
+	position: absolute;
+	bottom: 20px;
+	left: 27%;
+}
+#StoriesHead {
+	position: absolute;
+	left: 105%;
+	width: 260%;
+	background: #eee;
+	height: 46px;
+	top: 0;
+	border-radius: 10px;
+	box-shadow: 2px 2px 5px #888;
+	font-size: 24px;
+	padding: 20px;
+	font-weight: bold;
+}
+#StoryTimeline {
+	position: absolute;
+	left: 105%;
+	width: 273%;
+	height: 80px;
+	background: #eee;
+	bottom: -55px;
+	border-radius: 10px;
+	box-shadow: 2px 2px 4px #888;
+}
+.modalmode.storymode #parts .modalovl, .modalmode.storymode #signs .modalovl {
+	display: none;
+}
+#newStoryBox {
+	height: 0;
+	overflow: hidden;
+	transition: height 0.2s ease-in-out;
+}
+#newStoryBox.show {
+	height: 30px;
+}
 @font-face {
     font-family: celesteoffcpro;
     src: url('../fonts/CelesteOffcPro.ttf') format('truetype');
