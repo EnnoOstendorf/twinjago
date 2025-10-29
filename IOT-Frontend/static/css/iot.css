@@ -1363,6 +1363,41 @@ button, #burger {
     }
 }
 
+/* Debug Layer */
+#debugLayer {
+	background: #000;
+	position: fixed;
+	width: 260px;
+	height: 260px;
+	left: -500px;
+	top: -500px;
+	box-shadow: 0 0 6px #fff;
+	color: #fff;
+	padding: 20px;
+	opacity: 0;
+	transition: opacity 0.3s ease-in-out;
+}
+#debugLayer.show {
+    opacity:1;
+    left: calc( 50% - 150px );
+    top: calc( 50% - 150px );
+}
+#debugLayer b {
+	font-size: 20px;
+	font-weight: bold;
+}
+#debugLayer textarea {
+	width: 250px;
+	height: 180px;
+	margin: 10px 0;
+}
+#debugLayer button {
+	font-size: 16px;
+	font-weight: bold;
+	padding: 6px 10px 2px;
+	margin: 0 20px 0 auto;
+}
+
 @font-face {
     font-family: celesteoffcpro;
     src: url('../fonts/CelesteOffcPro.ttf') format('truetype');

@@ -2304,6 +2304,34 @@ window.onload = ( loadev ) => {
 	})
 	
     }
+    const gatherDebugInfo = () => {
+	const strut = {
+	    'width' : width,
+	    'height' : height,
+	    'windowwidth': window.innerWidth,
+	    'windowheight': window.innerHeight,
+	    'isTouch' : isTouchDevice(),
+	    'screen' : {
+		'width': screen.width,
+		'height': screen.height,
+		'avwidth': screen.availWidth,
+		'avheight': screen.availHeight,
+		'orientation': screen.orientation.angle,
+		'pdepth':screen.pixelDepth
+	    }
+	};
+	return JSON.stringify(strut);
+    }
+    const toggleDebugInfo = () => {
+	const dl = document.getElementById('debugLayer');
+	if ( dl.classList.contains('show') ) {
+	    dl.classList.remove('show');
+	}
+	else {
+	    dl.querySelector( 'textarea' ).value = gatherDebugInfo();
+	    dl.classList.add('show');
+	}
+    }
     const initButtonEvents = () => {
 	document.getElementById( 'edtBtn' ).onclick = ( ev ) => {
 	    if ( ev.target.classList.contains('akt') ) return;
@@ -2427,6 +2455,20 @@ window.onload = ( loadev ) => {
 	};
 	
 	window.addEventListener( 'resize', onWindowResize );
+
+	document.getElementById( 'debugClose' ).onclick = ( ev ) => {
+	    document.getElementById( 'debugLayer' ).classList.remove('show');
+	}
+	document.getElementById( 'debugCopy' ).onclick = ( ev ) => {
+	    navigator.clipboard.writeText(document.getElementById( 'debugOut' ).value);
+	}
+
+	window.addEventListener( 'keydown', ( ev ) => {
+	    if ( ev.key.toLowerCase() === 'd' ) {
+		toggleDebugInfo();
+		console.log('Pressed key',ev);
+	    }
+	});
     }
     initButtonEvents();
 
