@@ -155,10 +155,10 @@
 	  </form>
 	</div>
 	<div id="storiesDlg">
-	  <div id="StoriesHead">Bearbeite Stories für Twin <span id="storiesTwin"></span></div>
+	  <div id="StoriesHead">Bearbeite Stories für Twin <span id="storiesTwin"></span><br /><b class="storyselmsg">Wählen sie rechts die Teile aus, die beweglich sein sollen.</b></div>
 	  <h3>Stories <button id="StoriesAddBtn">+</button></h3>
 	  <div id="newStoryBox">
-	    <input id="newstoryname" autocomplete="off" /> <button id="newstorybtn">anlegen</button>
+	    <input id="newstoryname" placeholder="neue Story" autocomplete="off" /> <button id="newstorybtn">anlegen</button>
 	  </div>
 	  <div id="StoriesList">
 	  </div>
@@ -167,6 +167,15 @@
 	  <div id="StoryTimeline">
 	  </div>
 	  <button id="strDlgCls">Schließen</button>
+	  <div id="StorySelectOvl">
+	    <h4>Kapitel: <span id="StorySelChap"></span></h4>
+	    <h5>Story: <span id="StorySelStr"></span></h5>
+	    <h6>Teile:</h6>
+	    <div id="StorySelParts">
+	    </div>
+	    <button id="StorySelSave">Speichern</button>
+	    <button id="StorySelClose">Schließen</button>
+	  </div>
 	</div>
 	<div id="szeneDlg">
 	  <h3>Beleuchtung</h3>
