@@ -1943,7 +1943,7 @@ window.onload = ( loadev ) => {
 //	console.log('pin data',aktdevice,broker.devices[aktdevice].lastdata[0]);
     }
     const initMouseEvents = () => {
-	if (  isTouchDevice() ) {
+//	if (  isTouchDevice() ) {
 	    playground.ontouchstart = ( ev ) => {
 		document.body.classList.add('dragging');
 //		console.log('touchstart');
@@ -1964,8 +1964,8 @@ window.onload = ( loadev ) => {
 		else pinData();
 //		console.log('touchend');
 	    };
-	}
-	else {
+//	}
+//	else {
 	    playground.onmousemove = ( ev ) => {
 		//	    if ( datapinned && !doubleselect ) return;
 		const rect = ev.target.getBoundingClientRect();
@@ -1992,8 +1992,9 @@ window.onload = ( loadev ) => {
 		    console.log('mouseup',lastdown,now,tdelta);
 		}
 	    };
-	}
-	    
+//	}
+
+	console.log('TOUCH/POINTER Testballon aktiv');
 	/*	playground.onmousedown = ( ev ) => {
 	    console.log('mousebutton',ev.button);
 	    mouseDown( ev.clientX-offset.x, ev.clientY-offset.y,ev.button );
@@ -2304,6 +2305,34 @@ window.onload = ( loadev ) => {
 	})
 	
     }
+    const gatherDebugInfo = () => {
+	const strut = {
+	    'width' : width,
+	    'height' : height,
+	    'windowwidth': window.innerWidth,
+	    'windowheight': window.innerHeight,
+	    'isTouch' : isTouchDevice(),
+	    'screen' : {
+		'width': screen.width,
+		'height': screen.height,
+		'avwidth': screen.availWidth,
+		'avheight': screen.availHeight,
+		'orientation': screen.orientation.angle,
+		'pdepth':screen.pixelDepth
+	    }
+	};
+	return JSON.stringify(strut);
+    }
+    const toggleDebugInfo = () => {
+	const dl = document.getElementById('debugLayer');
+	if ( dl.classList.contains('show') ) {
+	    dl.classList.remove('show');
+	}
+	else {
+	    dl.querySelector( 'textarea' ).value = gatherDebugInfo();
+	    dl.classList.add('show');
+	}
+    }
     const initButtonEvents = () => {
 	document.getElementById( 'edtBtn' ).onclick = ( ev ) => {
 	    if ( ev.target.classList.contains('akt') ) return;
@@ -2427,6 +2456,20 @@ window.onload = ( loadev ) => {
 	};
 	
 	window.addEventListener( 'resize', onWindowResize );
+
+	document.getElementById( 'debugClose' ).onclick = ( ev ) => {
+	    document.getElementById( 'debugLayer' ).classList.remove('show');
+	}
+	document.getElementById( 'debugCopy' ).onclick = ( ev ) => {
+	    navigator.clipboard.writeText(document.getElementById( 'debugOut' ).value);
+	}
+
+	window.addEventListener( 'keydown', ( ev ) => {
+	    if ( ev.key.toLowerCase() === 'd' ) {
+		toggleDebugInfo();
+		console.log('Pressed key',ev);
+	    }
+	});
     }
     initButtonEvents();
 
