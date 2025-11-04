@@ -1943,7 +1943,7 @@ window.onload = ( loadev ) => {
 //	console.log('pin data',aktdevice,broker.devices[aktdevice].lastdata[0]);
     }
     const initMouseEvents = () => {
-	if (  isTouchDevice() ) {
+//	if (  isTouchDevice() ) {
 	    playground.ontouchstart = ( ev ) => {
 		document.body.classList.add('dragging');
 //		console.log('touchstart');
@@ -1964,8 +1964,8 @@ window.onload = ( loadev ) => {
 		else pinData();
 //		console.log('touchend');
 	    };
-	}
-	else {
+//	}
+//	else {
 	    playground.onmousemove = ( ev ) => {
 		//	    if ( datapinned && !doubleselect ) return;
 		const rect = ev.target.getBoundingClientRect();
@@ -1992,8 +1992,9 @@ window.onload = ( loadev ) => {
 		    console.log('mouseup',lastdown,now,tdelta);
 		}
 	    };
-	}
-	    
+//	}
+
+	console.log('TOUCH/POINTER Testballon aktiv');
 	/*	playground.onmousedown = ( ev ) => {
 	    console.log('mousebutton',ev.button);
 	    mouseDown( ev.clientX-offset.x, ev.clientY-offset.y,ev.button );
