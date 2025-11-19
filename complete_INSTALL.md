@@ -324,7 +324,7 @@ mongodump --archive="IoT-Devices-mongo-dump-21-03-25.gz" --gzip --db="IoT-Device
 
 copy it to the new instance and restore it
 ```
-mongorestore --archive="IoT-Devices-mongo-dump-21-03-25.gz" --gzip
+mongorestore --drop --archive="IoT-Devices-mongo-dump-21-03-25.gz" --gzip
 ```
 
 ### install IOT-Frontend
