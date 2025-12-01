@@ -138,6 +138,7 @@ router.post('/post', async (req, res) => {
         signs: o.signs,
         files: o.files,
         links: o.links,
+	storybook: o.storybook,
 	routes: o.routes
     })
 

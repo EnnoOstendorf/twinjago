@@ -23,6 +23,9 @@ function Stories() {
     const pool = [];
     const stories = [];
     let selmode = false;
+    let actstory = null;
+    let actchapter = null;
+    let actchapdiv = null;
     
     const chapterExists = ( name, story ) => {
 	console.log('chapterExists?',story);
@@ -33,7 +36,39 @@ function Stories() {
 	});
 	return found;
     }
-    const removePart = ( partovl, chapter ) => {
+    const addPartHTML = ( name, bid, index ) => {
+	const partsdiv = actchapdiv.querySelector('.strparts');
+	const ndiv = document.createElement( 'div' );
+	ndiv.classList.add('strpart');
+	ndiv.setAttribute( 'data-name', name );
+	ndiv.setAttribute( 'data-bid', bid );
+	ndiv.setAttribute('data-index', index );
+	ndiv.innerHTML =  '<h5>'+name+'</h5>';
+	ndiv.onclick = ( ev ) => {
+	    console.log('clicked on part', name );
+	}
+	partsdiv.appendChild( ndiv );
+	actchapdiv.classList.add('hasparts');
+	actchapdiv.classList.add('open');
+	console.log('actchapdiv',actchapdiv);
+	return ndiv;
+    }
+    const saveSelection = ( ) => {
+	const partsdiv = actchapdiv.querySelector('.strparts');
+	partsdiv.replaceChildren();
+	actchapter.parts.splice( 0 );
+	const selpartdivs = document.getElementById('StorySelParts').querySelectorAll('.selpart'); 
+	selpartdivs.forEach( ( o, i ) => {
+	    const name = o.getAttribute('data-name');
+	    const bid = o.getAttribute('data-bid');
+	    const index = o.getAttribute('data-index');
+	    const part = addPartHTML( name, bid, index );
+	    actchapter.parts.push({'name':name,'index':index,'id':bid, 'partdiv':part });
+//	    console.log('found part',name);
+	});
+	console.log('saving selection',actstory,actchapter);
+    }
+    const removePartSel = ( partovl, chapter ) => {
 	partovl.classList.remove('selected');
 	const part = partovl.parentNode;
 	const name = part.querySelector('strong').innerHTML;
@@ -42,10 +77,10 @@ function Stories() {
 	const seldiv = document.getElementById('StorySelParts');
 	const x = seldiv.querySelector('#selpart'+id);
 	seldiv.removeChild(x);
-	chapter.parts.forEach( ( o,i ) => { chapter.parts.splice( i, 1 ); } );
+//	chapter.parts.forEach( ( o,i ) => { chapter.parts.splice( i, 1 ); } );
 	console.log('removing part', name, id, index, x, chapter );
     }
-    const addPart = ( partovl, chapter ) => {
+    const addPartSel = ( partovl, chapter ) => {
 	partovl.classList.add('selected');
 	const part = partovl.parentNode;
 	const name = part.querySelector('strong').innerHTML;
@@ -61,34 +96,66 @@ function Stories() {
 	x.innerHTML = '<b>'+name+'</b><button class="seldelpart">X</button>';
 	const btn = x.querySelector('.seldelpart');
 	btn.onclick = ( ev ) => {
-	    removePart( partovl, chapter );
+	    removePartSel( partovl, chapter );
 	}
 	seldiv.appendChild(x);
-	chapter.parts.push({'name':name,'index':index,'id':id, 'partdiv':part, 'partseldiv':x });
 	console.log('adding part', name, id, index, chapter );
     }
-    
+    const hasPart = ( parts, partid ) => {
+	for ( let i=0; i< parts.length; i++ ) {
+	    if (parts[i].id === partid ) {
+		return true;
+		break;
+	    }
+	};
+	return false;
+    }
+    const findPartOvl = ( partid ) => {	
+	let po=null;
+	document.querySelectorAll('#partsinner .part').forEach( ( o, i ) => {	    
+	    const pid = o.querySelector( 'c' ).getAttribute('data-id');
+	    if ( partid === pid ) po = 0;
+	});
+	return po;
+    }
     const enterSelmode = ( btn, story, chapter ) => {
 	selmode = true;
 	btn.classList.add('chosen');
+	const seldiv = document.getElementById('StorySelParts');
+	seldiv.replaceChildren();
+	console.log('enterSelMode',story,btn.parentNode.parentNode);
 	document.getElementById('StorySelChap').innerHTML = chapter.name;
 	document.getElementById('StorySelStr').innerHTML = story.name;
 	document.body.classList.add('storyselmode');
-	document.querySelectorAll('#partsinner .part').forEach( ( o, i ) => {
+	actstory = story;
+	actchapter = chapter;	
+	actchapdiv =btn.parentNode.parentNode;
+	document.querySelectorAll('#partsinner .part').forEach( ( o, i ) => {	    
+	    const pid = o.querySelector( 'c' ).getAttribute('data-id');
+	    console.log('selmode part',);
 	    const x=document.createElement('div'); x.classList.add('strSelOvl');
+	    x.id = 'ovl'+pid;
+	    if ( hasPart( chapter.parts, pid ) ) x.classList.selected;
 	    x.onclick= (ev) => {
 		if ( x.classList.contains('selected') ) {
-		    removePart( x, chapter );
+		    removePartSel( x, chapter );
 		}
 		else {
-		    addPart( x, chapter );
+		    addPartSel( x, chapter );
 		}
 	    }
 	    o.appendChild(x);
 	});
+	chapter.parts.forEach( ( o ) => {
+	    console.log('adding part',o);
+	    addPartSel( document.getElementById('ovl'+o.id), chapter );
+	});
     }
     const leaveSelmode = () => {
 	selmode = false;
+	actstory = null;
+	actchapter = null;
+	actchapdiv = null;
 	document.querySelectorAll( '.selpartbtn.chosen').forEach( ( o ) => { o.classList.remove('chosen'); } );
 	document.body.classList.remove('storyselmode');
 	document.querySelectorAll('#partsinner .part').forEach( ( o, i ) => {
@@ -105,9 +172,9 @@ function Stories() {
 	// the chapter div
 	const x = document.createElement('div');
 	x.classList.add('chapter');
-	x.innerHTML = '<h4>'+name+'<button id="story_'+story.name+'_'+name+'_part" data-story-name="'+story.name+'_'+name+'" '+
-	    'title="Teile auswählen" class="selpartbtn">+Teil</button></h4>'+
-	    '<div class="parts"></div>';
+	x.innerHTML = '<h4><c>+</c><b>-</b>'+name+'<button id="story_'+story.name+'_'+name+'_part" data-story-name="'+story.name+'_'+name+'" '+
+	    'title="Teile auswählen" class="selpartbtn">Teile</button></h4>'+
+	    '<div class="strparts"></div>';
 	const chapter = { 'name': name, 'parts' : [], 'chapterdiv' : x };
 	// event handlers
 	const selbtn = x.querySelector('.selpartbtn');
@@ -115,16 +182,33 @@ function Stories() {
 	    if ( selmode ) leaveSelmode( ev.target );
 	    else enterSelmode( ev.target, story, chapter );
 	};
+	const foldin = x.querySelector('h4 > b');
+	const foldout = x.querySelector('h4 > c');
+	foldin.onclick = ( ev ) => {
+	    const cnt = ev.target.parentNode.parentNode;
+	    if ( !cnt.classList.contains( 'hasparts' ) ) return;
+	    if ( cnt.classList.contains( 'open' ) ) {
+		cnt.classList.remove('open');
+	    }
+	    else {
+		cnt.classList.add('open');
+	    }
+	    console.log('newsecfoldin click', cnt);
+	}
 	const chaplist = container.querySelector( '.chapters' );
+	container.classList.add('haschaps');
+	container.classList.add('open');
 	chaplist.appendChild(x);
+	actchapdiv = x;
 	console.log('adding chapter ',name,' to story ',story.chapters,'container',container);
 	story.chapters.push( chapter );
+	return chapter;
     }
     const createStoryDiv = ( name, story ) => {
 	// the story div
 	const x = document.createElement('div');
 	x.classList.add('story');
-	x.innerHTML = '<h4>'+name+'<button id="story_'+name+'_newbtn" data-story-name="'+name+'" title="neues Kapitel anlegen" class="newsecbtn">+Kapitel</button></h4>'+
+	x.innerHTML = '<h4><c>+</c><b>-</b>'+name+'<button id="story_'+name+'_newbtn" data-story-name="'+name+'" title="neues Kapitel anlegen" class="newsecbtn">+Kapitel</button></h4>'+
 	    '<div class="newsecbox"><input id="story_'+name+'_newinp" placeholder="neues Kapitel" class="newsecinp" />'+
 	    '<button id="story_'+name+'_newinpcreate" class="newsecinpcreate">anlegen</button></div>'+
 	    '<div class="chapters"></div>';
@@ -133,6 +217,8 @@ function Stories() {
 	const newsecbox = x.querySelector('.newsecbox');
 	const newsecbtn = x.querySelector('.newsecbtn');
 	const newsecinp = x.querySelector('.newsecinp');
+	const newsecfoldin = x.querySelector('h4 > b');
+	const newsecfoldout = x.querySelector('h4 > c');
 	const newseccrt = x.querySelector('.newsecinpcreate');
 	const _st = story;
 	newsecbtn.onclick = ( ev ) => {
@@ -147,10 +233,23 @@ function Stories() {
 	    addChapter( _st, newsecinp.value, x );
 	};
 	newsecinp.onkeyup = ( ev ) => {
-	    if ( ev.keyCode === 13 ) addChapter( name, newsecinp.value, x );
+	    if ( ev.keyCode === 13 ) addChapter( _st, newsecinp.value, x );
 	    else return;
 	}
-	
+	newsecfoldin.onclick = ( ev ) => {
+	    const cnt = ev.target.parentNode.parentNode;
+	    if ( !cnt.classList.contains( 'haschaps' ) ) return;
+	    if ( cnt.classList.contains( 'open' ) ) {
+		cnt.classList.remove('open');
+	    }
+	    else {
+		cnt.classList.add('open');
+	    }
+	    console.log('newsecfoldin click', cnt);
+	}
+	newsecfoldout.onclick = ( ev ) => {
+	    console.log('newfoldout click');
+	}
 	document.getElementById('StoriesList').appendChild(x);
 	story.storydiv = x;
 	return x;
@@ -174,8 +273,46 @@ function Stories() {
 	console.log('creating story',story);
 
 	stories.push( story );
+	return story;
+    }
+    const resetStories = () => {
+	stories.splice(0);
+	actstory=actchapter=null;
+	document.getElementById('StoriesList').replaceChildren();
+    }
+    const closeAllStories = () => {
+	document.getElementById('StoriesList').querySelectorAll('.open').forEach( (o, i) => {
+	    o.classList.remove('open');
+	});
+    }
+    
+    const reStories = ( book ) => {
+	resetStories();
+	book.stories.forEach( ( o, i ) => {
+	    const x = addStory( o.name );
+	    if ( o.chapters.length > 0 )
+		o.chapters.forEach( ( p, j ) => {
+		    const y = addChapter( x, p.name, x.storydiv );
+		    p.parts.forEach( ( q, k ) => {
+			const part = addPartHTML( q.name, q.id, q.index );
+			y.parts.push( q );
+			console.log( 'adding part',q);
+		    });
+		    console.log('adding chapter',p,y);
+		});
+	});
+	closeAllStories(); // if we don't do this, all stories are initially open, which is ugly
+	console.log('reStories',book);
     }
 
+    const dumpStories = () => {
+	const json = { stories: [] };
+	stories.forEach( ( o, i ) => {
+	    json.stories.push({ name : o.name, chapters: o.chapters });
+	});
+	return json;
+    }
+    
     const initEvents = () => {
 	document.getElementById('StoriesBtn').onclick = ( ev ) => {
 	    if ( ev.target.classList.contains('disabled') ) return;
@@ -197,13 +334,13 @@ function Stories() {
 	    if ( ev.keyCode === 13 ) {
 		addStory( document.getElementById('newstoryname').value );
 	    };
-	    //	    addStory( document.getElementById('newstoryname') );
 	}
 	document.getElementById('StorySelClose').onclick = ( ev ) => {
 	    leaveSelmode();
 	};
 	document.getElementById('StorySelSave').onclick = ( ev ) => {
 	    // TODO
+	    saveSelection();
 	    leaveSelmode();
 	};
     }
@@ -212,7 +349,10 @@ function Stories() {
 
     return {
 	pool: pool,
-	stories: stories
+	stories: stories,
+	reStories: reStories,
+	resetStories: resetStories,
+	dumpStories: dumpStories
     };
 }
 

@@ -53,6 +53,10 @@ const dataSchema = new mongoose.Schema({
 	required: true,
 	type: Array
     },
+    storybook: {
+	required: false,
+	type: Object
+    },
     routes: {
 	required: false,
 	type: Array

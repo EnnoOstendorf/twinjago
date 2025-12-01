@@ -1741,6 +1741,10 @@ input.error {
 #StoriesList {
 	border-top: 1px solid;
 	border-bottom: 1px solid;
+	max-height: 82%;
+	overflow: auto;
+	background: #eee;
+	box-shadow: -1px 0 5px #888 inset;
 }
 .story {
 	position: relative;
@@ -1753,12 +1757,42 @@ input.error {
 	margin: 5px 10px;
 	text-align: left;
 	font-size: 16px;
-	position:relative;
+	position: relative;
+	padding-left: 5px;
+}
+.story > h4 > c, .story > h4 > b,.chapter > h4 > c, .chapter > h4 > b {
+	position: absolute;
+	left: -10px;
+	border: 1px dotted #888;
+	margin: -2px 0 0;
+	top: 0;
+	width: 10px;
+	opacity: 0;
+	transition: opacity 0.2s ease-in-out;
+	text-align: center;
+	cursor: pointer;
+}
+.story.haschaps > h4 > c, .chapter.hasparts > h4 > c {
+	opacity: 1;
+}
+.story.haschaps.open > h4 > c,.chapter.hasparts.open > h4 > c {
+	opacity: 0;
+}
+.story.haschaps.open > h4 > b,.chapter.hasparts.open > h4 > b {
+	opacity: 1;
 }
 .story h4 button {
 	position: absolute;
 	right: 0px;
 	top: -2px;
+}
+.chapters {
+	height: 0;
+	overflow: hidden;
+	/* transition: height 0.2s ease-in-out; */
+}
+.story.haschaps.open .chapters {
+	height: auto;
 }
 
 .story .chapter h4 {
@@ -1844,6 +1878,25 @@ input.error {
 .strSelOvl.selected {
     border:2px solid;
 }
+.strparts {
+	height: 0;
+	overflow: hidden;
+	margin: 0 10px 0 30px;
+}
+.chapter.hasparts.open .strparts {
+	height: auto;
+}
+.strpart {
+	text-align: left;
+}
+.strpart h5 {
+	margin: 3px 0;
+	background: #fff;
+	font-size: 12px;
+}
+
+
+
 @font-face {
     font-family: celesteoffcpro;
     src: url('../fonts/CelesteOffcPro.ttf') format('truetype');
