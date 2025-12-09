@@ -4,12 +4,12 @@ import { TWEEN } from 'three/addons/libs/tween.module.min.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Sensors } from './sensors.js';
+import { Space } from './space.js';
 import { Stories } from './stories.js';
 
 console.log('Welcome to the IOT-System-Frontend of FH Münster', location.search.substr(1).split('='));
 console.log('loaded stories',Stories);
 
-const scene = new THREE.Scene();
 const config = [];
 let playground = null;
 let aktdevice = null;
@@ -25,7 +25,7 @@ const DUMMYSENDERURL = 'https://'+hostname+':3457/artificial_Devices.html';
 
 
 const genControls = ( camera, renderer ) => {
-    controls = new ArcballControls( camera, renderer.domElement, scene );
+    controls = new ArcballControls( camera, renderer.domElement, space.scene );
     controls.target.set( 0, 0, 0 );
 //    controls.adjustNearFar = true;
     controls.setGizmosVisible( false );
@@ -92,6 +92,7 @@ window.onload = ( loadev ) => {
     Coloris({ alpha: false });
     const stories = new Stories();
     const sensors = new Sensors();
+    const space = new Space();
     sensors.loadAllPipedDevices( hostname );
     console.log('Sensor Displays:',sensors.Displays);
     const palette = ['#202020','#808080','#800000','#FF0000','#008000','#00FF00','#808000','#FFFF00','#000080','#0000FF','#800080','#FF00FF','#008080','#00FFFF','#C0C0C0','#FFFFFF'];
@@ -104,35 +105,8 @@ window.onload = ( loadev ) => {
     playground = document.getElementById('playground');
     const width = playground.offsetWidth;
     const height = playground.offsetHeight;
-    const ghosttransp = 0.7;   
-    const offset = {
-	x: playground.offsetLeft,
-	y: playground.offsetTop
-    }
     let dynscroll = true;
     let saved = true;
-    let editbackup = {
-	pos : {
-	    x: 0, y: 0, z: 0
-	},
-	rot : {
-	    x: 0, y: 0, z: 0
-	},
-	scl : {
-	    x: 0, y: 0, z: 0
-	}
-    };
-    let labelbackup = {
-	pos : {
-	    x: 0, y: 0, z: 0
-	},
-	rot : {
-	    x: 0, y: 0, z: 0
-	}
-    };
-    const labeloffset = {
-	x: 0, y: 0.35, z: 3.55
-    }
     let dragmode = false;
     let dragstartval = 0;
     let dragfactor = 0.1;
@@ -152,77 +126,7 @@ window.onload = ( loadev ) => {
     let loadclosefuncs = [];
     let iotmanagerto = null;
     
-    scene.background = new THREE.Color( '#000000' );
 
-    const camnear = 1;
-    const camfar = 10000;
-    const camera = new THREE.PerspectiveCamera( 27, width/height, camnear, camfar );
-    camera.position.z = 200;
-    camera.position.x = 200;
-    camera.position.y = 100;
-    camera.rotation.z = Math.PI/4;
-
-    const renderer = new THREE.WebGLRenderer( { antialias: true } );
-    renderer.setSize( width, height );
-    renderer.setAnimationLoop( animation );
-    playground.appendChild( renderer.domElement );
-    
-    
-    const camstart = {
-	'position' : {
-	    'x' : camera.position.x,
-	    'y' : camera.position.y,
-	    'z' : camera.position.z
-	},
-	'rotation' : {
-	    'x' : camera.rotation.x,
-	    'y' : camera.rotation.y,
-	    'z' : camera.rotation.z
-	}
-    }
-    const camstartdefault = {
-	'position' : {
-	    'x' : 293,
-	    'y' : -396,
-	    'z' : 294
-	},
-	'rotation' : {
-	    'x' : 0.85,
-	    'y' : 0.58,
-	    'z' : 0.01
-	}
-    }
-    
-    const ambientLight = new THREE.AmbientLight( 0x111111 );
-    scene.add( ambientLight );
-
-    const light1 = new THREE.DirectionalLight( 0xffffff, 2.5 );
-    light1.position.set( 2000, 500, 3000 );
-    scene.add( light1 );
-    
-    const light2 = new THREE.PointLight( 0xffffff, 0.01 );
-    light2.position.set( -2000, -1700, -3000 );
-    scene.add( light2 );
-
-    const light3 = new THREE.PointLight( 0xffffff, 25000000 );
-    light3.position.set( -1500, -3500, 1500 );
-    scene.add( light3 );
-
-    const light4 = new THREE.PointLight( 0xffffff, 0.01 );
-    light4.position.set( 1500, 4500, -1500 );
-    scene.add( light4 );
-
-    let mainmesh=new THREE.Group();
-    mainmesh.userData.id="main";
-    let routemesh=new THREE.Group();
-    routemesh.userData.id="routes";
-    let signmesh=new THREE.Group();
-    signmesh.userData.id="signs";
-    let hlp = null;
-    let edithlp = null;
-    let axishelp = new THREE.AxesHelper( 6 );
-    mainmesh.add( axishelp );
-    mainmesh.add( routemesh );
     let devices = [];
     let parts = [];
     let files = [];
@@ -235,21 +139,12 @@ window.onload = ( loadev ) => {
 
     let isbasic = false;
     
-    const flattenVerts = ( verts ) => {
-	let target = [];
-	for ( let i=0; i<verts.length; i++ ) {
-	    for ( let j=0; j<verts[i].length; j++ ) {
-		target.push(verts[i][j]);
-	    }
-	}
-	return target;
-    }
     const showEditDlg = ( mode ) => {
-	edithlp = new THREE.BoxHelper(aktmesh, 0x00ffff);
-	scene.add(edithlp);
+	const edithlp = new THREE.BoxHelper(aktmesh, 0x00ffff);
+	space.scene.add(edithlp);
 	window.setTimeout( () => {
-	    backupCoords( aktmesh );
-	    restoreBackup( aktmesh );
+	    space.backupCoords( aktmesh );
+	    space.restoreBackup( aktmesh );
 	    aktEditCoords();
 	}, 500 );
 	const edtDlg = document.getElementById('editDlg');
@@ -511,7 +406,7 @@ window.onload = ( loadev ) => {
 	document.body.classList.add('modalmode');
 	document.getElementById('formPartIndex').value=partindex;
 	hlp = new THREE.BoxHelper(aktpin.obj3d, 0x00ffff);
-	scene.add(hlp);
+	space.scene.add(hlp);
 	const edtDlg = document.getElementById('pinDlg');
 	const cont = aktpin.objDOM.parentNode.parentNode;	
 	edtDlg.classList.add('vis');
@@ -758,45 +653,6 @@ window.onload = ( loadev ) => {
 	}
     }
     initPinDlg();
-    const restoreBackup = ( mesh ) => {
-	mesh.position.x = editbackup.pos.x;
-	mesh.position.y = editbackup.pos.y;
-	mesh.position.z = editbackup.pos.z;
-	mesh.rotation.x = editbackup.rot.x;
-	mesh.rotation.y = editbackup.rot.y;
-	mesh.rotation.z = editbackup.rot.z;
-	mesh.scale.x = editbackup.scl.x;
-	mesh.scale.y = editbackup.scl.y;
-	mesh.scale.z = editbackup.scl.z;
-    }
-    const backupCoords = ( mesh ) => {
-	console.log('backupCoords',mesh.userData);
-	editbackup.pos.x = mesh.userData.opos?.x || 0;// || mesh.position.x;
-	editbackup.pos.y = mesh.userData.opos?.y || 0;// || mesh.position.y;
-	editbackup.pos.z = mesh.userData.opos?.z || 0;// || mesh.position.z;
-	editbackup.rot.x = mesh.userData.orot?.x || 0;// || mesh.rotation.x;
-	editbackup.rot.y = mesh.userData.orot?.y || 0;// || mesh.rotation.y;
-	editbackup.rot.z = mesh.userData.orot?.z || 0;// || mesh.rotation.z;
-	editbackup.scl.x = mesh.userData.oscl?.x || 1;// || mesh.scale.x;
-	editbackup.scl.y = mesh.userData.oscl?.y || 1;// || mesh.scale.y;
-	editbackup.scl.z = mesh.userData.oscl?.z || 1;// || mesh.scale.z;
-    }
-    const backupLabelCoords = ( mesh ) => {
-	labelbackup.pos.x = mesh.position.x;
-	labelbackup.pos.y = mesh.position.y;
-	labelbackup.pos.z = mesh.position.z;
-	labelbackup.rot.x = mesh.rotation.x;
-	labelbackup.rot.y = mesh.rotation.y;
-	labelbackup.rot.z = mesh.rotation.z;
-    }
-    const restoreLabelBackup = ( mesh ) => {
-	mesh.position.x = labelbackup.pos.x;
-	mesh.position.y = labelbackup.pos.y;
-	mesh.position.z = labelbackup.pos.z;
-	mesh.rotation.x = labelbackup.rot.x;
-	mesh.rotation.y = labelbackup.rot.y;
-	mesh.rotation.z = labelbackup.rot.z;
-    }
     const checkFilesReady = ( item ) => {
 	if ( ! item || ! item.classList ) return;
 	const nfiles = item.parentNode.querySelectorAll('.fileitem');
@@ -886,133 +742,6 @@ window.onload = ( loadev ) => {
 	    return str.substr(0,anz-3)+'...';
 	return str;
     }
-    const createSign = ( raw, fname, modifications, nocreateDom ) => {
-	const img = new Image();
-	img.src = raw;
-	const index = signs.length;//document.querySelectorAll('.sign').length;//signlist.children.length;
-	const sign3D = new THREE.PlaneGeometry( 10, 10 );
-	const texture = new THREE.TextureLoader().load( raw );
-	texture.wrapS = THREE.ClampToEdgeWrapping;
-	texture.wrapT = THREE.ClampToEdgeWrapping;
-	texture.magFilter = THREE.LinearFilter;
-	texture.colorSpace = THREE.SRGBColorSpace;
-	texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-//	console.log('Create Sign mods',modifications);
-	const material = new THREE.MeshStandardMaterial( {
-	    map: texture,
-	    transparent: true,
-	    side: THREE.FrontSide,
-	    roughness: 0.0,
-	    fog: false,	    
-	    flatShading: true
-	});
-	if ( modifications ) {
-	}
-	const mesh = new THREE.Mesh( sign3D, material );
-	mesh.origcolor = 0xffffff;
-	mesh.userData.type = nocreateDom ? 'basicsign' : 'sign';
-	mesh.userData.index = index;
-	if ( modifications ) applyModifications( mesh, modifications );
-	if ( ! nocreateDom ) {
-	    signs.push({ 'index':index, 'fname': fname, 'img': raw, 'mesh': mesh, 'settings' : {} });
-	    const signlist = document.getElementById( 'signsinner' );
-	    signlist.insertAdjacentHTML( 'beforeend', '<span class="sign" id="sign'+index+'" title="'+fname+'"><i></i><s></s><b>('+clipString(fname,15)+')</b></span>' );
-	    const sign = document.getElementById( 'sign'+index );
-	    sign.appendChild( img );
-	    sign.querySelector('i').onclick = ( ev ) => {
-		editmode = true;
-		aktsign = sign;
-		aktmesh = mesh;
-		backupCoords( mesh );
-//		console.log( 'EDitbak', editbackup );
-		showEditDlg('sign');
-	    };
-	    sign.querySelector('s').onclick = ( ev ) => {	    
-		sign.remove();
-		mesh.geometry.dispose();
-		mesh.material.dispose();
-		signmesh.remove(mesh);
-//		console.log( 'clicked delete button', signs, index );
-		signs.splice( index, 1 );
-//		console.log( 'clicked delete button', signs, index );
-	    };
-	    sign.onmouseover = ( ev ) => {
-		hilightPart( mesh );
-	    };
-	    sign.onmouseout = ( ev ) => {
-		lolightParts();
-	    };
-	    signmesh.add( mesh );
-	}
-//	console.log('Create Sign', img );
-	return mesh;
-    }
-    const copyPinStart = ( index, mesh, nmesh ) => {
-//	console.log('findpinstart',mesh,parts[index].pins);
-	const pa = parts[index].pins;
-	if ( pa.length === 0 ) {
-	    mesh.position.x = 0;
-	    mesh.position.y = 10;
-	    mesh.position.z = 0;
-	    nmesh.position.x = labeloffset.x;
-	    nmesh.position.y = labeloffset.y;
-	    nmesh.position.z = labeloffset.z;
-	    nmesh.rotation.y = Math.PI / 2;
-	}
-	else if ( pa.length === 1 ) {
-	    const lastpos = pa[0].obj3d.position;
-	    const lastrot = pa[0].obj3d.rotation;
-	    mesh.position.x = lastpos.x+2.5445;
-	    mesh.position.y = lastpos.y;
-	    mesh.position.z = lastpos.z;	    
-	    mesh.rotation.x = lastrot.x;
-	    mesh.rotation.y = lastrot.y;
-	    mesh.rotation.z = lastrot.z;	    
-	    const lastlpos = pa[0].label.position;
-	    const lastlrot = pa[0].label.rotation;
-	    nmesh.position.x = lastlpos.x; nmesh.position.y = lastlpos.y; nmesh.position.z = lastlpos.z;
-	    nmesh.rotation.x = lastlrot.x; nmesh.rotation.y = lastlrot.y; nmesh.rotation.z = lastlrot.z;
-	}
-	else if ( pa.length > 1 ) {
-	    const lastpos = pa[pa.length-1].obj3d.position;
-	    const prelastpos = pa[pa.length-2].obj3d.position;
-	    const lastrot = pa[0].obj3d.rotation;
-	    mesh.position.x = lastpos.x + lastpos.x - prelastpos.x;
-	    mesh.position.y = lastpos.y + lastpos.y - prelastpos.y;
-	    mesh.position.z = lastpos.z + lastpos.z - prelastpos.z;
-	    mesh.rotation.x = lastrot.x;
-	    mesh.rotation.y = lastrot.y;
-	    mesh.rotation.z = lastrot.z;	    
-	    const lastlpos = pa[0].label.position;
-	    const lastlrot = pa[0].label.rotation;
-	    nmesh.position.x = lastlpos.x;
-	    nmesh.position.y = lastlpos.y;
-	    nmesh.position.z = lastlpos.z;	    
-	    nmesh.rotation.x = lastlrot.x;
-	    nmesh.rotation.y = lastlrot.y;
-	    nmesh.rotation.z = lastlrot.z;	    
-	}
-    }
-    const getTextureFromText = ( text, bgcol, fgcol ) => {
-	const fg = fgcol || '#000000';
-	const bg = bgcol || '#FFFFFF';
-	const canv = document.createElement( 'canvas' );//new OffscreenCanvas( 250, 50 );
-	canv.width=250;
-	canv.height=50;
-	const ctx = canv.getContext('2d');
-	ctx.fillStyle = bg;
-	ctx.fillRect( 0, 0, 250, 50 );
-	ctx.fillStyle = fg;
-	ctx.font = 'bold 50px Arial';
-	ctx.fillText (text, 10, 45, 250);
-	const textAsDataUrl = canv.toDataURL();
-	const img = document.createElement( 'img' )
-	img.src = textAsDataUrl;
-	const texture = new THREE.CanvasTexture(canv);
-	texture.wrapS = THREE.ClampToEdgeWrapping;
-	texture.wrapT = THREE.ClampToEdgeWrapping;
-	return texture;
-    };
     const addPinDOM = ( partindex, pinindex, pname, mesh ) => {
 //	let pinDOM;
 	const pinscont = document.querySelector( '#part'+partindex+' .pins');
@@ -1031,8 +760,8 @@ window.onload = ( loadev ) => {
 	pinscont.querySelector('b').innerHTML = (parts[partindex].pins.length) + ' Pins';
 	pinDOM.querySelector( 'i' ).onclick = ( ev ) => {
 	    aktpin = parts[partindex].pins[pinindex];
-	    backupCoords( mesh );
-	    backupLabelCoords( aktpin.label );
+	    space.backupCoords( mesh );
+	    space.backupLabelCoords( aktpin.label );
 	    showPinDlg(partindex);
 	};
 	pinDOM.querySelector( 's' ).onclick = ( ev ) => {	   
@@ -1047,52 +776,17 @@ window.onload = ( loadev ) => {
 	    pinscont.querySelector('b').innerHTML = parts[partindex].pins.length + ' Pins';
 	};
     }
-    const addPin = ( index, cont3d, pinscont, pinname, pincol, pinmods, pinlabelmods, isbasicp, ppinindex ) => {
-//	console.log('addPin',index,cont3d);
-	const col = pincol || '#ffff00';
-	let pname = pinname || 'Pin';
+    const addPin = ( index, cont3d, pinscont, pin3D, pinname, pincol, pinmods, pinlabelmods, isbasicp, ppinindex ) => {
 	let pinindex = parts[index]?parts[index].pins.length:0;
+	let pname = pinname || 'Pin';
+	const col = pincol || '#ffff00';
 	const partname = parts[index]?parts[index].name:'unknown';
-	const pin3D = new THREE.CylinderGeometry( 0.5, 0.5, 2.5 );
-	const material = new THREE.MeshStandardMaterial({
-	    color: col,
-	    side: THREE.DoubleSide,
-	    flatShading: true
-	});
-	const mesh = new THREE.Mesh( pin3D, material );
-	mesh.userData.type='pin';
-	mesh.userData.origColor=col;
-	cont3d.add(mesh);
-	const pinLabel = new THREE.PlaneGeometry( 8, 2 );
-	const labelmaterial = new THREE.MeshStandardMaterial( {
-	    map: getTextureFromText(pname),
-	    side: THREE.DoubleSide,
-	    flatShading: true
-	});
-	const nmesh = new THREE.Mesh( pinLabel, labelmaterial );
-	if ( pinlabelmods ) {
-	    applyModifications( nmesh, pinlabelmods );
-	}
-/*	else findPinStartLabel( index, nmesh );
-		else {
-	    nmesh.position.x = labeloffset.x;
-	    nmesh.position.y = labeloffset.y;
-	    nmesh.position.z = labeloffset.z;
-	    nmesh.rotation.y = Math.PI / 2;
-	}*/
-	nmesh.userData.type='pinlabel';
-	if ( pinmods ) {
-	    applyModifications( mesh, pinmods );
-	}
-	else copyPinStart( index, mesh, nmesh );
-	mesh.add(nmesh);
-
 	if ( isbasicp ) {
 	    pinindex = ppinindex;
 	}
 	if ( !isbasicp ) {
 	    const pinDOM = document.getElementById('pin'+index+'-'+pinindex);
-	    let newpin = { 'name': pname, 'objDOM': pinDOM, 'part' : partname, 'obj3d' : mesh, 'index':pinindex, 'label': nmesh, 'color' : col }
+	    let newpin = { 'name': pname, 'objDOM': pinDOM, 'part' : partname, 'obj3d' : pin3D.obj3d, 'index':pinindex, 'label': pin3D.label, 'color' : col }
 	    parts[index].pins.push(newpin);
 //	    console.log('add Pin', pinindex, index);
 	    pname = pinname || 'Pin '+pinindex;
@@ -1100,8 +794,8 @@ window.onload = ( loadev ) => {
 //	    console.log('addPin',parts[index].pins);
 	}
 	else {
-	    isbasicp.parts[index].pins[pinindex].obj3d = mesh;
-	    isbasicp.parts[index].pins[pinindex].label = nmesh;
+	    isbasicp.parts[index].pins[pinindex].obj3d = pin3D.obj3d;
+	    isbasicp.parts[index].pins[pinindex].label = pin3D.label;
 //	    console.log('addPin isbasic',isbasicp.parts[index].pins, pinindex);
 	}
     }
@@ -1149,21 +843,22 @@ window.onload = ( loadev ) => {
 	};
 	DOMObj.querySelector( '.addPinBtn' ).onclick = ( ev ) => {
 	    const pinscont = ev.target.parentNode;
-	    addPin( index, meshp, pinscont );
+	    const pin3d = space.addPin3D( index, space.meshp, pinscont );
+	    addPin( index, meshp, pinscont, pin3d );
 	};
 	DOMObj.querySelector( 'i' ).onclick = ( ev ) => {
 //	    console.log( 'edit part' );
 	    editmode = true;
 	    aktmesh = meshp;
 	    aktsign = DOMObj;
-	    backupCoords( meshp );
+	    space.backupCoords( meshp );
 //	    console.log( 'EDitbak', editbackup );
 	    showEditDlg( 'part' );
 	};
 	DOMObj.querySelector('s').onclick = ( ev ) => {	    
 	    meshp.geometry?.dispose();
 	    meshp.material?.dispose();
-	    mainmesh.remove(meshp);
+	    space.mainmesh.remove(meshp);
 	    DOMObj.remove();
 	    parts.splice(index,1);
 	    rebuildPartsDom();
@@ -1175,7 +870,40 @@ window.onload = ( loadev ) => {
 	};
 
     }
+    const addSignDOM = ( index, fname, raw, mesh ) => {
+	const img = new Image();
+	img.src = raw;
+	signs.push({ 'index':index, 'fname': fname, 'img': raw, 'mesh': mesh, 'settings' : {} });
+	const signlist = document.getElementById( 'signsinner' );
+	signlist.insertAdjacentHTML( 'beforeend', '<span class="sign" id="sign'+index+'" title="'+fname+'"><i></i><s></s><b>('+clipString(fname,15)+')</b></span>' );
+	const sign = document.getElementById( 'sign'+index );
+	sign.appendChild( img );
+	sign.querySelector('i').onclick = ( ev ) => {
+	    editmode = true;
+	    aktsign = sign;
+	    aktmesh = mesh;
+	    space.backupCoords( mesh );
+	    //		console.log( 'EDitbak', editbackup );
+	    showEditDlg('sign');
+	};
+	sign.querySelector('s').onclick = ( ev ) => {	    
+	    sign.remove();
+	    mesh.geometry.dispose();
+	    mesh.material.dispose();
+	    signmesh.remove(mesh);
+	    //		console.log( 'clicked delete button', signs, index );
+	    signs.splice( index, 1 );
+	    //		console.log( 'clicked delete button', signs, index );
+	};
+	sign.onmouseover = ( ev ) => {
+	    hilightPart( mesh );
+	};
+	sign.onmouseout = ( ev ) => {
+	    lolightParts();
+	};
+    }
     const addPartDOM = ( namep, fnamep, deviceidp, brokerupmsg, tooltipp, origdata, rebuild ) => {
+	console.log('adding part DOM', namep, fnamep, origdata);
 	let index=0;
 	if ( ! rebuild ) {
 	    parts.push({ 'name' : namep, 'fname': fnamep, 'deviceid': deviceidp, 'brokerupmsg': brokerupmsg, 'tooltip': tooltipp, 'origdata' : origdata, 'pins':[] });
@@ -1193,7 +921,7 @@ window.onload = ( loadev ) => {
 	return index;
     }
     const addPartMesh = ( meshp, datap, index ) => {
-//	console.log('adding part Mesh', index);
+	console.log('adding part Mesh', parts, index, meshp, datap);
 	parts[index].mesh = meshp;
 	parts[index].origdata = datap;
 	addPartDOMEvents( index, meshp );
@@ -1210,31 +938,61 @@ window.onload = ( loadev ) => {
 	}
 	
 	if ( event.detail.currentEl.id === 'ambientcolor' ) {
-	    ambientLight.color.set( event.detail.color );
-	    console.log( 'ambient light color',event.detail.color,ambientLight);
+	    space.ambientLight.color.set( event.detail.color );
+	    console.log( 'ambient light color',event.detail.color,space.ambientLight);
 	}
 	else if ( event.detail.currentEl.id === 'light1color' ) {
-	    light1.color.set( event.detail.color );
-	    light1.userData.helper.update();
+	    space.light1.color.set( event.detail.color );
+	    space.light1.userData.helper.update();
 	    console.log( 'light1 light color',event.detail.color);
 	}
 	else if ( event.detail.currentEl.id === 'light2color' ) {
-	    light2.color.set( event.detail.color );
-	    light2.userData.helper.update();
+	    space.light2.color.set( event.detail.color );
+	    space.light2.userData.helper.update();
 	    console.log( 'light2 light color',event.detail.color);
 	}
 	else if ( event.detail.currentEl.id === 'light3color' ) {
-	    light3.color.set( event.detail.color );
-	    light3.userData.helper.update();
+	    space.light3.color.set( event.detail.color );
+	    space.light3.userData.helper.update();
 	    console.log( 'light3 light color',event.detail.color);
 	}
 	else if ( event.detail.currentEl.id === 'light4color' ) {
-	    light4.color.set( event.detail.color );
-	    light4.userData.helper.update();
+	    space.light4.color.set( event.detail.color );
+	    space.light4.userData.helper.update();
 	    console.log( 'light4 light color',event.detail.color);
 	}
 //	console.log('New Color', event.detail.currentEl.id);
     });
+    const DISPWIDTHHALF = DISPWIDTH / 2;
+    const DISPBOTTOMOFFSET = 5;
+    const checkDisplays = (delta) => {
+	for ( let i=0; i<sensors.displays.length; i++ ) {
+	    const v = new THREE.Vector3();
+	    const obj=sensors.displays[i].mesh;
+	    v.copy( obj.position );
+	    v.project( space.camera );
+	    let left = Math.round((v.x+1)*width/2)-DISPWIDTHHALF;
+	    let top = Math.round((-v.y+1)*height/2);
+	    let bottom = height - top + DISPBOTTOMOFFSET + sensors.displays[i].height;
+	    let hinview=false;
+	    let vinview=false;
+	    if ( left < -30 ) left = -30;
+	    else if ( left > width -100) left = width -70;
+	    else hinview = true;
+	    if ( top < 0 ) top = 0;
+	    else if ( top > height -20) top = height-20;
+	    else vinview = true;
+	    if ( hinview && vinview && !space.checkFrustum(obj) ) {
+		left=width/2 -DISPWIDTHHALF;
+		bottom=DISPBOTTOMOFFSET;
+		//	    console.log('falsely visible marker');
+	    }
+	    sensors.displays[i].dispdom.style.left = left + 'px';
+//	    Displays[i].dispdom.style.top = top + 'px';
+	    sensors.displays[i].dispdom.style.bottom = bottom + 'px';
+	    //	console.log('Marker',i,markers[i].object);
+	}
+    }
     const fillDisplayMeasures = ( dspBox, part, prefill ) => {
 	const dispmsrdiv = dspBox.querySelector('.dispsensmsr');
 	const id = dspBox.querySelector('.deviceID').value;
@@ -1383,7 +1141,7 @@ window.onload = ( loadev ) => {
 	    editmode = true;
 	    aktmesh = meshp;
 	    aktsign = DOMObj;
-	    backupCoords( meshp );
+	    space.backupCoords( meshp );
 //	    console.log( 'EDitbak', editbackup );
 	    showEditDlg( 'part' );
 	};
@@ -1461,7 +1219,7 @@ window.onload = ( loadev ) => {
 		    else {
 			pinarr[i].obj3d.visible = true;
 			pinarr[i].label.material.map.dispose();
-			pinarr[i].label.material.map = getTextureFromText( val );
+			pinarr[i].label.material.map = space.getTextureFromText( val );
 		    }
 //		    [TODO: update label]
 //		    console.log( 'pinarr val', outputBox.querySelector('#pintrans'+i+' input').value,pinarr[i], parts[index] );
@@ -1477,7 +1235,7 @@ window.onload = ( loadev ) => {
 		    outputBox.querySelector('#pintrans'+i+' input').value = pinarr[i].name;
 		    pinarr[i].obj3d.visible = true;
 		    pinarr[i].label.material.map.dispose();
-		    pinarr[i].label.material.map = getTextureFromText( pinarr[i].name );
+		    pinarr[i].label.material.map = space.getTextureFromText( pinarr[i].name );
 		}
 		
 	    });
@@ -1505,7 +1263,7 @@ window.onload = ( loadev ) => {
 	    // TODO: dispose in basic
 	    //	    meshp.geometry.dispose();
 	    //	    meshp.material.dispose();
-	    mainmesh.remove(meshp);
+	    space.mainmesh.remove(meshp);
 	    DOMObj.remove();
 	    parts.splice(index,1);
 	    rebuildPartsDom();
@@ -1517,58 +1275,6 @@ window.onload = ( loadev ) => {
 	}
     }
 
-    const create3DFromGlb = ( index, glb, fname, data, deviceid, brokerupmsg, tooltip, mods, isbasicp ) => {
-	const col = data.color || '#ffffff';
-	const oname = data.name || fname;
-	const mesh = glb.scene;
-	mesh.scale.set(50,50,50);
-	mesh.userData.type = isbasicp ? 'basicpart' : 'part';
-	if ( !isbasicp ) {
-//	    addPartDOM(oname, fname, deviceid, brokerupmsg, tooltip, data);
-	    addPartMesh(mesh, data, index);
-	    mainmesh.add( mesh );
-	}
-	return mesh;
-    };
-    const create3DFromGeom = ( index, geom, fname, data, deviceid, brokerupmsg, tooltip, mods, isbasicp ) => {
-	let material;
-	const col = data.color || '#ffffff';
-	const oname = data.name || fname;
-	if ( mods && mods.ghost ) {
-//	    console.log('ghost part', mods);
-	    material = new THREE.MeshStandardMaterial({
-		transparent: true,
-		opacity: ghosttransp, flatShading: true
-	    });
-	}
-	else {
-	    material = new THREE.MeshPhongMaterial( { color: col, fog: false, flatShading: true } );
-	}
-	const mesh = new THREE.Mesh( geom, material );
-	if ( mods && mods.ghost ) {
-	    mesh.visible = false;
-	}
-	mesh.origcolor = col;
-	mesh.userData.type = isbasicp ? 'basicpart' : 'part';
-	if ( !isbasicp ) {
-//	    addPartDOM(oname, fname, deviceid, brokerupmsg, tooltip, data);
-	    addPartMesh(mesh, data, index);
-	    mainmesh.add( mesh );
-	}
-	return mesh;
-    };
-    const create3D = ( index, data, fname, deviceid, brokerupmsg, tooltip, mods, isbasicp ) => {
-	const geometry = new THREE.BufferGeometry();
-	const verts = flattenVerts( data.vertices );
-	const inds = flattenVerts( data.facets );
-	const norms = data.normals;
-	const oname = data.name;
-	geometry.setIndex( inds );
-	geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( verts, 3 ) );
-	geometry.setAttribute( 'normal', new THREE.Float32BufferAttribute( norms, 3 ) );
-	geometry.computeBoundingSphere();	
-	return create3DFromGeom( index, geometry, fname, data, deviceid, brokerupmsg, tooltip, mods, isbasicp );
-    }
     const finput = document.querySelector('input#newpartfile');
     finput.onchange = ( ev ) => {
 //	console.log('3D File chosen',finput.value,finput.files[0]);
@@ -1582,7 +1288,9 @@ window.onload = ( loadev ) => {
 		console.log('loading JSON:',e);
 		const rawfile = e.target.result;
 		const parsed = JSON.parse(rawfile);
-		create3D( index, parsed.objects[0], fname );
+		const o3=space.create3D( index, parsed.objects[0], fname );
+		addPartMesh(o3, parsed.objects[0], index);
+
 	    };
 	    reader.readAsText(finput.files[0]);
 	}
@@ -1591,7 +1299,10 @@ window.onload = ( loadev ) => {
 		const stlloader = new STLLoader();
 		console.log('loading stl',e.target);
 	    	stlloader.load( e.target.result, ( geometry ) => {
-		    create3DFromGeom( index, geometry, fname, { type: 'stl', color: '#888888', file: e.target.result, name: fname.replace('.stl','') } );
+		    console.log('loading STL:',e);
+		    const d={ type: 'stl', color: '#888888', file: e.target.result, name: fname.replace('.stl','') };
+		    const mesh=space.create3DFromGeom( index, geometry, fname, d );
+		    addPartMesh(mesh, d, index);
 //		    console.log('loaded stl',geometry);
 		});
 	    };
@@ -1600,9 +1311,13 @@ window.onload = ( loadev ) => {
 	else if ( ext == 'glb' ) {
 	    reader.onload = (e) => {
 		const gltfloader = new GLTFLoader();
-		console.log('loading glb',e.target);
 	    	gltfloader.load( e.target.result, ( glb ) => {
-		    create3DFromGlb( index, glb, fname, { type: 'glb', color: '#888888', file: e.target.result, name: fname.replace('.gltf','') } );
+		    console.log('loading glb',e.target);
+		    
+		    const d={ type: 'glb', color: '#888888', file: e.target.result, name: fname.replace('.gltf','') }
+		    const mesh = space.create3DFromGlb( index, glb, fname, d );
+		    addPartMesh(mesh, d, index);
+
 //		    console.log('loaded glb',glb);
 		});
 	    };
@@ -1616,7 +1331,10 @@ window.onload = ( loadev ) => {
 	const reader = new FileReader();	    
 	reader.onload = (e) => {		
 	    const rawfile = e.target.result;
-	    createSign( rawfile, filedata.name );
+	    const index = signs.length;
+	    const fname = filedata.name;
+	    const mesh = space.createSign( index, rawfile, fname );
+	    addSignDOM( index, fname, rawfile, mesh );	
 	};
 	reader.readAsDataURL(filedata);
     }
@@ -1698,66 +1416,8 @@ window.onload = ( loadev ) => {
 	finput4.value='';
     }
 //    console.log('loaded threejs',THREE);
-    scene.add(mainmesh);
-    scene.add(signmesh);
-// animation
-
-    const checkFrustum = (obj) => {
-	var frustum = new THREE.Frustum();
-	var projScreenMatrix = new THREE.Matrix4();
-
-	camera.updateMatrix();
-	camera.updateMatrixWorld();
-
-	projScreenMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse );
-
-	frustum.setFromProjectionMatrix(
-	    new THREE.Matrix4().multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse ) );
-	return frustum.containsPoint ( obj.position );
-    }
-    const DISPWIDTHHALF = DISPWIDTH / 2;
-    const DISPBOTTOMOFFSET = 5;
-    const checkDisplays = (delta) => {
-	for ( let i=0; i<sensors.displays.length; i++ ) {
-	    const v = new THREE.Vector3();
-	    const obj=sensors.displays[i].mesh;
-	    v.copy( obj.position );
-	    v.project( camera );
-	    let left = Math.round((v.x+1)*width/2)-DISPWIDTHHALF;
-	    let top = Math.round((-v.y+1)*height/2);
-	    let bottom = height - top + DISPBOTTOMOFFSET + sensors.displays[i].height;
-	    let hinview=false;
-	    let vinview=false;
-	    if ( left < -30 ) left = -30;
-	    else if ( left > width -100) left = width -70;
-	    else hinview = true;
-	    if ( top < 0 ) top = 0;
-	    else if ( top > height -20) top = height-20;
-	    else vinview = true;
-	    if ( hinview && vinview && !checkFrustum(obj) ) {
-		left=width/2 -DISPWIDTHHALF;
-		bottom=DISPBOTTOMOFFSET;
-		//	    console.log('falsely visible marker');
-	    }
-	    sensors.displays[i].dispdom.style.left = left + 'px';
-//	    Displays[i].dispdom.style.top = top + 'px';
-	    sensors.displays[i].dispdom.style.bottom = bottom + 'px';
-	    //	console.log('Marker',i,markers[i].object);
-	}
-    }
-
-
-    function animation( time ) {
-
-	if ( mainmesh ) {
-	    checkDisplays( time );
-	    //	    mainmesh.rotation.x = time / 2000;
-//	    mainmesh.rotation.y = time / 1000;
-	    
-	}
-	renderer.render( scene, camera );
-	TWEEN.update();
-    }
+    space.scene.add(space.mainmesh);
+    space.scene.add(space.signmesh);
 
     let MOUSEDOWN = false;
     let MOUSESTART = { x : 0, y : 0 };
@@ -1770,8 +1430,6 @@ window.onload = ( loadev ) => {
     let ptrans = 0.1;
     let strans = 0.01;
     let rtrans = 0.01;
-    let boxedObj = null;   
-    let lastBoxedObjID = 0;   
 
     const Jump = ( part, overwrite ) => {
 	if ( !part ) return;
@@ -1787,25 +1445,9 @@ window.onload = ( loadev ) => {
     const Mark = ( part ) => {
 	part?.classList.add('over');
     }
-    const boxObj = ( obj, col ) => {
-	if (hlp) unBox();
-	boxedObj = obj;
-	if ( ! col ) col = 0x00ffff;
-	hlp = new THREE.BoxHelper(obj, col);
-	scene.add(hlp);
-	playground.classList.add('boxed');
-    }
-    const unBox = () => {
-	    if ( hlp ) {
-		hlp.geometry.dispose();
-		hlp.material.dispose();
-		scene.remove( hlp );
-	    };
-	boxedObj = null;
-	playground.classList.remove('boxed');
-    }
     const hilightPart = ( obj, overwrite ) => {
 	if ( editmode ) return;
+	if ( !obj ) return;
 	const ind = obj.userData.index;
 	const type = obj.userData.type;
 	let part = document.getElementById('part'+ind);
@@ -1813,19 +1455,19 @@ window.onload = ( loadev ) => {
 	if ( type === 'part' ) {
 	    Mark( part );
 	    Jump( part, overwrite );
-	    boxObj( obj, 0xbbbbbb );
+	    space.boxObj( obj, 0xbbbbbb );
 //	    console.log('hilight part');
 	    if ( obj.material?.color ) 
 		obj.material.color.set( '#33aa88' );
 	}
 	else if ( type === 'basicpart' || type === 'basicsign' ) {
 	    let t = obj;
-	    while ( t != mainmesh && !t.userData || !t.userData.type || t.userData.type != 'basic' )
+	    while ( t != space.mainmesh && !t.userData || !t.userData.type || t.userData.type != 'basic' )
 		t = t.parent;
 	    part = document.getElementById('part'+t.userData.index);
 	    Mark( part );
 	    Jump( part, overwrite );
-	    boxObj( t, 0xbbbbbb );
+	    space.boxObj( t, 0xbbbbbb );
 //	    console.log('hilight basicsign|basicpart',type);
 
 	}
@@ -1833,7 +1475,7 @@ window.onload = ( loadev ) => {
 //	    console.log('hilight basic',part);
 	    Mark( part );
 	    Jump( part, overwrite );
-	    boxObj( obj, 0xbbbbbb );
+	    space.boxObj( obj, 0xbbbbbb );
 	}
 	else if ( type === 'sign' ) {
 	    const t=document.getElementById('sign'+ind);
@@ -1847,113 +1489,20 @@ window.onload = ( loadev ) => {
     }
     const lolightParts = () => {
 	const hiparts = document.querySelector('.part.over,.sign.over');
-	unBox();
+	space.unBox();
 	if ( hiparts ) hiparts.classList.remove('over');
-	for ( let i=0; i<mainmesh.children.length; i++ ) {
-	    const a=mainmesh.children[i];
+	for ( let i=0; i<space.mainmesh.children.length; i++ ) {
+	    const a=space.mainmesh.children[i];
 	    if ( a && a.material ) a.material.color.set( a.origcolor );
 	}
-	for ( let i=0; i<signmesh.children.length; i++ ) {
-	    const a=signmesh.children[i];
+	for ( let i=0; i<space.signmesh.children.length; i++ ) {
+	    const a=space.signmesh.children[i];
 	    if ( a && a.material ) a.material.color.set( a.origcolor );
 	}
     }
     const stopCapture = () => {
 	capturemode = false;
 	document.querySelector('#pincapture').classList.remove('hot');
-    }
-    const mouseOver3D = ( xp, yp ) => {
-	const raycaster = new THREE.Raycaster();
-	const pointer = new THREE.Vector2();
-	pointer.x = (xp/width)*2-1; pointer.y = - (yp/height)*2+1;
-	raycaster.setFromCamera( pointer, camera );
-	const intersects = raycaster.intersectObjects( scene.children );
-//	console.log('intersect', pointer, xp, yp, offset);
-	if ( intersects.length > 0 ) {
-	    if ( intersects[0].object.type !== 'AxesHelper'  ) {
-		let o3 = intersects[0].object;
-		if ( capturemode ) {
-		    const posis = o3.geometry.attributes.position;
-		    const face = intersects[0].face;
-		    const poi = intersects[0].point;
-		    if ( ! face ) return;
-		    aktpin.obj3d.position.x = posis.getX(face.a);
-		    aktpin.obj3d.position.y = posis.getY(face.a);
-		    aktpin.obj3d.position.z = posis.getZ(face.a);
-		    // aktpin.label.position.x = aktpin.obj3d.position.x + labeloffset.x;
-		    // aktpin.label.position.y = aktpin.obj3d.position.y + labeloffset.y;
-		    // aktpin.label.position.z = aktpin.obj3d.position.z + labeloffset.z;
-		    aktPinCoords();
-//		    console.log( 'intersects',intersects[0].point);//face.a,posis.getX(face.a) );
-		}
-		else if ( !o3.userData.type ||
-			  o3.userData.type !== 'sign' &&
-			  o3.userData.type !== 'basicsign' &&
-			  o3.userData.type !== 'pin' &&
-			  o3.userData.type !== 'pinlabel' ) {
-		    if ( ! o3.userData.type ) {
-			while ( o3.parent && ! o3.userData.type ) {
-			    o3 = o3.parent;
-			}
-			if ( ! o3.userData.type ) return;
-		    }
-//		    console.log('intersect', o3);		    
-		    
-		    lolightParts();
-		    hilightPart( o3 );
-		}
-		else if ( o3.userData.type && o3.userData.type === 'basicsign' ) {
-		    while ( o3.parent && o3.userData.type !== 'basic' ) {
-			o3 = o3.parent;
-		    }
-		    lolightParts();
-		    hilightPart( o3 );
-		}
-		else {
-		    lolightParts();
-//		    console.log('intersect unknown', o3.userData);
-		}
-	    }
-	}
-	else lolightParts();
-    }
-    const mouseDown = ( x, y, b ) => {
-	MOUSEDOWN = true;
-	MOUSESTART.x = x;
-	MOUSESTART.y = y;
-	MOUSEBUTTON = b;
-	if ( b === 0 ) {
-	    MESHSTARTPOS.x = mainmesh.rotation.y;
-	    MESHSTARTPOS.y = mainmesh.rotation.z;
-	}
-	else if ( b === 1 ) {
-	    MESHSTARTPOS.x = mainmesh.position.x;
-	    MESHSTARTPOS.y = mainmesh.position.y;	
-	}
-	if ( capturemode ) stopCapture();
-	if ( boxedObj ) {
-//	    console.log('dynscroll', lastBoxedObjID, boxedObj.id );
-	    if ( boxedObj.id !== lastBoxedObjID ) {
-		if ( dynscroll ) dynscroll = false;
-	    }
-	    else {
-		if ( !dynscroll ) dynscroll = true;
-		lastBoxedObjID = 0;
-	    }
-	    
-	    hilightPart( boxedObj, true );
-//	    console.log('dynscroll2', lastBoxedObjID, boxedObj.id );
-	    lastBoxedObjID = boxedObj.id;
-	}
-	else {
-	    if ( !dynscroll ) {
-		dynscroll = true;
-		lastBoxedObjID = 0;
-	    }
-	}
-	if ( !dynscroll ) document.getElementById( 'dynamic' ).classList.add( 'fixed' );
-	else document.getElementById( 'dynamic' ).classList.remove( 'fixed' );
-//	console.log('mousedown', boxedObj, dynscroll);
     }
     const aktEditCoords = () => {
 	console.log('aktEditCoords',aktmesh);
@@ -2139,7 +1688,12 @@ console.log('editPaste',buf);
     const mouseMove = ( xp, yp ) => {
 	
 	if ( MOUSEDOWN === false ) {
-	    mouseOver3D(xp,yp);
+	    const mo = space.mouseOver3D(xp,yp,aktpin,capturemode);
+	    if ( capturemode ) aktPinCoords();
+	    else {
+		lolightParts();
+		hilightPart( mo );
+	    }
 	    return;
 	}
 /*	let diff = { x : xp - MOUSESTART.x, y : yp - MOUSESTART.y };
@@ -2156,34 +1710,6 @@ console.log('editPaste',buf);
 	    signmesh.position.y = mainmesh.position.y;
 	}
 */
-    }
-    const removeMeshes = ( obj ) => {
-	for ( let i=obj.children.length-1; i>=0; i-- ) {
-	    const am = obj.children[i];
-	    if ( am.type === "Mesh" ) {
-//		console.log('removing mesh',am);
-		if ( am.material.map ) am.material.map.dispose();
-		am.geometry.dispose();
-		am.material.dispose();
-		am.parent.remove(am);
-	    }
-	    else if ( am.type === "Object3D" ) {
-		removeMeshes( am );
-	    }
-	    else if ( am.type === "Group" && am.userData.id !== 'routes' ) {
-		console.log('remove group',am);
-		removeMeshes( am );
-		am.parent.remove(am);
-	    }
-	    else if ( am.type === "Line" ) {
-		am.geometry.dispose();
-		am.material.dispose();
-		am.parent.remove(am);
-	    }
-	    else {
-//		console.log('RemoveMesh unknown type',am);
-	    };
-	}
     }
     const resetDevice = ( type ) => {	
 	console.log('reset device', type);
@@ -2217,7 +1743,7 @@ console.log('editPaste',buf);
 	    document.getElementById('routingPinDlg').replaceChildren();
 	    document.getElementById('newgroup').classList.remove('disabled');
 	    document.getElementById( 'devType' ).innerHTML = 'Twin';
-	    renderSceneData(iniscenedata);
+	    space.resetSceneData();
 	}
 	aktsign = null;
 	aktroute = null;
@@ -2247,9 +1773,9 @@ console.log('editPaste',buf);
 //	document.getElementById('sensorout').innerHTML = '';
 //	document.getElementById('sensorout').classList.remove('show');
 	document.querySelector('#dbID span').innerHTML = 'new';
-	removeMeshes( mainmesh );
-	removeMeshes( signmesh );
-	removeMeshes( routemesh );
+	space.removeMeshes( space.mainmesh );
+	space.removeMeshes( space.signmesh );
+	space.removeMeshes( space.routemesh );
 	document.body.classList.remove('modalmode');
 
     }
@@ -2258,36 +1784,6 @@ console.log('editPaste',buf);
 	    if ( devices[i].id === id ) return devices[i];
 	}
 	return null;
-    }
-    const savePositionUserData = ( o ) => {
-	o.userData.opos = { x: o.position.x, y:o.position.y, z:o.position.z};
-	o.userData.orot = { x: o.rotation.x, y:o.rotation.y, z:o.rotation.z};
-	o.userData.oscl = { x: o.scale.x, y:o.scale.y, z:o.scale.z};
-    }
-    const applyModifications = ( o, mods ) => {
-	o.position.x = mods.position.x || 0; o.position.y = mods.position.y || 0;
-	o.position.z = mods.position.z || 0;
-	o.rotation.x = mods.rotation.x || 0; o.rotation.y = mods.rotation.y || 0;
-	o.rotation.z = mods.rotation.z || 0;
-	o.scale.x = mods.scale?.x || 1;
-	o.scale.y = mods.scale?.y || 1;
-	o.scale.z = mods.scale?.z || 1;
-	savePositionUserData( o );
-//	console.log('applyModifications',o.userData);
-	/*	o.userData.orot = new THREE.Vector3();
-	o.userData.oscl = new THREE.Vector3();
-	o.position.copy(o.userData.opos);
-	o.rotation.copy(o.userData.orot);
-	o.scale.copy(o.userData.oscl);*/
-	if ( mods.hasOwnProperty('depthWrite') ) o.material.depthWrite = mods.depthWrite;
-	if ( mods.hasOwnProperty('side') ) o.material.side = mods.side;
-	if ( mods.hasOwnProperty('ghost') && mods.ghost ) {
-//	    console.log('applyModifications found ghost object',o,mods);
-	    if ( !o.material.transparency ) o.material.transparency=true;
-	    o.material.side=THREE.DoubleSide;
-	    o.material.opacity = ghosttransp;
-	    o.material.needsUpdate = true;
-	}
     }
     const findPinObject = ( pin ) => {
 //	console.log('findPinObject', pin, parts);
@@ -2307,8 +1803,8 @@ console.log('editPaste',buf);
 	return 0;
     }
     const renderRoutes = ( dra ) => {
-	document.getElementById('routelist').replaceChildren();
 	routes.splice(0);
+	document.getElementById('routelist').replaceChildren();
 	dra.forEach( ( o, i ) => {
 	    const po1 = findPinObject( o.pin1 );
 	    const po2 = findPinObject( o.pin2 );
@@ -2323,110 +1819,10 @@ console.log('editPaste',buf);
 	});
 //	console.log( 'render routes', dra );
     }
-    const iniscenedata = {
-	ambient: {
-	    color: '#111111',
-	    intensity: 1
-	},
-	lights : [
-	    {
-		color:'#ffffff',
-		intensity: 2.5,
-		position: {
-		    x:2000,
-		    y:500,
-		    z:3000
-		}
-	    },
-	    {
-		color:'#ffffff',
-		intensity: 0.01,
-		position: {
-		    x:-1500,
-		    y:3500,
-		    z:1500
-		}
-	    },
-	    
-	    {
-		color:'#ffffff',
-		intensity: 25000000,
-		position: {
-		    x:-1500,
-		    y:-3500,
-		    z:1500
-		}
-	    },
-	    {
-		color:'#ffffff',
-		intensity: 0.01,
-		position: {
-		    x:1500,
-		    y:4500,
-		    z:-1500
-		}
-	    },
-	
-	]
-    }
-    const renderSceneData = ( scenedata ) => {
-	console.log('render scene data',scenedata);
-	const ambcolinp = document.getElementById('ambientcolor');
-	ambcolinp.value = scenedata.ambient.color;
-	ambcolinp.style.background = scenedata.ambient.color;
-	ambientLight.color.set( scenedata.ambient.color );
-	ambcolinp.dispatchEvent(new Event('input', { bubbles: true }));
-
-	document.getElementById('ambientintensity').value = scenedata.ambient.intensity;
-	ambientLight.intensity = scenedata.ambient.intensity;
-	const lights = [ light1, light2, light3, light4 ];
-	for ( let i=0; i<4; i++ ) {
-	    const licolinp = document.getElementById('light'+(i+1)+'color');
-	    licolinp.value = scenedata.lights[i].color;
-	    licolinp.style.background = scenedata.lights[i].color;
-	    licolinp.dispatchEvent(new Event('input', { bubbles: true }));
-	    document.getElementById('light'+(i+1)+'intensity').value = scenedata.lights[i].intensity;
-	    document.getElementById('light'+(i+1)+'x').value = scenedata.lights[i].position.x;
-	    document.getElementById('light'+(i+1)+'y').value = scenedata.lights[i].position.y;
-	    document.getElementById('light'+(i+1)+'z').value = scenedata.lights[i].position.z;
-	    if ( lights[i] ) {
-//		console.log('render light',i,lights[i]);
-		lights[i].color.set(scenedata.lights[i].color);
-		lights[i].intensity=scenedata.lights[i].intensity;
-		lights[i].position.x=scenedata.lights[i].position.x;
-		lights[i].position.y=scenedata.lights[i].position.y;
-		lights[i].position.z=scenedata.lights[i].position.z;
-		if ( lights[i].userData.helper ) lights[i].userData.helper.update();
-	    }
-	}
-    }
-    const showSceneHelpers = ( ) => {
-	const lightobjs = [ light2, light3, light4 ]
-	const hlp = new THREE.DirectionalLightHelper( light1 )
-	light1.userData.helper = hlp;
-	scene.add(hlp);
-	for ( let i=0; i<3; i++ ) {
-	    const o=lightobjs[i];
-	    const helper = new THREE.PointLightHelper( o );
-	    o.userData.helper = helper;
-	    scene.add(helper);
-	}
-    }
-    const hideSceneHelpers = ( ) => {
-	const lightobjs = [ light1, light2, light3, light4 ]
-	for ( let i=0; i<4; i++ ) {
-	    const o=lightobjs[i];
-	    if ( o.userData.helper ) {
-		o.userData.helper.dispose();
-		scene.remove( o.userData.helper );
-		delete o.userData.helper;
-	    }
-	}
-    }
     const renderDevice = ( devdata, isbasicp, fin ) => {
 	let target;
 	if ( isbasicp ) target = new THREE.Object3D();
-//	console.log('render device', devdata.name);
+//	console.log('render device X', devdata.name, isbasicp);
 	if ( !isbasicp ) {
 	    document.getElementById('deviceName').value = devdata.name;
 	    document.getElementById('deviceCat').value = devdata.category || '';
@@ -2447,7 +1843,7 @@ console.log('editPaste',buf);
 		document.getElementById( 'StoriesBtn' ).classList.remove('disabled');
 	    }
 	    if ( devdata.scene ) {
-		renderSceneData( devdata.scene );
+		space.renderSceneData( devdata.scene );
 		if ( devdata.scene.logo ) {
 		    document.getElementById('brandlogo').src = devdata.scene.logo;
 		    document.getElementById('branddelete').classList.add('show');
@@ -2485,25 +1881,27 @@ console.log('editPaste',buf);
 //	for ( let i=0; i<devdata.parts.length; i++ ) {
 	devdata.parts.forEach( ( o, i ) => {
 //	    const o = devdata.parts[i];
-//	    console.log('render part',o,i);
+//	    console.log('render part',o.type,o,i,isbasicp,!isbasicp);
 	    if ( o.type === 'basic' ) {
 		loadBasic( o );
 	    }
 	    else {
+//		console.log('render part not basic',isbasicp,!isbasicp);
 		let o3;
 		if ( !isbasicp ) addPartDOM( o.name, o.fname, o.deviceid, o.brokerupmsg, o.tooltip, o.origdata );
-//		console.log('render part',o.origdata,isbasicp);
 		if ( o.origdata && o.origdata.type && o.origdata.type === 'stl' ) {
 		    const stlloader = new STLLoader();
 		    loadopencount++;
 		    stlloader.load( o.origdata.file, ( geometry ) => {
-			o3 = create3DFromGeom( i, geometry, o.fname, o.origdata, o.deviceid, o.brokerupmsg, o.tooltip, o.modifications, isbasicp );
-			applyModifications( o3, o.modifications );
+			o3 = space.create3DFromGeom( i, geometry, o.fname, o.origdata, o.deviceid, o.brokerupmsg, o.tooltip, o.modifications, isbasicp );
 //			console.log('loaded stl',geometry,o3);
+			if ( !isbasicp ) addPartMesh(o3, o.origdata, i);
+			space.applyModifications( o3, o.modifications );
 			o.pins.forEach( ( p, j ) => {
 			    const pinscont = document.querySelector('#part'+i+' .pins');
 //			    console.log('add pin',p,pinscont);
-			    addPin( i, o3, pinscont, p.name, p.color, p.modifications, p.labelmodifications, isbasicp, j );
+			    const pin3D = space.addPin3D( i, o3, pinscont, p.name, p.color, p.modifications, p.labelmodifications, isbasicp, j );
+			    addPin( i, o3, pinscont, pin3D, p.name, p.color, p.modifications, p.labelmodifications, isbasicp, j );
 			});
 			if ( isbasicp && target ) target.add(o3);
 			loadopencount--;
@@ -2514,13 +1912,15 @@ console.log('editPaste',buf);
 		    const gltfloader = new GLTFLoader();
 		    loadopencount++;
 	    	    gltfloader.load( o.origdata.file, ( glb ) => {
-			o3=create3DFromGlb( i, glb, o.fname, o.origdata, o.deviceid, o.brokerupmsg, o.tooltip, o.modifications, isbasicp );
-			applyModifications( o3, o.modifications );
+			o3=space.create3DFromGlb( i, glb, o.fname, o.origdata, o.deviceid, o.brokerupmsg, o.tooltip, o.modifications, isbasicp );
+			space.applyModifications( o3, o.modifications );
+			if ( !isbasicp ) addPartMesh(o3, o.origdata, i);
 //			console.log('loaded glb',glb,o3);
 			o.pins.forEach( ( p, j ) => {
 			    const pinscont = document.querySelector('#part'+i+' .pins');
 //			    console.log('add pin',p,pinscont);
-			    addPin( i, o3, pinscont, p.name, p.color, p.modifications, p.labelmodifications, isbasicp, j );
+			    const pin3D = space.addPin3D( i, o3, pinscont, p.name, p.color, p.modifications, p.labelmodifications, isbasicp, j );
+			    addPin( i, o3, pinscont, pin3D, p.name, p.color, p.modifications, p.labelmodifications, isbasicp, j );
 			});
 			if ( isbasicp && target ) target.add(o3);
 			loadopencount--;
@@ -2529,21 +1929,26 @@ console.log('editPaste',buf);
 		    });
 		}
 		else {
-		    o3 = create3D( i, o.origdata, o.fname, o.deviceid, o.brokerupmsg, o.tooltip, o.modifications, isbasicp );
-		    applyModifications( o3, o.modifications );
+		    o3 = space.create3D( i, o.origdata, o.fname, o.deviceid, o.brokerupmsg, o.tooltip, o.modifications, isbasicp );
+		    space.applyModifications( o3, o.modifications );
+		    if ( !isbasicp ) addPartMesh(o3, o.origdata, i);
 		    o.pins.forEach( ( p, j ) => {
 			const pinscont = document.querySelector('#part'+i+' .pins');
 //			console.log('add pin json',i,p,pinscont,document.getElementById('partsinner').innerHTML);
-			addPin( i, o3, pinscont, p.name, p.color, p.modifications, p.labelmodifications, isbasicp, j );
+			const pin3D = space.addPin3D( i, o3, pinscont, p.name, p.color, p.modifications, p.labelmodifications, isbasicp, j );
+			addPin( i, o3, pinscont, pin3D, p.name, p.color, p.modifications, p.labelmodifications, isbasicp, j );
 		    });
 		    if ( isbasicp && target ) target.add(o3);
 		}
 	    }
 	});
 	devdata.signs.forEach( ( o, i ) => {
-	    const o3=createSign( o.img, o.fname || 'noname', o.modifications, isbasicp );
-	    if ( isbasicp && target ) target.add(o3);
-//	    console.log( 'render sign', o, i );
+	    const o3=space.createSign( i, o.img, o.fname || 'noname', o.modifications, isbasicp );
+	    if ( !isbasicp ) addSignDOM( i, o.fname || 'noname', o.img, o3 );
+	    if ( isbasicp && target ) {		
+		target.add(o3);
+		console.log( 'render sign', o, i, isbasicp, target );
+	    }
 	});
 	if ( devdata.routes && devdata.routes.length > 0 ) {
 	    devdata.routes.forEach( (o,i) => {
@@ -2559,38 +1964,20 @@ console.log('editPaste',buf);
 	}
 	if ( isbasicp && target ) return target;
     }
-    const setCamStart = ( nc ) => {
-	camstart.position.x = nc.position.x;
-	camstart.position.y = nc.position.y;
-	camstart.position.z = nc.position.z;
-	camstart.rotation.x = nc.rotation.x;
-	camstart.rotation.y = nc.rotation.y;
-	camstart.rotation.z = nc.rotation.z;
-    }
-    const RestoreCamPos = ( akt ) => {	
-	camera.position.x = akt.position.x;
-	camera.position.y = akt.position.y;
-	camera.position.z = akt.position.z;
-	camera.rotation.x = akt.rotation.x;
-	camera.rotation.y = akt.rotation.y;
-	camera.rotation.z = akt.rotation.z;
-	camera.updateProjectionMatrix();
-	console.log('RestoerCamPos',akt);
-    };
     const setControls = () => {
 	const ocampo = {
 	    'position' : {
-		'x' : camera.position.x,
-		'y' : camera.position.y,
-		'z' : camera.position.z
+		'x' : space.camera.position.x,
+		'y' : space.camera.position.y,
+		'z' : space.camera.position.z
 	    },
 	    'rotation' : {
-		'x' : camera.rotation.x,
-		'y' : camera.rotation.y,
-		'z' : camera.rotation.z
+		'x' : space.camera.rotation.x,
+		'y' : space.camera.rotation.y,
+		'z' : space.camera.rotation.z
 	    }
 	}
-	controls = new ArcballControls( camera, renderer.domElement, scene );
+	controls = new ArcballControls( space.camera, space.renderer.domElement, space.scene );
 	controls.addEventListener( 'change', (ev) => {
 	    // sync the small camera for the axis triade on change of the main camera
 	    //	    let ncp = 
@@ -2612,7 +1999,7 @@ console.log('editPaste',buf);
     
 //	controls.saveState();
 	controls.keys = [ 65, 83, 68 ];
-	RestoreCamPos(ocampo);
+	space.RestoreCamPos(ocampo);
 //	controls.update();
     }
     setControls( );
@@ -2644,13 +2031,13 @@ console.log('editPaste',buf);
 	    document.getElementById( 'RoutingBtn' ).classList.add('disabled');
 	    document.getElementById( 'devType' ).innerHTML = 'Basic';
 	    document.getElementById( 'devStgHead' ).classList.add('basic');
-	    RestoreCamPos( camstartdefault );
+	    space.RestoreCamPos( );
 	}
 	else {
 	    isbasic = false;
 	    if ( json.camstart ) {
-		setCamStart( json.camstart );
-		RestoreCamPos( json.camstart );
+		space.setCamStart( json.camstart );
+		space.RestoreCamPos( json.camstart );
 		console.log('CAMSTART');
 	    }
 	    document.getElementById('liveBtn').classList.remove('hidden');
@@ -2820,27 +2207,6 @@ console.log('editPaste',buf);
 	};
 	xhr.send();
     }
-    const getDeviceScene = () => {
-	const scenestruct = {
-	    ambient : {
-		color: document.getElementById('ambientcolor').value,
-		intensity: parseFloat( document.getElementById('ambientintensity').value )
-	    },
-	    lights : []
-	};
-	for ( let i=1; i<5; i++ ) {
-	    scenestruct.lights.push({
-		color: document.getElementById('light'+i+'color').value,
-		intensity: document.getElementById('light'+i+'intensity').value,
-		position: {
-		    x: document.getElementById('light'+i+'x').value,
-		    y: document.getElementById('light'+i+'y').value,
-		    z: document.getElementById('light'+i+'z').value
-		}
-	    });
-	};
-	return scenestruct;
-    }
     const saveDevice = ( typep ) => {
 	const devicenameo = document.getElementById('deviceName');
 	const devicecato = document.getElementById('deviceCat');
@@ -2868,7 +2234,7 @@ console.log('editPaste',buf);
 	    console.log('deleting logo');
 	}
 	
-	setCamStart( camera );
+	space.setCamStart( space.camera );
 	let devdata = { 'name': devicename, 'category': devicecat, 'type': type, 'camstart' : camstart,
 			'scene': devicescene, 'doks': devicedoks, 'parts': [], 'signs': [],
 			'files' : [], 'links' : [], 'routes' : [] };
@@ -2981,8 +2347,7 @@ console.log('editPaste',buf);
 		    }
 		    else {
 			partdata.pins.push( pindata );
-		    }
-		}
+		    }		}
 	    }
 	    devdata.parts.push( partdata );
 	}
@@ -3085,7 +2450,7 @@ console.log('editPaste',buf);
 	playground.onmousedown = ( ev ) => {
 //	    console.log('mousebutton',ev.button);
 	    const rect = ev.target.getBoundingClientRect();
-	    mouseDown( ev.clientX-rect.left, ev.clientY-rect.top );
+	    space.mouseDown( ev.clientX-rect.left, ev.clientY-rect.top );
 //	    mouseDown( ev.clientX-offset.x, ev.clientY-offset.y,ev.button );
 	};
 	playground.onmouseup = ( ev ) => {
@@ -3168,7 +2533,7 @@ console.log('editPaste',buf);
 		else {
 		    f.obj3d.visible = true;
 		    f.label.material.map.dispose();
-		    f.label.material.map = getTextureFromText( o.trans );
+		    f.label.material.map = space.getTextureFromText( o.trans );
 		}
 	    }
 //	    console.log('basicpin',o.trans, o.part, f);
@@ -3219,8 +2584,8 @@ console.log('editPaste',buf);
 		o3.userData.index = index;
 		o3.userData.type = 'basic';
 		basic.name=json.name;
-		if ( basic.modifications ) applyModifications( o3, basic.modifications );
-		mainmesh.add(o3);
+		if ( basic.modifications ) space.applyModifications( o3, basic.modifications );
+		space.mainmesh.add(o3);
 		if ( noloadopen ) {
 		    translateLabels(basic);
 		    addBasicPart( basic, o3 );
@@ -3286,10 +2651,10 @@ console.log('editPaste',buf);
 	const SCREEN_HEIGHT = drect.height;
 	const SCREEN_WIDTH = drect.width;
 
-	camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
-	camera.updateProjectionMatrix();
+	space.camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
+	space.camera.updateProjectionMatrix();
 
-	renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+	space.renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
 	
 //	composer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
 
@@ -3511,88 +2876,6 @@ console.log('editPaste',buf);
 	};
 	selbox.classList.add('show');
     }
-    const ROUTEHEIGHT = 5;
-    const add3DRoute = ( ro ) => {
-//	console.log('adding 3D route',ro);
-	const rtmsh = new THREE.Object3D();
-	const pinoffs = { 'x':0, 'y':0,'z':-1 };
-	const routeh = ROUTEHEIGHT + (ro.hmod?ro.hmod:0) + routes.length;
-	// start end points
-	let hv1 = new THREE.Vector3();
-	ro.pin1.obj3d.getWorldPosition(hv1);
-	let hv2 = new THREE.Vector3();
-	ro.pin2.obj3d.getWorldPosition(hv2);
-
-	// first point, just up
-	let hv11 = hv1.clone();
-	hv11.z += routeh;
-	// second point half way y to target
-	let hv12 = hv11.clone();
-	const min= Math.min( hv12.y, hv2.y );
-	const max= Math.max( hv12.y, hv2.y );
-	let dist = ( max - min ) / 2;
-	hv12.y = min + dist;
-	// third point, move x to target x
-	let hv13 = hv12.clone();
-	hv13.x = hv2.x;
-	// last point, over target, z is first point z
-	let hv21 = hv2.clone();
-	hv21.z = hv11.z;
-//	console.log('pin hmod',ro.hmod);
-
-	const material = new THREE.LineBasicMaterial({
-	    color: ro.pin1.col,
-	    linewidth: 500
-	});
-
-	const points = [ hv1, hv11, hv12, hv13, hv21, hv2 ];
-
-	const geometry = new THREE.BufferGeometry().setFromPoints( points );
-	//	    geometry.computeBoundingSphere();
-	const line = new THREE.Line( geometry, material );
-	rtmsh.add( line );
-	const halfpi = Math.PI / 2;
-	const rtcylrots = [
-	    { x: halfpi, y: 0, z: 0 },
-	    { x: 0, y: halfpi, z: 0 },
-	    { x: 0, y: 0, z: halfpi },
-	    { x: 0, y: halfpi, z: 0 },
-	    { x: halfpi, y: 0, z: 0 }
-	]
-	const calcHeight = ( p1, p2 ) => {
-	    const h1 = Math.abs( p1.x - p2.x );
-	    const h2 = Math.abs( p1.y - p2.y );
-	    const h3 = Math.abs( p1.z - p2.z );
-	    return Math.max( h1, h2, h3 );
-	}
-	const calcPosition = ( p1, p2 ) => {
-	    const rp = { x:0,y:0,z:0 };
-	    const dx = ( p2.x - p1.x ) / 2;
-	    rp.x = p1.x + dx;
-	    const dy = ( p2.y - p1.y ) / 2;
-	    rp.y = p1.y + dy;
-	    const dz = ( p2.z - p1.z ) / 2;
-	    rp.z = p1.z + dz;
-	    return rp;
-	}
-	const addRTCylinder = ( p1, p2, h, d, rot, col ) => {
-	    const cylg = new THREE.CylinderGeometry( 0.1 * d, 0.1 * d, h + 0.1, 8 );
-	    //		const cylm = new THREE.MeshBasicMaterial( { color: 0xffffff } );
-	    const cylm = new THREE.MeshBasicMaterial( { color: col } );
-	    const cyl = new THREE.Mesh( cylg, cylm );
-	    cyl.rotation.set( rot.x, rot.y, rot.z );
-	    const pos = calcPosition( p1, p2 );
-	    cyl.position.set( pos.x, pos.y, pos.z );
-	    rtmsh.add(cyl);
-	};
-	for ( let i=0; i<points.length-1; i++ ) {
-	    const h = calcHeight( points[i], points[i+1] );
-	    addRTCylinder( points[i], points[i+1], h, ro.dmod, rtcylrots[i], ro.pin1.col );
-	}
-	routemesh.add( rtmsh );
-	ro.obj3d = rtmsh;
-	//	    console.log('add 3D Route',pos1arr,pos2arr,pinoffs);
-    }
     const idify = ( name ) => {
 	return name.replace( /\ /g, '_' );
     }
@@ -3619,7 +2902,7 @@ console.log('editPaste',buf);
 		}
 		let ar = routes[i];
 //		console.log('delete route click',ar);
-		removeMeshes( ar.obj3d );
+		space.removeMeshes( ar.obj3d );
 //		ar.obj3d.geometry.dispose();
 //		ar.obj3d.material.dispose();
 		ar.obj3d.parent.remove(ar.obj3d);
@@ -3632,7 +2915,7 @@ console.log('editPaste',buf);
 	    aktroute.id=routeo.id;
 	    rpd.classList.remove('pin2');
 	    rpd.classList.remove('vis');
-	    add3DRoute(aktroute);
+	    space.add3DRoute(aktroute,routes.length);
 //	    console.log('route second pin');
 	    // set second pin
 	}
@@ -3704,7 +2987,7 @@ console.log('editPaste',buf);
 	    console.log('change ambient color',ev.target.value);
 	}
 	document.getElementById('ambientintensity').onchange = ( ev ) => {
-	    console.log('change ambient intensity',ev.target.value,ambientLight.intensity);
+	    console.log('change ambient intensity',ev.target.value,space.ambientLight.intensity);
 	}
 	document.getElementById('SzeneBtn').onclick = ( ev ) => {
 	    if ( ev.target.classList.contains('disabled') ) return;
@@ -3820,10 +3103,8 @@ console.log('editPaste',buf);
 	    
 	}
 	document.getElementById('reroute').onclick = ( ev ) => {
-	    removeMeshes( routemesh );
+	    space.removeMeshes( routemesh );
 	    const reroutes = JSON.parse(JSON.stringify(routes));
-	    routes.splice(0);
-	    document.getElementById('routelist').replaceChildren();
 	    renderRoutes( reroutes );
 	    console.log('reroute', reroutes);
 	}
@@ -3994,28 +3275,30 @@ console.log('editPaste',buf);
 	document.getElementById('editCancel').onclick = ( ev ) => {
 	    editmode = false;
 	    document.body.classList.remove('modalmode');
-	    restoreBackup(aktmesh);
+	    space.restoreBackup(aktmesh);
 	    const dlgdom = document.getElementById('editDlg');
 	    dlgdom.className = '';
-	    if ( edithlp ) {
-		edithlp.geometry.dispose();
-		edithlp.material.dispose();
-		scene.remove( edithlp );
+	    if ( space.edithlp ) {
+		space.edithlp.geometry.dispose();
+		space.edithlp.material.dispose();
+		space.scene.remove( edithlp );
 	    };
 	    ev.preventDefault();
+	    return false;
 	};
 	document.getElementById('pinCancel').onclick = ( ev ) => {
 //	    editmode = false;
-	    restoreBackup(aktpin.obj3d);
-	    restoreLabelBackup(aktpin.label);
+	    space.restoreBackup(aktpin.obj3d);
+	    space.restoreLabelBackup(aktpin.label);
 	    document.getElementById('pinDlg').classList.remove('vis');
 	    if ( hlp ) {
 		hlp.geometry.dispose();
 		hlp.material.dispose();
-		scene.remove( hlp );
+		space.scene.remove( hlp );
 	    };
 	    document.body.classList.remove('modalmode');
 	    ev.preventDefault();
+	    return false;
 	};
 	document.getElementById('editCopy').onclick = ( ev ) => {
 	    editCopy();
@@ -4026,15 +3309,16 @@ console.log('editPaste',buf);
 	};
 	document.getElementById('editConfirm').onclick = ( ev ) => {
 	    editmode = false;
-	    savePositionUserData(aktmesh);
-	    if ( edithlp ) {
-		edithlp.geometry.dispose();
-		edithlp.material.dispose();
-		scene.remove( edithlp );
+	    space.savePositionUserData(aktmesh);
+	    if ( space.edithlp ) {
+		space.edithlp.geometry.dispose();
+		space.edithlp.material.dispose();
+		space.scene.remove( edithlp );
 	    };
 	    document.getElementById('editDlg').className = '';
 	    document.body.classList.remove('modalmode');
 	    ev.preventDefault();
+	    return false;
 	};
 	document.getElementById('pinname').onblur = ( ev ) => {
 	    aktpin.name = ev.target.value;
@@ -4051,13 +3335,13 @@ console.log('editPaste',buf);
 	    if ( hlp ) {
 		hlp.geometry.dispose();
 		hlp.material.dispose();
-		scene.remove( hlp );
+		space.scene.remove( hlp );
 	    };
 	    aktpin.name = document.getElementById('pinname').value;
 	    const aktpartindex = document.getElementById('formPartIndex').value;
 	    let DOMO = document.querySelector( '#pin'+aktpartindex+'-'+aktpin.index+' span' );
 	    aktpin.label.material.map.dispose();
-	    aktpin.label.material.map = getTextureFromText( aktpin.name );
+	    aktpin.label.material.map = space.getTextureFromText( aktpin.name );
 	    console.log('save pin',aktpin,DOMO);
 	    DOMO.textContent = aktpin.name;
 	    document.getElementById('pinDlg').classList.remove('vis');
@@ -4133,23 +3417,23 @@ console.log('editPaste',buf);
 		else if ( ev.target.id === 'labelposx' ) aktpin.label.position.x = v;
 		else if ( ev.target.id === 'labelposy' ) aktpin.label.position.y = v;
 		else if ( ev.target.id === 'labelposz' ) aktpin.label.position.z = v;
-		else if ( ev.target.id === 'ambientintensity' ) ambientLight.intensity = v;
-		else if ( ev.target.id === 'light1intensity' ) light1.intensity = v;
-		else if ( ev.target.id === 'light1x' ) light1.position.x = v;
-		else if ( ev.target.id === 'light1y' ) light1.position.y = v;
-		else if ( ev.target.id === 'light1z' ) light1.position.z = v;
-		else if ( ev.target.id === 'light2intensity' ) light2.intensity = v;
-		else if ( ev.target.id === 'light2x' ) light2.position.x = v;
-		else if ( ev.target.id === 'light2y' ) light2.position.y = v;
-		else if ( ev.target.id === 'light2z' ) light2.position.z = v;
-		else if ( ev.target.id === 'light3intensity' ) light3.intensity = v;
-		else if ( ev.target.id === 'light3x' ) light3.position.x = v;
-		else if ( ev.target.id === 'light3y' ) light3.position.y = v;
-		else if ( ev.target.id === 'light3z' ) light3.position.z = v;
-		else if ( ev.target.id === 'light4intensity' ) light4.intensity = v;
-		else if ( ev.target.id === 'light4x' ) light4.position.x = v;
-		else if ( ev.target.id === 'light4y' ) light4.position.y = v;
-		else if ( ev.target.id === 'light4z' ) light4.position.z = v;
+		else if ( ev.target.id === 'ambientintensity' ) space.ambientLight.intensity = v;
+		else if ( ev.target.id === 'light1intensity' ) space.light1.intensity = v;
+		else if ( ev.target.id === 'light1x' ) space.light1.position.x = v;
+		else if ( ev.target.id === 'light1y' ) space.light1.position.y = v;
+		else if ( ev.target.id === 'light1z' ) space.light1.position.z = v;
+		else if ( ev.target.id === 'light2intensity' ) space.light2.intensity = v;
+		else if ( ev.target.id === 'light2x' ) space.light2.position.x = v;
+		else if ( ev.target.id === 'light2y' ) space.light2.position.y = v;
+		else if ( ev.target.id === 'light2z' ) space.light2.position.z = v;
+		else if ( ev.target.id === 'light3intensity' ) space.light3.intensity = v;
+		else if ( ev.target.id === 'light3x' ) space.light3.position.x = v;
+		else if ( ev.target.id === 'light3y' ) space.light3.position.y = v;
+		else if ( ev.target.id === 'light3z' ) space.light3.position.z = v;
+		else if ( ev.target.id === 'light4intensity' ) space.light4.intensity = v;
+		else if ( ev.target.id === 'light4x' ) space.light4.position.x = v;
+		else if ( ev.target.id === 'light4y' ) space.light4.position.y = v;
+		else if ( ev.target.id === 'light4z' ) space.light4.position.z = v;
 		aktPinCoords();
 		aktEditCoords();
 		console.log('changed coord',ev.target.id);
@@ -4215,31 +3499,31 @@ console.log('editPaste',buf);
 		else if ( dragtarget.id === 'labelposxhs' ) aktpin.label.position.x = newv;
 		else if ( dragtarget.id === 'labelposyhs' ) aktpin.label.position.y = newv;
 		else if ( dragtarget.id === 'labelposzhs' ) aktpin.label.position.z = newv;
-		else if ( dragtarget.id === 'ambientintensityhs' ) ambientLight.intensity = newv;
-		else if ( dragtarget.id === 'light1xhs' ) { light1.position.x = newv; cobj = light1; }
-		else if ( dragtarget.id === 'light1yhs' ) { light1.position.y = newv; cobj = light1; }
-		else if ( dragtarget.id === 'light1zhs' ) { light1.position.z = newv; cobj = light1; }
-		else if ( dragtarget.id === 'light2xhs' ) { light2.position.x = newv; cobj = light2; }
-		else if ( dragtarget.id === 'light2yhs' ) { light2.position.y = newv; cobj = light2; }
-		else if ( dragtarget.id === 'light2zhs' ) { light2.position.z = newv; cobj = light2; }
-		else if ( dragtarget.id === 'light3xhs' ) { light3.position.x = newv; cobj = light3; }
-		else if ( dragtarget.id === 'light3yhs' ) { light3.position.y = newv; cobj = light3; }
-		else if ( dragtarget.id === 'light3zhs' ) { light3.position.z = newv; cobj = light3; }
-		else if ( dragtarget.id === 'light4xhs' ) { light4.position.x = newv; cobj = light4; }
-		else if ( dragtarget.id === 'light4yhs' ) { light4.position.y = newv; cobj = light4; }
-		else if ( dragtarget.id === 'light4zhs' ) { light4.position.z = newv; cobj = light4; }
+		else if ( dragtarget.id === 'ambientintensityhs' ) space.ambientLight.intensity = newv;
+		else if ( dragtarget.id === 'light1xhs' ) { space.light1.position.x = newv; cobj = space.light1; }
+		else if ( dragtarget.id === 'light1yhs' ) { space.light1.position.y = newv; cobj = space.light1; }
+		else if ( dragtarget.id === 'light1zhs' ) { space.light1.position.z = newv; cobj = space.light1; }
+		else if ( dragtarget.id === 'light2xhs' ) { space.light2.position.x = newv; cobj = space.light2; }
+		else if ( dragtarget.id === 'light2yhs' ) { space.light2.position.y = newv; cobj = space.light2; }
+		else if ( dragtarget.id === 'light2zhs' ) { space.light2.position.z = newv; cobj = space.light2; }
+		else if ( dragtarget.id === 'light3xhs' ) { space.light3.position.x = newv; cobj = space.light3; }
+		else if ( dragtarget.id === 'light3yhs' ) { space.light3.position.y = newv; cobj = space.light3; }
+		else if ( dragtarget.id === 'light3zhs' ) { space.light3.position.z = newv; cobj = space.light3; }
+		else if ( dragtarget.id === 'light4xhs' ) { space.light4.position.x = newv; cobj = space.light4; }
+		else if ( dragtarget.id === 'light4yhs' ) { space.light4.position.y = newv; cobj = space.light4; }
+		else if ( dragtarget.id === 'light4zhs' ) { space.light4.position.z = newv; cobj = space.light4; }
 		else if ( dragtarget.id === 'light1intensityhs' || dragtarget.id === 'light1intensity' ) {
-		    light1.intensity = newv; cobj = light1; }
+		    space.light1.intensity = newv; cobj = space.light1; }
 		else if ( dragtarget.id === 'light2intensityhs' || dragtarget.id === 'light2intensity' ) {
-		    light2.intensity = newv; cobj = light2; }
+		    space.light2.intensity = newv; cobj = space.light2; }
 		else if ( dragtarget.id === 'light3intensityhs' || dragtarget.id === 'light3intensity' ) {
-		    light3.intensity = newv; cobj = light3; }
+		    space.light3.intensity = newv; cobj = space.light3; }
 		else if ( dragtarget.id === 'light4intensityhs' || dragtarget.id === 'light4intensity' ) {
-		    light4.intensity = newv; cobj = light4; }
+		    space.light4.intensity = newv; cobj = space.light4; }
 		if ( cobj && cobj.userData.helper ) {
 		    cobj.userData.helper.update();		    
 		}
-		if ( hlp ) hlp.update();
+		if ( space.hlp ) space.hlp.update();
 	    };
 	};
 	
@@ -4279,6 +3563,12 @@ console.log('editPaste',buf);
     window.setTimeout( () => {
 	fhheader.classList.add('hidden');
     }, 2000 );
+
+    space.addAnimFunc( ( time ) => {
+	if ( space.mainmesh ) {
+	    checkDisplays( time );
+	}
+    });
 
     HTMLready = true;
 };
